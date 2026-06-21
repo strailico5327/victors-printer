@@ -1,0 +1,133 @@
+/* HarmonyOS Sans */
+
+@font-face {
+  font-family: "HarmonyOS Sans";
+  src: url("/fonts/harmonyos_sans/HarmonyOS_Sans_Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans";
+  src: url("/fonts/harmonyos_sans/HarmonyOS_Sans_Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans";
+  src: url("/fonts/harmonyos_sans/HarmonyOS_Sans_Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* HarmonyOS Sans SC */
+
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("/fonts/harmonyos_sans_sc/HarmonyOS_SansSC_Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("/fonts/harmonyos_sans_sc/HarmonyOS_SansSC_Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans SC";
+  src: url("/fonts/harmonyos_sans_sc/HarmonyOS_SansSC_Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* HarmonyOS Sans TC */
+
+@font-face {
+  font-family: "HarmonyOS Sans TC";
+  src: url("/fonts/harmonyos_sans_tc/HarmonyOS_SansTC_Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans TC";
+  src: url("/fonts/harmonyos_sans_tc/HarmonyOS_SansTC_Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "HarmonyOS Sans TC";
+  src: url("/fonts/harmonyos_sans_tc/HarmonyOS_SansTC_Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* Linden Hill */
+
+@font-face {
+  font-family: "Linden Hill";
+  src: url("/fonts/LindenHill/LindenHill-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Linden Hill";
+  src: url("/fonts/LindenHill/LindenHill-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+
+/* Noto Serif CJK */
+
+@font-face {
+  font-family: "Noto Serif JP";
+  src: url("/fonts/noto_serif_jp/NotoSerifJP-VariableFont_wght.ttf") format("truetype");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Serif KR";
+  src: url("/fonts/noto_serif_kr/NotoSerifKR-VariableFont_wght.ttf") format("truetype");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Serif SC";
+  src: url("/fonts/noto_serif_sc/NotoSerifSC-VariableFont_wght.ttf") format("truetype");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Serif TC";
+  src: url("/fonts/noto_serif_tc/NotoSerifTC-VariableFont_wght.ttf") format("truetype");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}

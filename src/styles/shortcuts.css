@@ -1,0 +1,104 @@
+.custom-md img.shortcut-img {
+    cursor: zoom-in;
+    display: block;
+    margin: 1.5rem auto;
+}
+
+.custom-md .shortcut-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--shortcut-grid-columns), minmax(0, 1fr));
+    gap: 4px;
+    max-width: 100%;
+    margin: 1.5rem auto;
+}
+
+.custom-md .shortcut-grid-item {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: var(--shortcut-grid-ratio);
+}
+
+.custom-md .shortcut-grid img.shortcut-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    margin: 0;
+}
+
+.custom-md .shortcut-grid a.pswp-image-link {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    margin: 0;
+    display: block;
+    cursor: pointer;
+}
+
+.custom-md a.pswp-image-link img.shortcut-img {
+    cursor: pointer;
+}
+
+.custom-md .shortcut-flex {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    max-width: 100%;
+    margin: 1.5rem auto;
+}
+
+.custom-md .shortcut-flex-item {
+    display: block;
+    flex: var(--shortcut-flex-ratio) 1 0;
+    min-width: 0;
+}
+
+.custom-md .shortcut-flex img.shortcut-img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0;
+}
+
+.custom-md .shortcut-flex a.pswp-image-link {
+    width: 100%;
+    height: auto;
+    max-width: none;
+    margin: 0;
+    display: block;
+    cursor: pointer;
+}
+
+.custom-md .shortcut-date {
+    display: block;
+    text-align: right;
+    text-indent: 0;
+}
+
+.custom-md .mini-title {
+    margin: 1.2rem 0 0.4rem;
+    font-size: 1.15em;
+    font-weight: 700;
+    line-height: 1.4;
+    text-indent: 0;
+}
+
+.prose.custom-md.literary-prose :where(p.force-no-indent),
+.prose.custom-md.literary-prose :where(p.no-indent),
+.prose.custom-md :where(p.force-no-indent),
+.prose.custom-md :where(p.no-indent) {
+    text-indent: 0;
+}
+
+.prose.custom-md.literary-prose :where(p.force-indent),
+.prose.custom-md :where(p.force-indent) {
+    text-indent: 2em;
+}
+
+.prose.custom-md.literary-prose :where(p.force-right),
+.prose.custom-md :where(p.force-right) {
+    text-indent: 0;
+    text-align: right;
+}

@@ -1,0 +1,106 @@
+.pswp__button {
+    @apply transition bg-black/40 hover:bg-black/50 active:bg-black/60 flex items-center justify-center mr-0 w-12 h-12 !important;
+}
+.pswp__button--zoom, .pswp__button--close {
+    @apply mt-4 rounded-xl active:scale-90 !important;
+}
+.pswp__button--zoom {
+    @apply mr-2.5 !important;
+}
+.pswp__button--close {
+    @apply mr-4 !important;
+}
+
+.pswp-vivia {
+    --pswp-transition-duration: 360ms;
+    --pswp-vivia-easing: cubic-bezier(.16, 1, .3, 1);
+    --pswp-vivia-fade-duration: 500ms;
+    --pswp-vivia-fade-out-duration: 150ms;
+    --pswp-vivia-fade-out-delay: 350ms;
+}
+
+.pswp-vivia .pswp__bg,
+.pswp-vivia .pswp__hide-on-close {
+    transition-timing-function: var(--pswp-vivia-easing);
+}
+
+.pswp-vivia.pswp-vivia--overlay-fading .pswp__container {
+    opacity: 0;
+    transition: none !important;
+}
+
+.pswp-vivia.pswp-vivia--overlay-fading .pswp__item,
+.pswp-vivia.pswp-vivia--handoff .pswp__item {
+    transition: none;
+}
+
+.pswp-vivia.pswp-vivia--handoff .pswp__container {
+    opacity: 1 !important;
+    transition: none !important;
+}
+
+.pswp-vivia__fade-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    opacity: 1;
+    pointer-events: none;
+    transform: translateZ(0);
+}
+
+.pswp-vivia__fade-image {
+    position: absolute;
+    display: block;
+    max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 40px);
+    object-fit: contain;
+    transform: translateZ(0);
+    user-select: none;
+    will-change: opacity;
+}
+
+.pswp-vivia__fade-image--in {
+    z-index: 2;
+    animation: pswp-vivia-crossfade-in var(--pswp-vivia-fade-duration) ease both;
+}
+
+.pswp-vivia__fade-image--out {
+    z-index: 1;
+    animation: pswp-vivia-crossfade-out var(--pswp-vivia-fade-out-duration) ease var(--pswp-vivia-fade-out-delay) both;
+}
+
+.pswp-vivia__fade-layer--mixed-size .pswp-vivia__fade-image--in {
+    animation: pswp-vivia-crossfade-in 360ms ease 90ms both;
+}
+
+.pswp-vivia__fade-layer--mixed-size .pswp-vivia__fade-image--out {
+    animation: pswp-vivia-crossfade-out 220ms ease both;
+}
+
+@keyframes pswp-vivia-crossfade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pswp-vivia-crossfade-out {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pswp-vivia .pswp__item,
+    .pswp-vivia__fade-image {
+        animation: none;
+        transition: none;
+    }
+}
