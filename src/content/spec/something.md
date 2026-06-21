@@ -9,7 +9,7 @@ published: 2026-05-19
 
 :> Of course there are apps that can do the same jobs but they are either too complicated for a small task or not free. One of them even asked me to watch ads before using shamelessly.
 
-:!img github_profile.png 030626 75
+:!img github_profile.png 030626
 
 :!date 03062026
 
@@ -17,7 +17,7 @@ published: 2026-05-19
 
 :> Painted some icons.
 
-:!img neco_icons.png 030626 75
+:!img neco_icons.png 030626 
 
 :!date 03062026
 
@@ -25,7 +25,7 @@ published: 2026-05-19
 
 :> こなかちゃん可愛いいね
 
-:!img konaka_wallpaper_sunrise.png 030626 75
+:!img konaka_wallpaper_sunrise.png 030626 
 
 :!date 03062026
 
@@ -33,7 +33,7 @@ published: 2026-05-19
 
 :> New music collected!
 
-:!img feishin_new_030626.png 030626 75
+:!img feishin_new_030626.png 030626 
 
 :!date 03062026
 
@@ -75,9 +75,9 @@ published: 2026-05-19
 
 :> Only when you get some things for free do they become keepsakes.
 
-:!flex 100
-:!img zhuangfangyi_endfield_apple_activity.png 170526 49.95
-:!img endfield_apple_activity_announcement.png 170526 26.57
+:!flex 75
+:!img zhuangfangyi_endfield_apple_activity.png 170526 
+:!img endfield_apple_activity_announcement.png 170526 
 !:flex
 
 :!date 17052026
@@ -106,7 +106,7 @@ published: 2026-05-19
 
 :> If I were a quadrillionaire —
 
-:!img instant_noodles.png 130526 75
+:!img instant_noodles.png 130526 
 
 :!date 13052026
 
@@ -116,7 +116,7 @@ published: 2026-05-19
 
 :> It’s such a pity the old girl isn’t here today — I have never seen her so mad about a restaurant.
 
-:!img hot_pot_buffet_with_mother.jpg 130526 75
+:!img hot_pot_buffet_with_mother.jpg 130526 
 
 :!date 13052026
 
@@ -151,8 +151,8 @@ published: 2026-05-19
 :> Domain purchased; GitHub branches sorted; everything is just on track.
 
 :!flex 100
-:!img cloudflare_domain_screenshot.png 100526 49.95
-:!img github_blog_repo_branches_screenshot.png 100526 49.95
+:!img cloudflare_domain_screenshot.png 100526 
+:!img github_blog_repo_branches_screenshot.png 100526 
 !:flex
 
 :!date 10052026
@@ -162,9 +162,9 @@ published: 2026-05-19
 :> Before a mathematics examination —
 
 :!flex 100
-:!img phi_aleph_0_in_ap_screenshot.png 090526 33.3
-:!img phi_stasis_in_ap_screenshot.png 090526 33.3
-:!img phi_trojan_in_ap_screenshot.png 090526 33.3
+:!img phi_aleph_0_in_ap_screenshot.png 090526 
+:!img phi_stasis_in_ap_screenshot.png 090526 
+:!img phi_trojan_in_ap_screenshot.png 090526 
 !:flex
 
 :!date 09052026
@@ -179,7 +179,7 @@ published: 2026-05-19
 
 :> What a relief to be with someone you can get along well with.
 
-:!img at_dominos_ltp.png 080526 75
+:!img at_dominos_ltp.png 080526 
 
 :!date 08052026
 
@@ -206,7 +206,7 @@ published: 2026-05-19
 
 :> <a href="https://www.bilibili.com/video/BV1guRiBsEnC">AP is a love letter to a marvellous chart.</a>
 
-:!img phira_sanctuary_ap_captured.PNG 050526 75
+:!img phira_sanctuary_ap_captured.PNG 050526 
 
 :!date 05052026
 
@@ -222,6 +222,6 @@ published: 2026-05-19
 
 :> The minijacks in this chart are so horrible.
 
-:!img arc_infinity_heaven_byd_ex+_screenshot.png 060426 75
+:!img arc_infinity_heaven_byd_ex+_screenshot.png 060426 
 
 :!date 06042026

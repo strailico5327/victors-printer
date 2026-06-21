@@ -2,7 +2,7 @@
 title: Shortcut Layout Test
 published: 2026-06-19
 category: Tech
-draft: false
+draft: true
 proseStyle: literary
 tags:
     - Test
