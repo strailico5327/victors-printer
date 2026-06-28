@@ -1,6 +1,6 @@
 import { transformDateShortcutParagraph } from "./shortcuts/date.mjs";
-import { transformFormatShortcutParagraph } from "./shortcuts/format.mjs";
 import { transformFlexShortcutBlocks } from "./shortcuts/flex.mjs";
+import { transformFormatShortcutParagraph } from "./shortcuts/format.mjs";
 import { transformGridShortcutBlocks } from "./shortcuts/grid.mjs";
 import { transformImageShortcutParagraph } from "./shortcuts/img.mjs";
 import { transformMosaicShortcutBlocks } from "./shortcuts/mosaic.mjs";
@@ -118,7 +118,7 @@ function collectParagraphLines(node) {
 
 function isBreakNode(node) {
 	return (
-		(node.type === "break") ||
+		node.type === "break" ||
 		(node.type === "html" && /^<br\s*\/?>$/i.test(node.value.trim())) ||
 		(node.type === "raw" && /^<br\s*\/?>$/i.test(node.value.trim())) ||
 		(node.type === "element" && node.tagName === "br")
@@ -143,7 +143,9 @@ function getContentAssetBase(filePath) {
 	}
 
 	const normalisedPath = filePath.replace(/\\/g, "/");
-	const match = normalisedPath.match(/\/src\/content\/(posts|spec|timeline)\/(.+)$/);
+	const match = normalisedPath.match(
+		/\/src\/content\/(posts|spec|timeline)\/(.+)$/,
+	);
 
 	if (!match) {
 		return null;
@@ -159,7 +161,9 @@ function getContentAssetBase(filePath) {
 
 	if (collection === "timeline") {
 		const [year, month] = parts;
-		return year && month ? `/images/timeline/${year}/${month}` : "/images/timeline";
+		return year && month
+			? `/images/timeline/${year}/${month}`
+			: "/images/timeline";
 	}
 
 	const filename = parts.at(-1) || "";

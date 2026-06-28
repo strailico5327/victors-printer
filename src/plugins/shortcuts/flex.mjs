@@ -141,7 +141,11 @@ function getImageRatio(publicPath) {
 		return null;
 	}
 
-	const imagePath = path.join(process.cwd(), "public", publicPath.replace(/^\/+/, ""));
+	const imagePath = path.join(
+		process.cwd(),
+		"public",
+		publicPath.replace(/^\/+/, ""),
+	);
 
 	if (!existsSync(imagePath)) {
 		return null;

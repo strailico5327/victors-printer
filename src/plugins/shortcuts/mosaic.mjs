@@ -29,10 +29,18 @@ export function transformMosaicShortcutBlocks(parent, context = {}) {
 		const endIndex = findMosaicEnd(parent.children, index + 1);
 
 		if (endIndex === -1) {
-			throw new Error(`[shortcut mosaic] Missing !:mosaic after "${startText}"`);
+			throw new Error(
+				`[shortcut mosaic] Missing !:mosaic after "${startText}"`,
+			);
 		}
 
-		const rows = collectMosaicRows(parent.children, index + 1, endIndex, mosaic, context);
+		const rows = collectMosaicRows(
+			parent.children,
+			index + 1,
+			endIndex,
+			mosaic,
+			context,
+		);
 
 		parent.children.splice(index, endIndex - index + 1, {
 			type: "html",
@@ -144,7 +152,9 @@ function buildMosaicHtml(mosaic, rows, context) {
 	const rowHtml = rows
 		.map((row) => buildMosaicRowHtml(row, usesRowRatios, context))
 		.join("");
-	const modeClass = usesRowRatios ? "shortcut-mosaic-row-ratios" : "shortcut-mosaic-group-ratio";
+	const modeClass = usesRowRatios
+		? "shortcut-mosaic-row-ratios"
+		: "shortcut-mosaic-group-ratio";
 	const ratioStyle = usesRowRatios
 		? ""
 		: ` --shortcut-mosaic-ratio: ${escapeAttribute(mosaic.ratio)};`;

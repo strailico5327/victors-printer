@@ -5,9 +5,11 @@ import { formatDateForDisplay } from "@utils/date-utils";
 import { Icon } from "astro-icon/components";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
-const timelineEvents = (await getCollection("timeline", ({ data }) => {
-	return import.meta.env.PROD ? data.draft !== true : true;
-})).sort((a, b) => b.data.published.getTime() - a.data.published.getTime());
+const timelineEvents = (
+	await getCollection("timeline", ({ data }) => {
+		return import.meta.env.PROD ? data.draft !== true : true;
+	})
+).sort((a, b) => b.data.published.getTime() - a.data.published.getTime());
 const renderedEvents = await Promise.all(
 	timelineEvents.map(async (entry) => ({
 		entry,
@@ -20,7 +22,9 @@ if (renderedEvents.length === 0 && !timelineSpec) {
 	throw new Error("Timeline spec content not found");
 }
 
-const LegacyContent = timelineSpec ? (await timelineSpec.render()).Content : null;
+const LegacyContent = timelineSpec
+	? (await timelineSpec.render()).Content
+	: null;
 
 function formatTime(date: Date) {
 	return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;

@@ -1,6 +1,6 @@
 #Victor's Printer
 
-A personal blog powered by (*ASTRO*)[https://astro.build/] and (*FUWARI*)[https://github.com/saicaca/fuwari]
+A personal blog powered by [*ASTRO*](https://astro.build/) and [*FUWARI*](https://github.com/saicaca/fuwari)
 
 
 

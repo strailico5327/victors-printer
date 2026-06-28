@@ -1,5 +1,5 @@
-import rss from "@astrojs/rss";
 import { getCollection } from "astro:content";
+import rss from "@astrojs/rss";
 import { getSortedPosts } from "@utils/content-utils";
 import { formatDateForDisplay } from "@utils/date-utils";
 import { url } from "@utils/url-utils";

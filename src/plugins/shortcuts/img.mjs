@@ -83,9 +83,10 @@ export function parseImageShortcut(value, options = {}) {
 	return {
 		input,
 		gallery: resolvedGallery,
-		width: options.defaultWidth === false
-			? null
-			: normalizeWidth(width || options.defaultWidth || "75%"),
+		width:
+			options.defaultWidth === false
+				? null
+				: normalizeWidth(width || options.defaultWidth || "75%"),
 	};
 }
 
@@ -95,7 +96,10 @@ export function resolveShortcutGallery(gallery, context = {}, scope = "image") {
 	}
 
 	if (typeof context.galleryResolver === "function") {
-		const resolved = context.galleryResolver({ scope, assetBase: context.assetBase });
+		const resolved = context.galleryResolver({
+			scope,
+			assetBase: context.assetBase,
+		});
 
 		if (resolved) {
 			return resolved;
@@ -221,5 +225,8 @@ function takeGalleryOverride(args) {
 }
 
 function isWidthToken(value) {
-	return /^\d+(?:\.\d+)?%?$/.test(value) || /^(auto|inherit|initial|unset)$/.test(value);
+	return (
+		/^\d+(?:\.\d+)?%?$/.test(value) ||
+		/^(auto|inherit|initial|unset)$/.test(value)
+	);
 }
