@@ -76,7 +76,7 @@ export default {
 			}
 
 			if ((request.method === "GET" || request.method === "HEAD") && url.hostname === "publish.strailico.me") {
-				return proxyPublicSite(request, url);
+				return handlePublisherPageRequest(request, url);
 			}
 
 			return json({ ok: false, error: "not_found" }, 404, request);
@@ -91,8 +91,21 @@ export default {
 	},
 };
 
+async function handlePublisherPageRequest(request: Request, url: URL): Promise<Response> {
+	if (!isPublisherProxyPath(url.pathname)) {
+		return Response.redirect(new URL(`${url.pathname}${url.search}`, PUBLIC_SITE_ORIGIN), 302);
+	}
+
+	return proxyPublicSite(request, url);
+}
+
+function isPublisherProxyPath(pathname: string): boolean {
+	return pathname === "/" || pathname === "/publish" || pathname === "/publish/" || pathname.startsWith("/_astro/") || pathname.startsWith("/images/");
+}
+
 async function proxyPublicSite(request: Request, url: URL): Promise<Response> {
-	const target = new URL(url.pathname === "/" ? "/publish/" : `${url.pathname}${url.search}`, PUBLIC_SITE_ORIGIN);
+	const pathname = url.pathname === "/" || url.pathname === "/publish" ? "/publish/" : url.pathname;
+	const target = new URL(`${pathname}${url.search}`, PUBLIC_SITE_ORIGIN);
 	const response = await fetch(target, { method: request.method });
 	return new Response(response.body, response);
 }
