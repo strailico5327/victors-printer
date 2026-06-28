@@ -75,7 +75,7 @@ export default {
 				return withCors(await handlePublish(request, env), request);
 			}
 
-			if ((request.method === "GET" || request.method === "HEAD") && url.hostname === "publish.strailico.me") {
+			if ((request.method === "GET" || request.method === "HEAD") && url.hostname === "dashboard.strailico.me") {
 				return handlePublisherPageRequest(request, url);
 			}
 
@@ -100,11 +100,11 @@ async function handlePublisherPageRequest(request: Request, url: URL): Promise<R
 }
 
 function isPublisherProxyPath(pathname: string): boolean {
-	return pathname === "/" || pathname === "/publish" || pathname === "/publish/" || pathname.startsWith("/_astro/") || pathname.startsWith("/images/");
+	return pathname === "/" || pathname === "/dashboard" || pathname === "/dashboard/" || pathname.startsWith("/_astro/") || pathname.startsWith("/images/");
 }
 
 async function proxyPublicSite(request: Request, url: URL): Promise<Response> {
-	const pathname = url.pathname === "/" || url.pathname === "/publish" ? "/publish/" : url.pathname;
+	const pathname = url.pathname === "/" || url.pathname === "/dashboard" || url.pathname === "/dashboard/" ? "/publish/" : url.pathname;
 	const target = new URL(`${pathname}${url.search}`, PUBLIC_SITE_ORIGIN);
 	const response = await fetch(target, { method: request.method });
 	return new Response(response.body, response);

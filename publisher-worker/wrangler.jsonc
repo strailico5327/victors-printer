@@ -1,13 +1,13 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "victors-printer-publisher",
+  "name": "victors-dashboard",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-21",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
   "routes": [
     {
-      "pattern": "publish.strailico.me",
+      "pattern": "dashboard.strailico.me",
       "custom_domain": true
     }
   ],

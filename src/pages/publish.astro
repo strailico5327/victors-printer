@@ -251,7 +251,7 @@ const emptyCodePlaceholder = "\u200b";
 	import PhotoSwipe from "photoswipe";
 
 	if (window.location.hostname === "strailico.me") {
-		window.location.replace(`https://publish.strailico.me${window.location.pathname}${window.location.search}${window.location.hash}`);
+		window.location.replace(`https://dashboard.strailico.me/dashboard/${window.location.search}${window.location.hash}`);
 	}
 
 	const imagePanel = document.querySelector("#image-panel");

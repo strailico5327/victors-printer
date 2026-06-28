@@ -1,6 +1,6 @@
-# Victor's Printer Publisher Worker
+# Victor's Printer Dashboard Worker
 
-Private Cloudflare Worker for Victor's Printer at `publish.strailico.me`. It accepts a protected draft zip, validates it, and writes timeline Markdown plus images into the Astro blog repository through the GitHub Contents API.
+Private Cloudflare Worker for Victor's Printer at `dashboard.strailico.me`. It accepts a protected draft zip, validates it, and writes timeline Markdown plus images into the Astro blog repository through the GitHub Contents API.
 
 The public site should run on Cloudflare Pages. GitHub is only the source repo; Pages watches it and rebuilds after this Worker commits.
 

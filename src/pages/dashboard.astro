@@ -1,0 +1,10 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Dashboard" description="Private dashboard">
+	<meta http-equiv="refresh" content="0; url=https://dashboard.strailico.me/dashboard/" />
+	<script is:inline>
+		window.location.replace("https://dashboard.strailico.me/dashboard/");
+	</script>
+</Layout>
