@@ -142,12 +142,12 @@ async function handlePublish(request: Request, env: Env): Promise<Response> {
 		`timeline: replace ${event.id} images`,
 	);
 
-	let commit = await github.putText(paths.content, event.markdown, `timeline: publish ${event.id}`);
-
+	let commit = "";
 	for (let index = 0; index < event.images.length; index += 1) {
 		const image = event.images[index];
 		commit = await github.putBytes(imagePaths[index], toArrayBuffer(image.bytes), `timeline: publish ${image.name}`);
 	}
+	commit = await github.putText(paths.content, event.markdown, `timeline: publish ${event.id}`);
 
 	return json({
 		ok: true,
