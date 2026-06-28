@@ -6,6 +6,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
   "routes": [
+    "strailico.me/api/*",
     {
       "pattern": "publish.strailico.me",
       "custom_domain": true

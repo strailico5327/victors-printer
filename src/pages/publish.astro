@@ -344,7 +344,7 @@ const emptyCodePlaceholder = "\u200b";
 	const gridCapacity = () => (isSingleCanvasMode() ? 1 : gridRows * gridColumns);
 	const maxImages = 16;
 	const tileCount = maxImages;
-	const publishEndpoint = import.meta.env.PUBLIC_PUBLISH_API_ENDPOINT || "https://publish.strailico.me/api/publish";
+	const publishEndpoint = import.meta.env.PUBLIC_PUBLISH_API_ENDPOINT || "/api/publish";
 	const datetimeDigitIndexes = [0, 1, 3, 4, 6, 7, 8, 9, 11, 12, 14, 15];
 	const datetimeMask = "00/00/0000 00:00";
 	const datetimeMeasureCanvas = document.createElement("canvas");
