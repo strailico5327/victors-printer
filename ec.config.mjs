@@ -1,7 +1,7 @@
 import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-sections";
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
-import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.ts";
-import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
+import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.mjs";
+import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.mjs";
 
 export default {
 	themes: ["github-dark", "github-dark"],
