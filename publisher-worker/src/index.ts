@@ -48,6 +48,7 @@ const JSON_HEADERS = {
 	"content-type": "application/json; charset=utf-8",
 	"cache-control": "no-store",
 };
+const PUBLIC_SITE_ORIGIN = "https://strailico.me";
 
 const ID_PATTERN = /^\d{10}-[a-z0-9]{8}$/;
 const ISO_WITH_ZONE =
@@ -74,6 +75,10 @@ export default {
 				return withCors(await handlePublish(request, env), request);
 			}
 
+			if ((request.method === "GET" || request.method === "HEAD") && url.hostname === "publish.strailico.me") {
+				return proxyPublicSite(request, url);
+			}
+
 			return json({ ok: false, error: "not_found" }, 404, request);
 		} catch (error) {
 			if (error instanceof HttpError) {
@@ -85,6 +90,12 @@ export default {
 		}
 	},
 };
+
+async function proxyPublicSite(request: Request, url: URL): Promise<Response> {
+	const target = new URL(url.pathname === "/" ? "/publish/" : `${url.pathname}${url.search}`, PUBLIC_SITE_ORIGIN);
+	const response = await fetch(target, { method: request.method });
+	return new Response(response.body, response);
+}
 
 async function handlePublish(request: Request, env: Env): Promise<Response> {
 	const url = new URL(request.url);

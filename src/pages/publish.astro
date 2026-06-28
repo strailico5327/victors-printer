@@ -250,6 +250,10 @@ const emptyCodePlaceholder = "\u200b";
 	import { OverlayScrollbars } from "overlayscrollbars";
 	import PhotoSwipe from "photoswipe";
 
+	if (window.location.hostname === "strailico.me") {
+		window.location.replace(`https://publish.strailico.me${window.location.pathname}${window.location.search}${window.location.hash}`);
+	}
+
 	const imagePanel = document.querySelector("#image-panel");
 	const metaEditor = document.querySelector("#meta-editor");
 	const metaLocation = document.querySelector(".meta-location");
