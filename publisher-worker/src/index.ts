@@ -380,12 +380,12 @@ async function verifyAccessJwt(token: string, env: Env): Promise<void> {
 		throw new HttpError(403, "invalid_access_audience", "Cloudflare Access audience mismatch.");
 	}
 
-	const issuer = normalizeTeamDomain(env.CF_ACCESS_TEAM_DOMAIN);
-	if (payload.iss !== issuer) {
+	const issuer = getAccessIssuer(payload.iss);
+	if (!issuer) {
 		throw new HttpError(403, "invalid_access_issuer", "Cloudflare Access issuer mismatch.");
 	}
 
-	const certs = await getAccessCerts(env);
+	const certs = await getAccessCerts(issuer);
 	const jwk = certs.keys.find((key) => key.kid === header.kid);
 	if (!jwk) {
 		throw new HttpError(401, "unknown_access_key", "Access JWT signing key was not found.");
@@ -409,13 +409,13 @@ async function verifyAccessJwt(token: string, env: Env): Promise<void> {
 	}
 }
 
-async function getAccessCerts(env: Env): Promise<AccessCerts> {
+async function getAccessCerts(issuer: string): Promise<AccessCerts> {
 	const now = Date.now();
 	if (accessCertsCache && accessCertsCache.expiresAt > now) {
 		return accessCertsCache.certs;
 	}
 
-	const response = await fetch(`${normalizeTeamDomain(env.CF_ACCESS_TEAM_DOMAIN)}/cdn-cgi/access/certs`);
+	const response = await fetch(`${issuer}/cdn-cgi/access/certs`);
 	if (!response.ok) {
 		throw new HttpError(502, "access_certs_unavailable", "Unable to fetch Cloudflare Access certificates.");
 	}
@@ -536,6 +536,13 @@ function createGithubClient(env: Env) {
 
 function normalizeTeamDomain(value: string): string {
 	return value.replace(/\/+$/, "");
+}
+
+function getAccessIssuer(value: string | undefined): string | undefined {
+	if (!value) return undefined;
+	const issuer = normalizeTeamDomain(value);
+	const hostname = new URL(issuer).hostname;
+	return hostname === "cloudflareaccess.com" || hostname.endsWith(".cloudflareaccess.com") ? issuer : undefined;
 }
 
 function isLocalDryRun(url: URL, env: Env): boolean {
