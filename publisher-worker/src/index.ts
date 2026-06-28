@@ -571,6 +571,7 @@ function withCors(response: Response, request?: Request): Response {
 	headers.set("access-control-allow-origin", origin);
 	headers.set("access-control-allow-methods", "GET,POST,OPTIONS");
 	headers.set("access-control-allow-headers", "content-type,cf-access-jwt-assertion");
+	headers.set("access-control-allow-credentials", "true");
 	headers.set("access-control-max-age", "86400");
 	headers.append("vary", "Origin");
 
