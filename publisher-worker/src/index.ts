@@ -475,7 +475,7 @@ function createGithubClient(env: Env) {
 		}
 
 		if (!response.ok) {
-			throw new HttpError(502, "github_read_failed", `GitHub read failed for ${path}.`);
+			throw await githubReadError(path, response);
 		}
 
 		return (await response.json()) as GithubContentResponse;
@@ -488,7 +488,7 @@ function createGithubClient(env: Env) {
 		}
 
 		if (!response.ok) {
-			throw new HttpError(502, "github_read_failed", `GitHub read failed for ${path}.`);
+			throw await githubReadError(path, response);
 		}
 
 		const body = (await response.json()) as unknown;
@@ -524,7 +524,16 @@ function createGithubClient(env: Env) {
 		},
 
 		async deleteMatching(path: string, matches: (item: GithubDirectoryItem) => boolean, message: string): Promise<void> {
-			const items = (await getDirectory(path)).filter((item) => item.type === "file" && matches(item));
+			let items: GithubDirectoryItem[];
+			try {
+				items = (await getDirectory(path)).filter((item) => item.type === "file" && matches(item));
+			} catch (error) {
+				if (error instanceof HttpError && error.code === "github_read_failed") {
+					console.error(JSON.stringify({ level: "warn", path, error: error.message }));
+					return;
+				}
+				throw error;
+			}
 			for (const item of items) {
 				const response = await request(item.path, {
 					method: "DELETE",
@@ -543,6 +552,25 @@ function createGithubClient(env: Env) {
 			}
 		},
 	};
+}
+
+async function githubReadError(path: string, response: Response): Promise<HttpError> {
+	const detail = await response.text();
+	console.error(JSON.stringify({ level: "error", path, status: response.status, detail }));
+	return new HttpError(502, "github_read_failed", `GitHub read failed for ${path} (${response.status}): ${githubErrorMessage(detail)}`);
+}
+
+function githubErrorMessage(detail: string): string {
+	try {
+		const body = JSON.parse(detail) as { message?: string };
+		return body.message ?? responsePreview(detail);
+	} catch {
+		return responsePreview(detail);
+	}
+}
+
+function responsePreview(value: string): string {
+	return value.replace(/\s+/g, " ").trim().slice(0, 180);
 }
 
 function normalizeTeamDomain(value: string): string {
