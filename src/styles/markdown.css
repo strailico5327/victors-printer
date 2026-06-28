@@ -80,6 +80,10 @@
     .copy-btn .copy-icon {
         @apply opacity-100 fill-white dark:fill-white/75;
     }
+    .copy-btn:hover .copy-icon,
+    .copy-btn:active .copy-icon {
+        fill: var(--primary);
+    }
     .copy-btn.success .copy-icon {
         @apply opacity-0 fill-[var(--deep-text)]
     }
@@ -87,7 +91,8 @@
         @apply opacity-0 fill-white;
     }
     .copy-btn.success .success-icon {
-        @apply opacity-100
+        @apply opacity-100;
+        fill: var(--primary);
     }
 
     .expressive-code {

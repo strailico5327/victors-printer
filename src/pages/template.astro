@@ -1,0 +1,550 @@
+---
+import { Icon } from "astro-icon/components";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+---
+
+<MainGridLayout title="Control Template" description="Hidden control colour template">
+	<meta slot="head" name="robots" content="noindex,nofollow" />
+
+	<div class="template-preview onload-animation">
+		<section class="template-card card-base">
+			<div class="template-header">
+				<div>
+					<div class="template-eyebrow">Template</div>
+					<h1>Control colours</h1>
+				</div>
+				<div class="template-controls">
+					<div class="template-segmented" data-mode="second">
+						<button class="template-segment" type="button" aria-label="Editor">
+							<Icon name="material-symbols:edit-square-outline-rounded" />
+						</button>
+						<button class="template-segment active" type="button" aria-label="Preview">
+							<Icon name="material-symbols:visibility-outline-rounded" />
+						</button>
+					</div>
+					<button class="template-icon-button" type="button" aria-label="Cloud ready">
+						<Icon name="material-symbols:cloud-done-outline-rounded" />
+					</button>
+				</div>
+			</div>
+
+			<label class="template-label">
+				<span>Editor</span>
+				<textarea rows="5">Text editor colour: idle C5, hover C1, focus outline C2.</textarea>
+			</label>
+
+			<div class="template-row">
+				<label class="template-label compact">
+					<span>Date & time</span>
+					<span class="template-small-input">
+						<input type="text" value="21/06/2026 23:15" />
+						<button type="button" aria-label="Calendar">
+							<Icon name="material-symbols:calendar-today-outline-rounded" />
+						</button>
+					</span>
+				</label>
+				<button class="template-icon-button" type="button" aria-label="Location">
+					<Icon name="material-symbols:location-on-outline-rounded" />
+				</button>
+			</div>
+		</section>
+
+		<section class="template-card card-base">
+			<div class="template-header">
+				<h2>Images</h2>
+				<div class="template-segmented template-segmented-three" data-mode="third">
+					<button class="template-segment" type="button" aria-label="Off">
+						<Icon name="material-symbols:power-settings-new-rounded" />
+					</button>
+					<button class="template-segment" type="button" aria-label="Grid">
+						<Icon name="material-symbols:grid-view-rounded" />
+					</button>
+					<button class="template-segment active" type="button" aria-label="Syntax">
+						<Icon name="material-symbols:data-object-rounded" />
+					</button>
+				</div>
+			</div>
+
+			<div class="template-image-demo">
+				<div class="template-strip">
+					<button class="template-tile filled" type="button"><span>1</span></button>
+					<button class="template-tile empty" type="button">
+						<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+						<span>2</span>
+					</button>
+					<button class="template-tile empty selected" type="button">
+						<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+						<span>3</span>
+					</button>
+				</div>
+				<textarea rows="7">:!grid 2 2 1/1
+:!img example.webp 21062026
+!:grid</textarea>
+			</div>
+
+			<div class="template-footer">
+				<div class="template-button-row">
+					<button class="template-icon-button" type="button" aria-label="Add image">
+						<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+					</button>
+					<button class="template-icon-button" type="button" aria-label="Delete image">
+						<Icon name="material-symbols:delete-outline-rounded" />
+					</button>
+				</div>
+				<label class="template-brick-toggle">
+					<span class="template-mini-switch"></span>
+					<span>Brick</span>
+				</label>
+			</div>
+		</section>
+
+		<section class="template-card card-base">
+			<div class="template-header">
+				<h2>Reference controls</h2>
+				<div class="template-segmented template-segmented-three" data-mode="second">
+					<button class="template-segment" type="button" aria-label="Power">
+						<Icon name="material-symbols:power-settings-new-rounded" />
+					</button>
+					<button class="template-segment active" type="button" aria-label="Grid">
+						<Icon name="material-symbols:grid-view-rounded" />
+					</button>
+					<button class="template-segment" type="button" aria-label="Syntax">
+						<Icon name="material-symbols:data-object-rounded" />
+					</button>
+				</div>
+			</div>
+
+			<div class="template-reference-grid">
+				<div class="template-reference-block">
+					<div class="template-reference-title">Single icon button</div>
+					<button class="template-icon-button" type="button" aria-label="Clear selected image tile">
+						<Icon name="material-symbols:delete-outline-rounded" />
+					</button>
+				</div>
+
+				<div class="template-reference-block">
+					<div class="template-reference-title">Action group</div>
+					<div class="template-action-group">
+						<button type="button" aria-label="Cut image syntax">
+							<Icon name="material-symbols:content-cut-rounded" />
+						</button>
+						<button type="button" aria-label="Copy image syntax">
+							<Icon name="material-symbols:content-copy-outline-rounded" />
+						</button>
+						<button type="button" aria-label="Paste image syntax">
+							<Icon name="material-symbols:content-paste-rounded" />
+						</button>
+					</div>
+				</div>
+
+				<div class="template-reference-block wide">
+					<div class="template-reference-title">Date picker and collapsible input</div>
+					<div class="template-row">
+						<label class="template-label compact">
+							<span>Date & time</span>
+							<span class="template-small-input">
+								<input type="text" value="23/06/2026 20:34" />
+								<button type="button" aria-label="Use current date and time">
+									<Icon name="material-symbols:calendar-today-outline-rounded" />
+								</button>
+							</span>
+						</label>
+						<label class="template-label collapsible">
+							<span>Location</span>
+							<span class="template-small-input">
+								<input type="text" value="Fuzhou" />
+								<button type="button" aria-label="Show location">
+									<Icon name="material-symbols:location-on-outline-rounded" />
+								</button>
+							</span>
+						</label>
+					</div>
+				</div>
+
+				<div class="template-reference-block wide">
+					<div class="template-reference-title">Interactable list</div>
+					<div class="template-list">
+						<button type="button">
+							<span>Fiction</span>
+							<span class="template-list-count">2</span>
+						</button>
+						<button type="button">
+							<span>Recent</span>
+							<span class="template-list-count">1</span>
+						</button>
+						<button type="button">
+							<span>Tech</span>
+							<span class="template-list-count">2</span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+</MainGridLayout>
+
+<style>
+	.template-preview {
+		--publish-colour-c2: var(--primary);
+		--publish-colour-c3: rgba(0, 0, 0, 0.6);
+		--publish-colour-c4: var(--card-bg);
+		--publish-colour-c5: var(--page-bg);
+		--publish-colour-c7: rgba(0, 0, 0, 0.9);
+		--publish-control-bg: var(--btn-regular-bg);
+		--publish-control-hover-bg: var(--btn-regular-bg-hover);
+		--publish-control-active-bg: var(--btn-regular-bg-active);
+		--publish-input-hover-bg: var(--btn-regular-bg-hover);
+		display: grid;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	:global(.dark) .template-preview {
+		--publish-colour-c3: rgba(255, 255, 255, 0.62);
+		--publish-colour-c7: rgba(255, 255, 255, 0.9);
+		--publish-input-hover-bg: var(--btn-regular-bg-hover);
+	}
+
+	.template-card {
+		padding: 1.6rem;
+	}
+
+	.template-header,
+	.template-controls,
+	.template-row,
+	.template-footer,
+	.template-button-row {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+	}
+
+	.template-header,
+	.template-footer {
+		justify-content: space-between;
+	}
+
+	.template-eyebrow {
+		color: var(--publish-colour-c2);
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+	}
+
+	h1,
+	h2 {
+		margin: 0;
+		color: var(--publish-colour-c7);
+		line-height: 1.15;
+	}
+
+	.template-label {
+		display: grid;
+		gap: 0.35rem;
+		margin-top: 1rem;
+		color: var(--btn-content);
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	.template-label.compact {
+		width: 13rem;
+		margin-top: 0;
+	}
+
+	.template-label.collapsible {
+		width: min(18rem, 100%);
+		margin-top: 0;
+	}
+
+	textarea,
+	input {
+		box-sizing: border-box;
+		width: 100%;
+		border: 0;
+		border-radius: 0.75rem;
+		color: inherit;
+		background: var(--publish-control-bg);
+		outline: 2px solid transparent;
+		transition:
+			background-color 160ms ease,
+			outline-color 160ms ease;
+	}
+
+	textarea {
+		padding: 0.75rem 0.85rem;
+		color: var(--publish-colour-c7);
+		background: var(--publish-colour-c5);
+		resize: vertical;
+	}
+
+	textarea:hover,
+	.template-small-input:hover {
+		background: var(--publish-control-hover-bg);
+	}
+
+	textarea:focus,
+	input:focus {
+		outline-color: var(--publish-colour-c2);
+	}
+
+	.template-small-input {
+		position: relative;
+		display: block;
+		height: 2.35rem;
+		border-radius: 0.75rem;
+		background: var(--publish-control-bg);
+		outline: 2px solid transparent;
+		overflow: hidden;
+	}
+
+	.template-small-input input {
+		height: 2.35rem;
+		padding: 0.35rem 2.35rem 0.35rem 0.75rem;
+		background: transparent;
+		outline: 0;
+	}
+
+	.template-small-input button,
+	.template-icon-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.35rem;
+		height: 2.35rem;
+		border: 0;
+		border-radius: 0.75rem;
+		color: var(--btn-content);
+		background: var(--publish-control-bg);
+	}
+
+	.template-icon-button:hover {
+		background: var(--publish-control-hover-bg);
+	}
+
+	.template-small-input button {
+		position: absolute;
+		top: 0;
+		right: 0;
+		background: transparent;
+	}
+
+	.template-segmented {
+		--segment-size: 2.1rem;
+		--segment-gap: 0.25rem;
+		--segment-padding: 0.25rem;
+		position: relative;
+		display: flex;
+		gap: var(--segment-gap);
+		padding: var(--segment-padding);
+		border-radius: 0.8rem;
+		background: var(--publish-control-bg);
+	}
+
+	.template-segmented::before {
+		position: absolute;
+		content: "";
+		top: var(--segment-padding);
+		left: var(--segment-padding);
+		width: var(--segment-size);
+		height: var(--segment-size);
+		border-radius: 0.6rem;
+		background: var(--publish-colour-c4);
+		transform: translateX(calc(var(--segment-size) + var(--segment-gap)));
+	}
+
+	.template-segmented-three::before {
+		transform: translateX(calc((var(--segment-size) + var(--segment-gap)) * 2));
+	}
+
+	.template-segment {
+		position: relative;
+		z-index: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--segment-size);
+		height: var(--segment-size);
+		border: 0;
+		border-radius: 0.6rem;
+		color: var(--btn-content);
+		background: transparent;
+	}
+
+	.template-segment.active {
+		color: var(--publish-colour-c2);
+	}
+
+	.template-image-demo {
+		display: grid;
+		grid-template-columns: 4.5rem minmax(0, 1fr);
+		gap: 0.75rem;
+		margin-top: 1rem;
+	}
+
+	.template-strip {
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+	}
+
+	.template-tile {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		aspect-ratio: 1 / 1;
+		border: 0;
+		border-radius: 0.75rem;
+		color: var(--btn-content);
+		background: var(--publish-control-bg);
+		outline: 3px solid transparent;
+		outline-offset: -3px;
+	}
+
+	.template-tile.selected {
+		color: var(--publish-colour-c2);
+		outline-color: var(--publish-colour-c2);
+	}
+
+	.template-tile.filled {
+		background: linear-gradient(135deg, var(--publish-control-bg), var(--publish-control-hover-bg));
+	}
+
+	.template-tile span {
+		position: absolute;
+		top: 0.4rem;
+		left: 0.45rem;
+		color: var(--publish-colour-c7);
+		font-size: 0.68rem;
+		font-weight: 800;
+		-webkit-text-stroke: 0.025rem var(--publish-colour-c3);
+		text-shadow: 0 0 1px var(--publish-colour-c3);
+	}
+
+	.template-tile.selected span {
+		color: var(--publish-colour-c2);
+	}
+
+	.template-brick-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		height: 2.35rem;
+		padding: 0 0.7rem 0 0.55rem;
+		border-radius: 0.75rem;
+		color: var(--publish-colour-c7);
+		background: var(--publish-control-bg);
+		font-size: 0.88rem;
+		font-weight: 700;
+	}
+
+	.template-mini-switch {
+		position: relative;
+		width: 1.85rem;
+		height: 1.05rem;
+		border-radius: 999px;
+		background: var(--publish-colour-c3);
+	}
+
+	.template-mini-switch::before {
+		position: absolute;
+		content: "";
+		top: 0.18rem;
+		left: 0.18rem;
+		width: 0.69rem;
+		height: 0.69rem;
+		border-radius: 999px;
+		background: var(--publish-colour-c4);
+	}
+
+	.template-reference-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.template-reference-block {
+		display: grid;
+		align-content: start;
+		gap: 0.55rem;
+	}
+
+	.template-reference-block.wide {
+		grid-column: 1 / -1;
+	}
+
+	.template-reference-title {
+		color: var(--publish-colour-c3);
+		font-size: 0.85rem;
+		font-weight: 700;
+	}
+
+	.template-action-group {
+		display: inline-flex;
+		width: max-content;
+		gap: 0.25rem;
+		padding: 0.25rem;
+		border-radius: 0.8rem;
+		background: var(--publish-control-bg);
+	}
+
+	.template-action-group button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.1rem;
+		height: 2.1rem;
+		border: 0;
+		border-radius: 0.6rem;
+		color: var(--publish-colour-c3);
+		background: transparent;
+	}
+
+	.template-action-group button:hover {
+		color: var(--btn-content);
+		background: var(--publish-control-hover-bg);
+	}
+
+	.template-list {
+		display: grid;
+		gap: 0.2rem;
+		max-width: 18rem;
+	}
+
+	.template-list button {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		min-height: 2.4rem;
+		border: 0;
+		border-radius: 0.55rem;
+		padding: 0 0.45rem 0 0.65rem;
+		color: var(--publish-colour-c7);
+		background: transparent;
+		text-align: left;
+	}
+
+	.template-list button:hover {
+		background: var(--publish-control-hover-bg);
+	}
+
+	.template-list-count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 2rem;
+		height: 2rem;
+		border-radius: 0.55rem;
+		color: var(--btn-content);
+		background: var(--publish-control-bg);
+		font-weight: 700;
+	}
+
+	@media (max-width: 640px) {
+		.template-reference-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

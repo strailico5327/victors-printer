@@ -1,0 +1,17 @@
+{
+  "name": "strailico-timeline-publisher-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "sample:publish": "node scripts/publish-sample.mjs",
+    "type-check": "tsc --noEmit",
+    "types": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260620.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.0.0"
+  }
+}
