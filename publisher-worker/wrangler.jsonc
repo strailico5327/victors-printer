@@ -14,8 +14,8 @@
     "GITHUB_BRANCH": "master",
     "CF_ACCESS_TEAM_DOMAIN": "https://strailico.cloudflareaccess.com",
     "MAX_IMAGES": "16",
-    "MAX_IMAGE_BYTES": "5242880",
+    "MAX_IMAGE_BYTES": "26214400",
     "MAX_CONTENT_BYTES": "20000",
-    "MAX_REQUEST_BYTES": "52428800"
+    "MAX_REQUEST_BYTES": "104857600"
   }
 }

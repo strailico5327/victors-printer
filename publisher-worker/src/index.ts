@@ -1,3 +1,5 @@
+import { strFromU8, unzipSync } from "fflate";
+
 type Env = {
 	GITHUB_OWNER: string;
 	GITHUB_REPO: string;
@@ -13,44 +15,12 @@ type Env = {
 	MAX_REQUEST_BYTES?: string;
 };
 
-type TimelineImage = {
+type DraftEvent = {
+	type?: string;
 	id: string;
-	src?: string;
-	thumb?: string;
-	file?: string;
-	alt?: string;
-	width: number;
-	height: number;
-	thumbWidth: number;
-	thumbHeight: number;
-};
-
-type DraftManifest = {
-	id?: string;
-	datetime: string;
+	published: string;
+	draft?: string;
 	location?: string;
-	content?: string;
-	images?: TimelineImage[];
-	grid?: unknown;
-};
-
-type PublishedImage = {
-	id: string;
-	src: string;
-	thumb: string;
-	alt: string;
-	width: number;
-	height: number;
-	thumbWidth: number;
-	thumbHeight: number;
-};
-
-type PublishedEvent = {
-	id: string;
-	datetime: string;
-	location?: string;
-	content: string;
-	images: PublishedImage[];
 };
 
 type AccessJwk = JsonWebKey & {
@@ -63,6 +33,13 @@ type GithubContentResponse = {
 	encoding?: string;
 };
 
+type GithubDirectoryItem = {
+	name: string;
+	path: string;
+	sha: string;
+	type: string;
+};
+
 type AccessCerts = {
 	keys: AccessJwk[];
 };
@@ -72,7 +49,7 @@ const JSON_HEADERS = {
 	"cache-control": "no-store",
 };
 
-const ID_PATTERN = /^[a-z0-9][a-z0-9-]{5,31}$/;
+const ID_PATTERN = /^\d{10}-[a-z0-9]{8}$/;
 const ISO_WITH_ZONE =
 	/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
 
@@ -112,7 +89,7 @@ export default {
 async function handlePublish(request: Request, env: Env): Promise<Response> {
 	const url = new URL(request.url);
 	const contentLength = Number(request.headers.get("content-length") ?? "0");
-	const maxRequestBytes = readLimit(env.MAX_REQUEST_BYTES, 50 * 1024 * 1024);
+	const maxRequestBytes = readLimit(env.MAX_REQUEST_BYTES, 100 * 1024 * 1024);
 	if (contentLength > maxRequestBytes) {
 		throw new HttpError(413, "request_too_large", "Request body exceeds the configured limit.");
 	}
@@ -123,115 +100,147 @@ async function handlePublish(request: Request, env: Env): Promise<Response> {
 	}
 
 	const form = await request.formData();
-	const manifest = parseManifest(getRequiredString(form, "manifest"));
-	const eventId = normalizeEventId(manifest.id);
-	const content = await readContentField(form);
-	const dateParts = parseTimelineDate(manifest.datetime);
-	const imageFiles = getFileList(form, "images[]", "images");
-	const thumbFiles = getFileList(form, "thumbs[]", "thumbs");
-
-	validateContent(content, env);
-	validateManifest(manifest);
-	validateImageCounts(imageFiles, thumbFiles, manifest.images ?? [], env);
-	validateImageFiles(eventId, imageFiles, thumbFiles, env);
-
-	const paths = buildPaths(eventId, dateParts.year, dateParts.month);
-	const publishedImages = buildPublishedImages(eventId, manifest.images ?? []);
-	const event: PublishedEvent = {
-		id: eventId,
-		datetime: manifest.datetime,
-		content: `${eventId}.md`,
-		images: publishedImages,
-	};
-
-	if (manifest.location?.trim()) {
-		event.location = manifest.location.trim();
+	const draft = form.get("draft");
+	if (!(draft instanceof File)) {
+		throw new HttpError(400, "missing_draft", "draft zip is required.");
 	}
+
+	const zip = unzipSync(new Uint8Array(await draft.arrayBuffer()));
+	const event = parseDraftZip(zip, env);
+	const dateParts = parseTimelineDate(event.frontmatter.published);
+	const paths = buildPaths(event.id, dateParts.year, dateParts.month);
+	const imagePaths = event.images.map((image) => `public/images/timeline/${dateParts.year}/${dateParts.month}/${image.name}`);
 
 	if (isLocalDryRun(url, env)) {
 		return json({
 			ok: true,
 			dryRun: true,
-			id: eventId,
+			id: event.id,
 			commit: null,
 			paths: {
-				manifest: paths.manifest,
 				content: paths.content,
-				images: [...imageFiles, ...thumbFiles].map((file) => `public/images/timeline/${file.name}`),
+				images: imagePaths,
 			},
-			event,
 		});
 	}
 
 	const github = createGithubClient(env);
-	const existingManifest = await github.getJson<PublishedEvent[]>(paths.manifest, []);
+	await github.deleteMatching(
+		`public/images/timeline/${dateParts.year}/${dateParts.month}`,
+		(image) => image.name.startsWith(`${event.id}-`),
+		`timeline: replace ${event.id} images`,
+	);
 
-	if (existingManifest.some((item) => item.id === eventId)) {
-		throw new HttpError(409, "duplicate_event_id", "This event id already exists in the target month.");
+	let commit = await github.putText(paths.content, event.markdown, `timeline: publish ${event.id}`);
+
+	for (let index = 0; index < event.images.length; index += 1) {
+		const image = event.images[index];
+		commit = await github.putBytes(imagePaths[index], toArrayBuffer(image.bytes), `timeline: publish ${image.name}`);
 	}
-
-	if (await github.exists(paths.content)) {
-		throw new HttpError(409, "content_exists", "The target content file already exists.");
-	}
-
-	await github.putText(paths.content, content, `timeline: add ${eventId} content`);
-
-	for (const file of imageFiles) {
-		await github.putBytes(`public/images/timeline/${file.name}`, await file.arrayBuffer(), `timeline: add ${file.name}`);
-	}
-
-	for (const file of thumbFiles) {
-		await github.putBytes(`public/images/timeline/${file.name}`, await file.arrayBuffer(), `timeline: add ${file.name}`);
-	}
-
-	const nextManifest = sortManifest([...existingManifest, event]);
-	const manifestCommit = await github.putJson(paths.manifest, nextManifest, `timeline: publish ${eventId}`);
 
 	return json({
 		ok: true,
-		id: eventId,
-		commit: manifestCommit,
+		id: event.id,
+		commit,
 		paths: {
-			manifest: paths.manifest,
 			content: paths.content,
-			images: [...imageFiles, ...thumbFiles].map((file) => `public/images/timeline/${file.name}`),
+			images: imagePaths,
 		},
 	});
 }
 
-function parseManifest(value: string): DraftManifest {
-	let parsed: unknown;
-	try {
-		parsed = JSON.parse(value);
-	} catch {
-		throw new HttpError(400, "invalid_manifest_json", "manifest must be valid JSON.");
+function parseDraftZip(zip: Record<string, Uint8Array>, env: Env): {
+	id: string;
+	frontmatter: DraftEvent;
+	markdown: string;
+	images: { name: string; bytes: Uint8Array }[];
+} {
+	const markdownPaths = Object.keys(zip).filter((name) => !name.includes("/") && name.toLowerCase().endsWith(".md"));
+	if (markdownPaths.length !== 1) {
+		throw new HttpError(400, "invalid_draft_zip", "zip must contain exactly one root markdown file.");
 	}
 
-	if (!parsed || typeof parsed !== "object") {
-		throw new HttpError(400, "invalid_manifest", "manifest must be an object.");
+	const markdown = strFromU8(zip[markdownPaths[0]]);
+	validateContent(markdown, env);
+	const { data, body } = parseFrontmatter(markdown);
+	validateDraftEvent(data);
+	const eventId = data.id;
+	const expectedMarkdownPath = `${eventId}.md`;
+	if (markdownPaths[0] !== expectedMarkdownPath) {
+		throw new HttpError(400, "invalid_markdown_name", `markdown file must be ${expectedMarkdownPath}.`);
 	}
 
-	return parsed as DraftManifest;
+	const images = Object.entries(zip)
+		.filter(([name]) => name.startsWith("images/") && name.split("/").length === 2)
+		.map(([path, bytes]) => ({ name: path.slice("images/".length), bytes }));
+	validateImageFiles(eventId, images, env);
+
+	return {
+		id: eventId,
+		frontmatter: data,
+		markdown: buildPublishedMarkdown(data, body),
+		images,
+	};
 }
 
-function validateManifest(manifest: DraftManifest): void {
-	if (typeof manifest.datetime !== "string") {
-		throw new HttpError(400, "invalid_datetime", "datetime is required.");
+function parseFrontmatter(markdown: string): { data: DraftEvent; body: string } {
+	const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+	if (!match) {
+		throw new HttpError(400, "missing_frontmatter", "markdown frontmatter is required.");
 	}
 
-	parseTimelineDate(manifest.datetime);
-
-	if (manifest.location !== undefined && typeof manifest.location !== "string") {
-		throw new HttpError(400, "invalid_location", "location must be a string.");
+	const data: Record<string, string> = {};
+	for (const line of match[1].split(/\r?\n/)) {
+		const item = line.match(/^([A-Za-z][\w-]*):\s*(.*)$/);
+		if (!item) {
+			continue;
+		}
+		const [, key, rawValue] = item;
+		data[key] = parseYamlScalar(rawValue);
 	}
 
-	if (manifest.location && manifest.location.length > 120) {
+	return { data: data as DraftEvent, body: markdown.slice(match[0].length) };
+}
+
+function parseYamlScalar(value: string): string {
+	const trimmed = value.trim();
+	if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+		try {
+			return JSON.parse(trimmed);
+		} catch {
+			return trimmed.slice(1, -1);
+		}
+	}
+	return trimmed;
+}
+
+function validateDraftEvent(event: DraftEvent): void {
+	if (event.type !== "event") {
+		throw new HttpError(400, "invalid_event_type", 'type must be "event".');
+	}
+	if (!ID_PATTERN.test(event.id)) {
+		throw new HttpError(400, "invalid_event_id", "id must match ddmmyyhhmm-xxxxxxxx.");
+	}
+	parseTimelineDate(event.published);
+	if (event.location !== undefined && event.location.length > 120) {
 		throw new HttpError(400, "location_too_long", "location must be at most 120 characters.");
 	}
+}
 
-	if (manifest.images !== undefined && !Array.isArray(manifest.images)) {
-		throw new HttpError(400, "invalid_images", "images must be an array.");
-	}
+function buildPublishedMarkdown(event: DraftEvent, body: string): string {
+	const lines = [
+		"---",
+		'type: "event"',
+		`id: ${JSON.stringify(event.id)}`,
+		`published: ${event.published}`,
+		"draft: false",
+		`location: ${JSON.stringify(event.location ?? "")}`,
+		"---",
+		"",
+		body.trimEnd(),
+		"",
+	];
+	return lines.join("\n");
 }
 
 function validateContent(content: string, env: Env): void {
@@ -251,114 +260,48 @@ function validateContent(content: string, env: Env): void {
 	}
 }
 
-function validateImageCounts(files: File[], thumbs: File[], images: TimelineImage[], env: Env): void {
+function validateImageFiles(eventId: string, images: { name: string; bytes: Uint8Array }[], env: Env): void {
 	const maxImages = readLimit(env.MAX_IMAGES, 16);
-
-	if (files.length > maxImages) {
+	const originals = new Set<string>();
+	const thumbs = new Set<string>();
+	if (images.length > maxImages * 2) {
 		throw new HttpError(413, "too_many_images", "Too many images.");
 	}
 
-	if (files.length !== thumbs.length) {
-		throw new HttpError(400, "image_thumb_mismatch", "Every image must have one thumbnail.");
+	for (const image of images) {
+		if (image.bytes.byteLength > readLimit(env.MAX_IMAGE_BYTES, 25 * 1024 * 1024)) {
+			throw new HttpError(413, "image_too_large", `${image.name} exceeds the configured limit.`);
+		}
+		const original = image.name.match(new RegExp(`^${escapeRegExp(eventId)}-(\\d+)\\.(?:jpe?g|png)$`, "i"));
+		if (original) {
+			originals.add(original[1]);
+			continue;
+		}
+		const thumb = image.name.match(new RegExp(`^${escapeRegExp(eventId)}-(\\d+)_thumb\\.webp$`));
+		if (thumb) {
+			thumbs.add(thumb[1]);
+			continue;
+		}
+		throw new HttpError(400, "invalid_image_name", `Invalid image filename: ${image.name}`);
 	}
 
-	if (images.length !== files.length) {
-		throw new HttpError(400, "manifest_image_mismatch", "manifest.images must match uploaded images.");
+	for (const imageNumber of originals) {
+		if (!thumbs.has(imageNumber)) {
+			throw new HttpError(400, "missing_thumb", `Missing thumbnail for ${eventId}-${imageNumber}.`);
+		}
 	}
-}
-
-function validateImageFiles(eventId: string, images: File[], thumbs: File[], env: Env): void {
-	const maxImageBytes = readLimit(env.MAX_IMAGE_BYTES, 5 * 1024 * 1024);
-	const expectedThumbs = new Set<string>();
-
-	for (const file of images) {
-		if (!file.name.match(new RegExp(`^${escapeRegExp(eventId)}-\\d+\\.webp$`))) {
-			throw new HttpError(400, "invalid_image_name", `Invalid image filename: ${file.name}`);
-		}
-
-		if (file.type && file.type !== "image/webp") {
-			throw new HttpError(400, "invalid_image_type", "Only image/webp uploads are accepted.");
-		}
-
-		if (file.size > maxImageBytes) {
-			throw new HttpError(413, "image_too_large", `${file.name} exceeds the configured limit.`);
-		}
-
-		expectedThumbs.add(file.name.replace(/\.webp$/, "_thumb.webp"));
-	}
-
-	for (const file of thumbs) {
-		if (!expectedThumbs.has(file.name)) {
-			throw new HttpError(400, "invalid_thumb_name", `Invalid thumbnail filename: ${file.name}`);
-		}
-
-		if (file.type && file.type !== "image/webp") {
-			throw new HttpError(400, "invalid_thumb_type", "Only image/webp thumbnails are accepted.");
-		}
-
-		if (file.size > maxImageBytes) {
-			throw new HttpError(413, "thumb_too_large", `${file.name} exceeds the configured limit.`);
-		}
+	if (thumbs.size !== originals.size) {
+		throw new HttpError(400, "orphan_thumb", "Every thumbnail must match an original image.");
 	}
 }
 
-function buildPublishedImages(eventId: string, images: TimelineImage[]): PublishedImage[] {
-	return images.map((image) => {
-		if (!image.id.match(new RegExp(`^${escapeRegExp(eventId)}-\\d+$`))) {
-			throw new HttpError(400, "invalid_image_id", `Invalid image id: ${image.id}`);
-		}
-
-		for (const key of ["width", "height", "thumbWidth", "thumbHeight"] as const) {
-			if (!Number.isInteger(image[key]) || image[key] <= 0) {
-				throw new HttpError(400, "invalid_image_dimensions", `${image.id} has invalid dimensions.`);
-			}
-		}
-
-		return {
-			id: image.id,
-			src: `/images/timeline/${image.id}.webp`,
-			thumb: `/images/timeline/${image.id}_thumb.webp`,
-			alt: image.alt ?? "",
-			width: image.width,
-			height: image.height,
-			thumbWidth: image.thumbWidth,
-			thumbHeight: image.thumbHeight,
-		};
-	});
-}
-
-function normalizeEventId(value: unknown): string {
-	if (value === undefined || value === null || value === "") {
-		return generateEventId();
-	}
-
-	if (typeof value !== "string" || !ID_PATTERN.test(value)) {
-		throw new HttpError(400, "invalid_event_id", "id must match [a-z0-9-] and be 6-32 characters.");
-	}
-
-	return value;
-}
-
-function generateEventId(): string {
-	const bytes = new Uint8Array(6);
-	crypto.getRandomValues(bytes);
-	const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
-	let id = "";
-
-	for (const byte of bytes) {
-		id += alphabet[byte % alphabet.length];
-	}
-
-	return id;
-}
-
-function parseTimelineDate(value: string): { year: string; month: string; yyyymmdd: string } {
+function parseTimelineDate(value: string): { year: string; month: string } {
 	const match = ISO_WITH_ZONE.exec(value);
 	if (!match) {
 		throw new HttpError(400, "invalid_datetime", "datetime must be ISO 8601 with timezone.");
 	}
 
-	const [, year, month, day, hour, minute, second = "00", zone] = match;
+	const [, year, month, day, hour, minute, second = "00"] = match;
 	const parsed = new Date(value);
 
 	if (Number.isNaN(parsed.getTime())) {
@@ -384,52 +327,14 @@ function parseTimelineDate(value: string): { year: string; month: string; yyyymm
 		throw new HttpError(400, "invalid_datetime", "datetime is not a valid date.");
 	}
 
-	return { year, month, yyyymmdd: `${year}${month}${day}` };
+	return { year, month };
 }
 
-function buildPaths(eventId: string, year: string, month: string): { manifest: string; content: string } {
+function buildPaths(eventId: string, year: string, month: string): { content: string } {
 	const base = `src/content/timeline/${year}/${month}`;
 	return {
-		manifest: `${base}/manifest.json`,
 		content: `${base}/${eventId}.md`,
 	};
-}
-
-function sortManifest(events: PublishedEvent[]): PublishedEvent[] {
-	return [...events].sort((a, b) => b.datetime.localeCompare(a.datetime));
-}
-
-async function readContentField(form: FormData): Promise<string> {
-	const content = form.get("content");
-
-	if (typeof content === "string") {
-		return content;
-	}
-
-	if (content instanceof File) {
-		return await content.text();
-	}
-
-	const file = form.get("content.md");
-	if (file instanceof File) {
-		return await file.text();
-	}
-
-	throw new HttpError(400, "missing_content", "content is required.");
-}
-
-function getRequiredString(form: FormData, key: string): string {
-	const value = form.get(key);
-	if (typeof value !== "string") {
-		throw new HttpError(400, `missing_${key}`, `${key} is required.`);
-	}
-
-	return value;
-}
-
-function getFileList(form: FormData, primary: string, fallback: string): File[] {
-	const values = [...form.getAll(primary), ...form.getAll(fallback)];
-	return values.filter((value): value is File => value instanceof File);
 }
 
 async function assertAccess(request: Request, env: Env): Promise<void> {
@@ -565,26 +470,21 @@ function createGithubClient(env: Env) {
 		return (await response.json()) as GithubContentResponse;
 	}
 
+	async function getDirectory(path: string): Promise<GithubDirectoryItem[]> {
+		const response = await request(path, { searchParams: { ref: env.GITHUB_BRANCH } });
+		if (response.status === 404) {
+			return [];
+		}
+
+		if (!response.ok) {
+			throw new HttpError(502, "github_read_failed", `GitHub read failed for ${path}.`);
+		}
+
+		const body = (await response.json()) as unknown;
+		return Array.isArray(body) ? (body as GithubDirectoryItem[]) : [];
+	}
+
 	return {
-		async exists(path: string): Promise<boolean> {
-			return (await getContent(path)) !== null;
-		},
-
-		async getJson<T>(path: string, fallback: T): Promise<T> {
-			const item = await getContent(path);
-			if (!item?.content) {
-				return fallback;
-			}
-
-			const text = decodeBase64ToText(item.content.replace(/\n/g, ""));
-			return JSON.parse(text) as T;
-		},
-
-		async putJson(path: string, value: unknown, message: string): Promise<string> {
-			const text = `${JSON.stringify(value, null, 2)}\n`;
-			return await this.putText(path, text, message);
-		},
-
 		async putText(path: string, text: string, message: string): Promise<string> {
 			const bytes = new TextEncoder().encode(text);
 			return await this.putBytes(path, bytes.buffer as ArrayBuffer, message);
@@ -610,6 +510,26 @@ function createGithubClient(env: Env) {
 
 			const body = (await response.json()) as { commit?: { sha?: string } };
 			return body.commit?.sha ?? "";
+		},
+
+		async deleteMatching(path: string, matches: (item: GithubDirectoryItem) => boolean, message: string): Promise<void> {
+			const items = (await getDirectory(path)).filter((item) => item.type === "file" && matches(item));
+			for (const item of items) {
+				const response = await request(item.path, {
+					method: "DELETE",
+					body: JSON.stringify({
+						message,
+						sha: item.sha,
+						branch: env.GITHUB_BRANCH,
+					}),
+				});
+
+				if (!response.ok && response.status !== 404) {
+					const detail = await response.text();
+					console.error(JSON.stringify({ level: "error", path: item.path, status: response.status, detail }));
+					throw new HttpError(502, "github_delete_failed", `GitHub delete failed for ${item.path}.`);
+				}
+			}
 		},
 	};
 }
@@ -688,6 +608,12 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 	}
 
 	return btoa(binary);
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+	const copy = new Uint8Array(bytes.byteLength);
+	copy.set(bytes);
+	return copy.buffer;
 }
 
 function escapeRegExp(value: string): string {

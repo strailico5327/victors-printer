@@ -1,23 +1,93 @@
 ---
-import { getEntry } from "astro:content";
+import { getCollection, getEntry } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
+import { formatDateForDisplay } from "@utils/date-utils";
+import { Icon } from "astro-icon/components";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
+const timelineEvents = (await getCollection("timeline", ({ data }) => {
+	return import.meta.env.PROD ? data.draft !== true : true;
+})).sort((a, b) => b.data.published.getTime() - a.data.published.getTime());
+const renderedEvents = await Promise.all(
+	timelineEvents.map(async (entry) => ({
+		entry,
+		rendered: await entry.render(),
+	})),
+);
 const timelineSpec = await getEntry("spec", "something");
 
-if (!timelineSpec) {
+if (renderedEvents.length === 0 && !timelineSpec) {
 	throw new Error("Timeline spec content not found");
 }
 
-const { Content } = await timelineSpec.render();
+const LegacyContent = timelineSpec ? (await timelineSpec.render()).Content : null;
+
+function formatTime(date: Date) {
+	return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
 ---
 
 <MainGridLayout title="Timeline" description="Timeline">
-	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
-		<div class="card-base z-10 px-9 py-6 relative w-full">
-			<Markdown class="mt-2 literary-prose">
-				<Content />
-			</Markdown>
+	{renderedEvents.length > 0 ? (
+		<div class="timeline-flow w-full">
+			{renderedEvents.map(({ entry, rendered: { Content } }) => (
+				<article class="timeline-event card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
+					<header class="timeline-event-meta onload-animation">
+						<div class="flex flex-wrap text-black/40 dark:text-white/35 items-center gap-4 gap-x-5 gap-y-2">
+							<div class="flex items-center">
+								<div class="meta-icon">
+									<Icon name="material-symbols:calendar-today-outline-rounded" class="text-xl" />
+								</div>
+								<time class="text-sm font-medium" datetime={entry.data.published.toISOString()}>
+									{formatDateForDisplay(entry.data.published)} {formatTime(entry.data.published)}
+								</time>
+							</div>
+							{entry.data.location && (
+								<div class="flex items-center">
+									<div class="meta-icon">
+										<Icon name="material-symbols:location-on-outline-rounded" class="text-xl" />
+									</div>
+									<span class="text-sm font-medium">{entry.data.location}</span>
+								</div>
+							)}
+						</div>
+						<div class="border-[var(--line-divider)] border-dashed border-b-[1px] mt-5"></div>
+					</header>
+
+					<Markdown class="mb-6 markdown-content onload-animation literary-prose timeline-event-body">
+						<Content />
+					</Markdown>
+				</article>
+			))}
 		</div>
-	</div>
+	) : (
+		<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
+			<div class="card-base z-10 px-9 py-6 relative w-full">
+				<Markdown class="mt-2 literary-prose">
+					{LegacyContent && <LegacyContent />}
+				</Markdown>
+			</div>
+		</div>
+	)}
 </MainGridLayout>
+
+<style>
+	.timeline-flow {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.timeline-event {
+		width: 100%;
+		border-radius: var(--radius-large);
+	}
+
+	.timeline-event-meta {
+		margin-bottom: 1.25rem;
+	}
+
+	.timeline-event-body {
+		margin-top: 0;
+	}
+</style>

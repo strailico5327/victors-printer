@@ -35,6 +35,56 @@
     cursor: pointer;
 }
 
+.custom-md .shortcut-mosaic {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 100%;
+    margin: 1.5rem auto;
+}
+
+.custom-md .shortcut-mosaic-group-ratio {
+    aspect-ratio: var(--shortcut-mosaic-ratio);
+}
+
+.custom-md .shortcut-mosaic-row {
+    display: grid;
+    grid-template-columns: repeat(var(--shortcut-mosaic-columns), minmax(0, 1fr));
+    gap: 4px;
+    min-width: 0;
+}
+
+.custom-md .shortcut-mosaic-group-ratio .shortcut-mosaic-row {
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+.custom-md .shortcut-mosaic-row-ratios .shortcut-mosaic-item {
+    aspect-ratio: var(--shortcut-mosaic-row-ratio);
+}
+
+.custom-md .shortcut-mosaic-item {
+    display: block;
+    overflow: hidden;
+}
+
+.custom-md .shortcut-mosaic img.shortcut-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    margin: 0;
+}
+
+.custom-md .shortcut-mosaic a.pswp-image-link {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    margin: 0;
+    display: block;
+    cursor: pointer;
+}
+
 .custom-md a.pswp-image-link img.shortcut-img {
     cursor: pointer;
 }

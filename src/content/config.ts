@@ -1,4 +1,5 @@
 import { defineCollection, z } from "astro:content";
+import type { BaseSchema, CollectionConfig } from "astro/content/config";
 
 const postsCollection = defineCollection({
 	schema: z.object({
@@ -23,7 +24,17 @@ const postsCollection = defineCollection({
 const specCollection = defineCollection({
 	schema: z.object({}),
 });
-export const collections = {
+const timelineCollection = defineCollection({
+	schema: z.object({
+		type: z.literal("event"),
+		id: z.string().regex(/^\d{10}-[a-z0-9]{8}$/),
+		published: z.date(),
+		draft: z.boolean().optional().default(false),
+		location: z.string().optional().default(""),
+	}),
+});
+export const collections: Record<string, CollectionConfig<BaseSchema>> = {
 	posts: postsCollection,
 	spec: specCollection,
+	timeline: timelineCollection,
 };

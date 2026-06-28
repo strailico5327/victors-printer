@@ -1,5 +1,7 @@
 import rss from "@astrojs/rss";
+import { getCollection } from "astro:content";
 import { getSortedPosts } from "@utils/content-utils";
+import { formatDateForDisplay } from "@utils/date-utils";
 import { url } from "@utils/url-utils";
 import type { APIContext } from "astro";
 import MarkdownIt from "markdown-it";
@@ -18,12 +20,11 @@ function stripInvalidXmlChars(str: string): string {
 
 export async function GET(context: APIContext) {
 	const blog = await getSortedPosts();
-
-	return rss({
-		title: siteConfig.title,
-		description: siteConfig.subtitle || "No description",
-		site: context.site ?? "https://fuwari.vercel.app",
-		items: blog.map((post) => {
+	const timeline = await getCollection("timeline", ({ data }) => {
+		return import.meta.env.PROD ? data.draft !== true : true;
+	});
+	const items = [
+		...blog.map((post) => {
 			const content =
 				typeof post.body === "string" ? post.body : String(post.body || "");
 			const cleanedContent = stripInvalidXmlChars(content);
@@ -37,6 +38,28 @@ export async function GET(context: APIContext) {
 				}),
 			};
 		}),
+		...timeline.map((event) => {
+			const content =
+				typeof event.body === "string" ? event.body : String(event.body || "");
+			const cleanedContent = stripInvalidXmlChars(content);
+			const time = `${String(event.data.published.getHours()).padStart(2, "0")}:${String(event.data.published.getMinutes()).padStart(2, "0")}`;
+			return {
+				title: `Timeline: ${formatDateForDisplay(event.data.published)} ${time}`,
+				pubDate: event.data.published,
+				description: event.data.location || "",
+				link: url("/timeline/"),
+				content: sanitizeHtml(parser.render(cleanedContent), {
+					allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
+				}),
+			};
+		}),
+	].sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
+
+	return rss({
+		title: siteConfig.title,
+		description: siteConfig.subtitle || "No description",
+		site: context.site ?? "https://fuwari.vercel.app",
+		items,
 		customData: `<language>${siteConfig.lang}</language>`,
 	});
 }

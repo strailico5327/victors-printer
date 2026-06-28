@@ -3,6 +3,7 @@ import { transformFormatShortcutParagraph } from "./shortcuts/format.mjs";
 import { transformFlexShortcutBlocks } from "./shortcuts/flex.mjs";
 import { transformGridShortcutBlocks } from "./shortcuts/grid.mjs";
 import { transformImageShortcutParagraph } from "./shortcuts/img.mjs";
+import { transformMosaicShortcutBlocks } from "./shortcuts/mosaic.mjs";
 
 export default function shortcuts() {
 	return function transformer(tree, file) {
@@ -22,6 +23,7 @@ function transformChildren(parent, context) {
 	splitShortcutParagraphs(parent);
 	transformFlexShortcutBlocks(parent, context);
 	transformGridShortcutBlocks(parent, context);
+	transformMosaicShortcutBlocks(parent, context);
 
 	parent.children = parent.children.map((child) => {
 		if (transformDateShortcutParagraph(child)) {
@@ -126,10 +128,12 @@ function isBreakNode(node) {
 function isShortcutLine(line) {
 	return (
 		/^:!date\s+\d{8}$/.test(line) ||
-		/^:!img\s+\S+\s+\S+(?:\s+\S+)?$/.test(line) ||
-		/^:!flex(?:\s+\S+)?$/.test(line) ||
-		/^:!grid(?:\s+\S+){2,4}$/.test(line) ||
-		/^!:(?:flex|grid)$/.test(line)
+		/^:!img\s+\S+(?:\s+\S+){0,3}$/.test(line) ||
+		/^:!flex(?:\s+\S+){0,2}$/.test(line) ||
+		/^:!grid(?:\s+\S+){2,5}$/.test(line) ||
+		/^:!mosaic(?:\s+\S+){0,3}$/.test(line) ||
+		/^:\/(?:\s+\S+)?$/.test(line) ||
+		/^!:(?:flex|grid|mosaic)$/.test(line)
 	);
 }
 
@@ -139,7 +143,7 @@ function getContentAssetBase(filePath) {
 	}
 
 	const normalisedPath = filePath.replace(/\\/g, "/");
-	const match = normalisedPath.match(/\/src\/content\/(posts|spec)\/(.+)$/);
+	const match = normalisedPath.match(/\/src\/content\/(posts|spec|timeline)\/(.+)$/);
 
 	if (!match) {
 		return null;
@@ -151,6 +155,11 @@ function getContentAssetBase(filePath) {
 
 	if (parts.length === 0) {
 		return null;
+	}
+
+	if (collection === "timeline") {
+		const [year, month] = parts;
+		return year && month ? `/images/timeline/${year}/${month}` : "/images/timeline";
 	}
 
 	const filename = parts.at(-1) || "";

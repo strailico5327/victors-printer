@@ -1,5 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import {
+	parseImageShortcut as parseShortcutImage,
+	resolveShortcutGallery,
+} from "./img.mjs";
 
 export function transformFlexShortcutBlocks(parent, context = {}) {
 	if (!parent || !Array.isArray(parent.children)) {
@@ -11,7 +15,7 @@ export function transformFlexShortcutBlocks(parent, context = {}) {
 
 	while (index < parent.children.length) {
 		const startText = getParagraphText(parent.children[index]);
-		const flex = parseFlexStart(startText);
+		const flex = parseFlexStart(startText, context);
 
 		if (!flex) {
 			index += 1;
@@ -28,7 +32,7 @@ export function transformFlexShortcutBlocks(parent, context = {}) {
 
 		for (let childIndex = index + 1; childIndex < endIndex; childIndex += 1) {
 			const imageText = getParagraphText(parent.children[childIndex]);
-			const image = parseImageShortcut(imageText);
+			const image = parseImageShortcut(imageText, flex.gallery, context);
 
 			if (image) {
 				images.push(image);
@@ -84,7 +88,7 @@ function isFlexEndParagraph(node) {
 	);
 }
 
-function parseFlexStart(value) {
+function parseFlexStart(value, context) {
 	if (typeof value !== "string") {
 		return null;
 	}
@@ -95,32 +99,27 @@ function parseFlexStart(value) {
 		return null;
 	}
 
+	const galleryOverride = takeGalleryOverride(parts);
+
 	if (parts.length > 2) {
 		throw new Error(
-			`[shortcut flex] Invalid syntax: "${value}". Use :!flex <container-width?>`,
+			`[shortcut flex] Invalid syntax: "${value}". Use :!flex <container-width?> <@gallery?>`,
 		);
 	}
 
 	return {
 		width: normalizeWidth(parts[1] || "100%"),
+		gallery: resolveShortcutGallery(galleryOverride, context, "flex"),
 	};
 }
 
-function parseImageShortcut(value) {
-	if (typeof value !== "string") {
-		return null;
-	}
-
-	const match = value.trim().match(/^:!img\s+(\S+)\s+(\S+)(?:\s+(\S+))?\s*$/);
-
-	if (!match) {
-		return null;
-	}
-
-	return {
-		input: match[1],
-		gallery: match[2],
-	};
+function parseImageShortcut(value, defaultGallery, context) {
+	return parseShortcutImage(value, {
+		context,
+		defaultGallery,
+		defaultWidth: false,
+		scope: "flex",
+	});
 }
 
 function buildFlexHtml(flex, images, context) {
@@ -335,6 +334,17 @@ function normalizeWidth(width) {
 	}
 
 	return width;
+}
+
+function takeGalleryOverride(parts) {
+	const last = parts.at(-1);
+
+	if (!last?.startsWith("@")) {
+		return null;
+	}
+
+	parts.pop();
+	return last.slice(1);
 }
 
 function formatNumber(value) {

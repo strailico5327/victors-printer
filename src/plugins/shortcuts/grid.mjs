@@ -1,3 +1,8 @@
+import {
+	parseImageShortcut as parseShortcutImage,
+	resolveShortcutGallery,
+} from "./img.mjs";
+
 export function transformGridShortcutBlocks(parent, context = {}) {
 	if (!parent || !Array.isArray(parent.children)) {
 		return false;
@@ -8,7 +13,7 @@ export function transformGridShortcutBlocks(parent, context = {}) {
 
 	while (index < parent.children.length) {
 		const startText = getParagraphText(parent.children[index]);
-		const grid = parseGridStart(startText);
+		const grid = parseGridStart(startText, context);
 
 		if (!grid) {
 			index += 1;
@@ -25,7 +30,7 @@ export function transformGridShortcutBlocks(parent, context = {}) {
 
 		for (let childIndex = index + 1; childIndex < endIndex; childIndex += 1) {
 			const imageText = getParagraphText(parent.children[childIndex]);
-			const image = parseImageShortcut(imageText);
+			const image = parseImageShortcut(imageText, grid.gallery, context);
 
 			if (!image) {
 				continue;
@@ -85,7 +90,7 @@ function isGridEndParagraph(node) {
 	);
 }
 
-function parseGridStart(value) {
+function parseGridStart(value, context) {
 	if (typeof value !== "string") {
 		return null;
 	}
@@ -96,9 +101,11 @@ function parseGridStart(value) {
 		return null;
 	}
 
+	const galleryOverride = takeGalleryOverride(parts);
+
 	if (parts.length < 3 || parts.length > 5) {
 		throw new Error(
-			`[shortcut grid] Invalid syntax: "${value}". Use :!grid <columns> <rows> <cell-ratio?> <container-width?>`,
+			`[shortcut grid] Invalid syntax: "${value}". Use :!grid <columns> <rows> <cell-ratio?> <container-width?> <@gallery?>`,
 		);
 	}
 
@@ -139,6 +146,7 @@ function parseGridStart(value) {
 		rows,
 		ratio,
 		width,
+		gallery: resolveShortcutGallery(galleryOverride, context, "grid"),
 		maxItems: columns * rows,
 	};
 }
@@ -182,21 +190,13 @@ function normalizeRatio(value, fullText) {
 	return `${match[1]} / ${match[2]}`;
 }
 
-function parseImageShortcut(value) {
-	if (typeof value !== "string") {
-		return null;
-	}
-
-	const match = value.trim().match(/^:!img\s+(\S+)\s+(\S+)(?:\s+(\S+))?\s*$/);
-
-	if (!match) {
-		return null;
-	}
-
-	return {
-		input: match[1],
-		gallery: match[2],
-	};
+function parseImageShortcut(value, defaultGallery, context) {
+	return parseShortcutImage(value, {
+		context,
+		defaultGallery,
+		defaultWidth: false,
+		scope: "grid",
+	});
 }
 
 function buildGridHtml(grid, images, context) {
@@ -284,6 +284,17 @@ function normalizeWidth(width) {
 	}
 
 	return width;
+}
+
+function takeGalleryOverride(parts) {
+	const last = parts.at(-1);
+
+	if (!last?.startsWith("@")) {
+		return null;
+	}
+
+	parts.pop();
+	return last.slice(1);
 }
 
 function escapeAttribute(value) {
