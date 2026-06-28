@@ -52,7 +52,7 @@ wrangler secret put CF_ACCESS_AUD
 
 `GITHUB_TOKEN` needs repository Contents read/write permission.
 
-For local development, create `publisher-worker/.dev.vars`:
+For local development, create `dashboard/.dev.vars`:
 
 ```dotenv
 GITHUB_TOKEN=github_pat_xxx

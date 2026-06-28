@@ -1,5 +1,5 @@
 {
-  "name": "victors-printer-publisher-worker",
+  "name": "victors-dashboard",
   "private": true,
   "type": "module",
   "scripts": {
