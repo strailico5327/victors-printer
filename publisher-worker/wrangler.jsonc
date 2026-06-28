@@ -1,17 +1,24 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "strailico-timeline-publisher",
+  "name": "victors-printer-publisher",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-21",
   "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "publish.strailico.me",
+      "custom_domain": true
+    }
+  ],
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
   },
   "vars": {
-    "GITHUB_OWNER": "Strailico",
-    "GITHUB_REPO": "astro-victors-printer",
-    "GITHUB_BRANCH": "master",
+    "GITHUB_OWNER": "strailico5327",
+    "GITHUB_REPO": "victors-printer",
+    "GITHUB_BRANCH": "main",
     "CF_ACCESS_TEAM_DOMAIN": "https://strailico.cloudflareaccess.com",
     "MAX_IMAGES": "16",
     "MAX_IMAGE_BYTES": "26214400",

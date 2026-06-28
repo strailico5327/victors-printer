@@ -434,7 +434,7 @@ function createGithubClient(env: Env) {
 	const headers = {
 		accept: "application/vnd.github+json",
 		authorization: `Bearer ${env.GITHUB_TOKEN}`,
-		"user-agent": "strailico-timeline-publisher",
+		"user-agent": "victors-printer-publisher",
 		"x-github-api-version": "2022-11-28",
 	};
 

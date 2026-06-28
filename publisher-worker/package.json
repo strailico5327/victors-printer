@@ -1,5 +1,5 @@
 {
-  "name": "strailico-timeline-publisher-worker",
+  "name": "victors-printer-publisher-worker",
   "private": true,
   "type": "module",
   "scripts": {
