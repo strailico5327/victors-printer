@@ -4,9 +4,9 @@ import { i18n } from "@i18n/translation";
 import { getCategoryUrl } from "@utils/url-utils.ts";
 
 // // Retrieve posts and sort them by publication date
-async function getRawSortedPosts() {
-	const allBlogPosts = await getCollection("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+async function getRawSortedPosts(): Promise<CollectionEntry<"posts">[]> {
+	const allBlogPosts = (await getCollection("posts")).filter((post) => {
+		return import.meta.env.PROD ? post.data.draft !== true : true;
 	});
 
 	const sorted = allBlogPosts.sort((a, b) => {
@@ -17,7 +17,7 @@ async function getRawSortedPosts() {
 	return sorted;
 }
 
-export async function getSortedPosts() {
+export async function getSortedPosts(): Promise<CollectionEntry<"posts">[]> {
 	const sorted = await getRawSortedPosts();
 
 	for (let i = 1; i < sorted.length; i++) {
@@ -52,12 +52,10 @@ export type Tag = {
 };
 
 export async function getTagList(): Promise<Tag[]> {
-	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
-	});
+	const allBlogPosts = await getRawSortedPosts();
 
 	const countMap: { [key: string]: number } = {};
-	allBlogPosts.forEach((post: { data: { tags: string[] } }) => {
+	allBlogPosts.forEach((post) => {
 		post.data.tags.forEach((tag: string) => {
 			if (!countMap[tag]) countMap[tag] = 0;
 			countMap[tag]++;
@@ -79,11 +77,9 @@ export type Category = {
 };
 
 export async function getCategoryList(): Promise<Category[]> {
-	const allBlogPosts = await getCollection<"posts">("posts", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
-	});
+	const allBlogPosts = await getRawSortedPosts();
 	const count: { [key: string]: number } = {};
-	allBlogPosts.forEach((post: { data: { category: string | null } }) => {
+	allBlogPosts.forEach((post) => {
 		if (!post.data.category) {
 			const ucKey = i18n(I18nKey.uncategorised);
 			count[ucKey] = count[ucKey] ? count[ucKey] + 1 : 1;

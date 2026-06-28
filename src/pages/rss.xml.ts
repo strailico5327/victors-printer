@@ -20,8 +20,8 @@ function stripInvalidXmlChars(str: string): string {
 
 export async function GET(context: APIContext) {
 	const blog = await getSortedPosts();
-	const timeline = await getCollection("timeline", ({ data }) => {
-		return import.meta.env.PROD ? data.draft !== true : true;
+	const timeline = (await getCollection("timeline")).filter((event) => {
+		return import.meta.env.PROD ? event.data.draft !== true : true;
 	});
 	const items = [
 		...blog.map((post) => {
