@@ -4,7 +4,9 @@ import Code from "../../node_modules/astro-expressive-code/components/Code.astro
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
 const emptyCodePlaceholder = "\u200b";
-const dashboardNavLinks = [{ name: "Publish", url: "/publish/", external: false }];
+const dashboardNavLinks = [
+	{ name: "Publish", url: "/publish/", external: false },
+];
 ---
 
 <MainGridLayout title="Publish" description="Timeline publish UI" navLinks={dashboardNavLinks}>

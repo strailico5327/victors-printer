@@ -1,7 +1,10 @@
 ---
 import ChangelogMonthPage from "../../../components/ChangelogMonthPage.astro";
 import MainGridLayout from "../../../layouts/MainGridLayout.astro";
-import { formatChangelogMonth, getChangelogMonths } from "../../../utils/changelog";
+import {
+	formatChangelogMonth,
+	getChangelogMonths,
+} from "../../../utils/changelog";
 
 export async function getStaticPaths() {
 	const months = await getChangelogMonths();

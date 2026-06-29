@@ -147,7 +147,7 @@ function isShortcutLine(line) {
 		/^:!grid(?:\s+\S+){2,5}$/.test(line) ||
 		/^:!mosaic(?:\s+\S+){0,3}$/.test(line) ||
 		/^:!link\s+\S+(?:\s+(?:true|false))?$/.test(line) ||
-		/^(?::(?:>>|>|<)\s+)?\:!link\s+.+\s+\S+(?:\s+(?:true|false))?$/.test(line) ||
+		/^(?::(?:>>|>|<)\s+)?:!link\s+.+\s+\S+(?:\s+(?:true|false))?$/.test(line) ||
 		/^:\/(?:\s+\S+)?$/.test(line) ||
 		/^!:(?:flex|grid|mosaic|link)$/.test(line) ||
 		/^:!===!:$/.test(line) ||

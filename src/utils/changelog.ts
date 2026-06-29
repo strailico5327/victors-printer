@@ -23,7 +23,11 @@ export async function getChangelogMonths(): Promise<ChangelogMonth[]> {
 		await Promise.all(
 			files
 				.filter((file) => file.endsWith(".md"))
-				.map(async (file) => parseChangelogYear(await readFile(join(CHANGELOG_DIR, file), "utf-8"))),
+				.map(async (file) =>
+					parseChangelogYear(
+						await readFile(join(CHANGELOG_DIR, file), "utf-8"),
+					),
+				),
 		)
 	).flat();
 
@@ -37,7 +41,9 @@ export async function getChangelogMonths(): Promise<ChangelogMonth[]> {
 	return Array.from(monthMap.entries())
 		.map(([key, monthDays]) => {
 			const [year, month] = key.split("-").map(Number);
-			const sortedDays = monthDays.sort((a, b) => b.date.getTime() - a.date.getTime());
+			const sortedDays = monthDays.sort(
+				(a, b) => b.date.getTime() - a.date.getTime(),
+			);
 
 			return {
 				year,
@@ -67,7 +73,12 @@ function parseChangelogYear(body: string): ChangelogDay[] {
 	for (const line of lines) {
 		const trimmed = line.trim();
 
-		if (!trimmed || trimmed === "---" || /^:!#{1,6}\s+/.test(trimmed) || /^#{1,6}\s+/.test(trimmed)) {
+		if (
+			!trimmed ||
+			trimmed === "---" ||
+			/^:!#{1,6}\s+/.test(trimmed) ||
+			/^#{1,6}\s+/.test(trimmed)
+		) {
 			continue;
 		}
 
@@ -89,7 +100,9 @@ function parseChangelogYear(body: string): ChangelogDay[] {
 			continue;
 		}
 
-		const itemMatch = trimmed.match(/^(?:\{%\s*fidt\s*%\}\s*)?(.+?)(?:<br>)?$/i);
+		const itemMatch = trimmed.match(
+			/^(?:\{%\s*fidt\s*%\}\s*)?(.+?)(?:<br>)?$/i,
+		);
 		pendingItems.push(itemMatch?.[1].trim() ?? trimmed);
 	}
 
