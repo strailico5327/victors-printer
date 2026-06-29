@@ -101,11 +101,23 @@ async function handlePublisherPageRequest(request: Request, url: URL): Promise<R
 }
 
 function isPublisherProxyPath(pathname: string): boolean {
-	return pathname === "/" || pathname === "/dashboard" || pathname === "/dashboard/" || pathname.startsWith("/_astro/") || pathname.startsWith("/images/");
+	return (
+		pathname === "/" ||
+		pathname === "/dashboard" ||
+		pathname === "/dashboard/" ||
+		pathname === "/publish" ||
+		pathname === "/publish/" ||
+		pathname.startsWith("/_astro/") ||
+		pathname.startsWith("/images/")
+	);
 }
 
 async function proxyPublicSite(request: Request, url: URL): Promise<Response> {
-	const pathname = url.pathname === "/" || url.pathname === "/dashboard" || url.pathname === "/dashboard/" ? "/publish/" : url.pathname;
+	if (url.pathname === "/dashboard" || url.pathname === "/dashboard/") {
+		return Response.redirect(new URL("/", url), 301);
+	}
+
+	const pathname = url.pathname === "/" ? "/publish/" : url.pathname;
 	const target = new URL(`${pathname}${url.search}`, PUBLIC_SITE_ORIGIN);
 	const response = await fetch(target, { method: request.method });
 	return new Response(response.body, response);
