@@ -54,7 +54,7 @@ wrangler secret put PAGES_DEPLOY_HOOK_URL
 `GITHUB_TOKEN` needs repository Contents read/write permission.
 `PAGES_DEPLOY_HOOK_URL` is a Cloudflare Pages deploy hook for the public site. Without it, publishing can update GitHub without rebuilding the static timeline.
 
-For local development, create `dashboard/.dev.vars`:
+For local development, create `worker/.dev.vars`:
 
 ```dotenv
 GITHUB_TOKEN=github_pat_xxx
