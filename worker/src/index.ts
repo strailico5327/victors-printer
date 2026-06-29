@@ -117,7 +117,7 @@ async function proxyPublicSite(request: Request, url: URL): Promise<Response> {
 		return Response.redirect(new URL("/", url), 301);
 	}
 
-	const pathname = url.pathname === "/" ? "/publish/" : url.pathname;
+	const pathname = url.pathname === "/" ? "/dashboard/" : url.pathname;
 	const target = new URL(`${pathname}${url.search}`, PUBLIC_SITE_ORIGIN);
 	const response = await fetch(target, { method: request.method });
 	return new Response(response.body, response);
