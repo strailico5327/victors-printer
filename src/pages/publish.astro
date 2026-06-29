@@ -33,7 +33,7 @@ const emptyCodePlaceholder = "\u200b";
 					<label class="field meta-time">
 						<span class="meta-label">Date & time</span>
 						<span class="date-control">
-							<input id="datetime-input" type="text" value="21/06/2026 23:15" />
+							<input id="datetime-input" type="text" />
 							<span class="datetime-caret" aria-hidden="true"></span>
 							<button id="set-now-button" class="date-now-button" type="button" aria-label="Use current date and time">
 								<Icon name="material-symbols:calendar-today-outline-rounded" />
@@ -355,6 +355,10 @@ const emptyCodePlaceholder = "\u200b";
 	const datetimeMeasureContext = datetimeMeasureCanvas.getContext("2d");
 	const originalTileFiles = new WeakMap();
 
+	if (datetimeInput) {
+		datetimeInput.value = datetimeValue();
+	}
+
 	let eventRandomSuffix = randomId();
 	let eventId = currentEventId();
 	let nextImageNumber = 1;
@@ -405,6 +409,50 @@ const emptyCodePlaceholder = "\u200b";
 		const digits = datetimeInput?.value.replace(/\D/g, "") ?? "";
 		const prefix = `${digits.slice(0, 2)}${digits.slice(2, 4)}${digits.slice(6, 8)}${digits.slice(8, 10)}${digits.slice(10, 12)}`;
 		return `${prefix || "0000000000"}-${eventRandomSuffix}`;
+	}
+
+	function datetimeValue(date = new Date()) {
+		return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+	}
+
+	function syncEventIdToDatetime() {
+		const nextEventId = currentEventId();
+		if (nextEventId === eventId) {
+			return;
+		}
+		const updates = imageOrder
+			.map((oldImageId, index) => {
+				const image = imagesById.get(oldImageId);
+				if (!image) {
+					return null;
+				}
+				const number = Number(image.id.match(/-(\d+)$/)?.[1]) || index + 1;
+				const extension = image.outputExtension || image.fileName.split(".").pop()?.toLowerCase() || "png";
+				const nextImageId = `${nextEventId}-${number}`;
+				return { oldImageId, nextImageId, image, extension };
+			})
+			.filter(Boolean);
+		eventId = nextEventId;
+		for (const { oldImageId, nextImageId, image, extension } of updates) {
+			imagesById.delete(oldImageId);
+			image.id = nextImageId;
+			image.fileName = `${nextImageId}.${extension}`;
+			image.thumbName = thumbNameForFileName(image.fileName);
+			imagesById.set(nextImageId, image);
+			for (let index = 0; index < imageOrder.length; index += 1) {
+				if (imageOrder[index] === oldImageId) {
+					imageOrder[index] = nextImageId;
+				}
+			}
+			for (let index = 0; index < gridSlots.length; index += 1) {
+				if (gridSlots[index] === oldImageId) {
+					gridSlots[index] = nextImageId;
+				}
+			}
+			for (const row of mosaicRows) {
+				row.imageIds = (row.imageIds ?? []).map((imageId) => (imageId === oldImageId ? nextImageId : imageId));
+			}
+		}
 	}
 
 	function datetimeToIso(value) {
@@ -569,6 +617,8 @@ const emptyCodePlaceholder = "\u200b";
 		input.value = normalizeDatetimeValue(chars.join(""));
 		const followingIndex = datetimeDigitIndexes.find((digitIndex) => digitIndex > nextIndex) ?? nextIndex;
 		input.setSelectionRange(followingIndex, followingIndex);
+		syncEventIdToDatetime();
+		renderAllImages();
 		markDirty();
 		updateDatetimeCaret();
 	}
@@ -585,6 +635,8 @@ const emptyCodePlaceholder = "\u200b";
 		chars[selectedIndex] = "0";
 		input.value = normalizeDatetimeValue(chars.join(""));
 		input.setSelectionRange(selectedIndex, selectedIndex);
+		syncEventIdToDatetime();
+		renderAllImages();
 		markDirty();
 		updateDatetimeCaret();
 	}
@@ -1887,6 +1939,7 @@ const emptyCodePlaceholder = "\u200b";
 			nextImageNumber = Math.max(nextImageNumber, (Number(imageId.match(/-(\d+)$/)?.[1]) || 0) + 1);
 		}
 		restoreLayoutFromShortcuts(shortcutLines, fileNameToImageId);
+		syncEventIdToDatetime();
 		activeMosaicRowIndex = Math.min(mosaicRows.length - 1, Math.max(0, activeMosaicRowIndex));
 		pendingMosaicRowRatioWidth = mosaicRatioForRow(activeMosaicRowIndex).width;
 		pendingMosaicRowRatioHeight = mosaicRatioForRow(activeMosaicRowIndex).height;
@@ -2636,9 +2689,10 @@ const emptyCodePlaceholder = "\u200b";
 		if (!datetimeInput) {
 			return;
 		}
-		const now = new Date();
-		datetimeInput.value = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+		datetimeInput.value = datetimeValue();
 		datetimeInput.focus();
+		syncEventIdToDatetime();
+		renderAllImages();
 		markDirty();
 		updateDatetimeCaret();
 	});
@@ -2706,6 +2760,8 @@ const emptyCodePlaceholder = "\u200b";
 
 	datetimeInput?.addEventListener("input", () => {
 		datetimeInput.value = normalizeDatetimeValue(datetimeInput.value);
+		syncEventIdToDatetime();
+		renderAllImages();
 		markDirty();
 		updateDatetimeCaret();
 	});
@@ -2735,6 +2791,8 @@ const emptyCodePlaceholder = "\u200b";
 		const nextIndex =
 			datetimeDigitIndexes.find((index) => index >= (datetimeInput.selectionStart ?? 0) + digitCursor) ?? 15;
 		datetimeInput.setSelectionRange(nextIndex, nextIndex);
+		syncEventIdToDatetime();
+		renderAllImages();
 		markDirty();
 		updateDatetimeCaret();
 	});
