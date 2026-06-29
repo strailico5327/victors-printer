@@ -48,15 +48,18 @@ Set these with Wrangler before deployment:
 ```sh
 wrangler secret put GITHUB_TOKEN
 wrangler secret put CF_ACCESS_AUD
+wrangler secret put PAGES_DEPLOY_HOOK_URL
 ```
 
 `GITHUB_TOKEN` needs repository Contents read/write permission.
+`PAGES_DEPLOY_HOOK_URL` is a Cloudflare Pages deploy hook for the public site. Without it, publishing can update GitHub without rebuilding the static timeline.
 
 For local development, create `dashboard/.dev.vars`:
 
 ```dotenv
 GITHUB_TOKEN=github_pat_xxx
 CF_ACCESS_AUD=access-application-aud
+PAGES_DEPLOY_HOOK_URL=https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/xxx
 ALLOW_LOCAL_BYPASS=true
 LOCAL_DRY_RUN=true
 ```

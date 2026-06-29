@@ -1,4 +1,5 @@
 GITHUB_TOKEN=github_pat_xxx
 CF_ACCESS_AUD=access-application-aud
+PAGES_DEPLOY_HOOK_URL=https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/xxx
 ALLOW_LOCAL_BYPASS=true
 LOCAL_DRY_RUN=true

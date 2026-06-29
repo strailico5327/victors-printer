@@ -7,6 +7,7 @@ type Env = {
 	GITHUB_TOKEN: string;
 	CF_ACCESS_TEAM_DOMAIN: string;
 	CF_ACCESS_AUD: string;
+	PAGES_DEPLOY_HOOK_URL?: string;
 	ALLOW_LOCAL_BYPASS?: string;
 	LOCAL_DRY_RUN?: string;
 	MAX_IMAGES?: string;
@@ -161,16 +162,41 @@ async function handlePublish(request: Request, env: Env): Promise<Response> {
 		commit = await github.putBytes(imagePaths[index], toArrayBuffer(image.bytes), `timeline: publish ${image.name}`);
 	}
 	commit = await github.putText(paths.content, event.markdown, `timeline: publish ${event.id}`);
+	const deploy = await triggerPagesDeploy(env);
 
 	return json({
 		ok: true,
 		id: event.id,
 		commit,
+		deploy,
 		paths: {
 			content: paths.content,
 			images: imagePaths,
 		},
 	});
+}
+
+async function triggerPagesDeploy(env: Env): Promise<{ configured: boolean; ok?: boolean; status?: number; error?: string }> {
+	const hook = env.PAGES_DEPLOY_HOOK_URL?.trim();
+	if (!hook) {
+		return { configured: false };
+	}
+
+	try {
+		const response = await fetch(hook, { method: "POST" });
+		if (response.ok) {
+			return { configured: true, ok: true, status: response.status };
+		}
+
+		const detail = await response.text();
+		const error = responsePreview(detail);
+		console.error(JSON.stringify({ level: "warn", status: response.status, error }));
+		return { configured: true, ok: false, status: response.status, error };
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		console.error(JSON.stringify({ level: "warn", error: message }));
+		return { configured: true, ok: false, error: message };
+	}
 }
 
 function parseDraftZip(zip: Record<string, Uint8Array>, env: Env): {
