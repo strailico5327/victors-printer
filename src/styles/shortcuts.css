@@ -128,18 +128,69 @@
 }
 
 .custom-md .shortcut-card-separator {
+    --shortcut-card-radius: var(--radius-large);
     height: 1rem;
-    margin: 1.5rem -2.25rem;
+    margin: 1.5rem -1.5rem;
     background: var(--page-bg);
+    position: relative;
     text-indent: 0;
 }
 
-.custom-md .shortcut-card-separator:first-child {
-    margin-top: -1.5rem;
+.custom-md .shortcut-card-separator::before,
+.custom-md .shortcut-card-separator::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: var(--shortcut-card-radius);
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-size:
+        var(--shortcut-card-radius) var(--shortcut-card-radius),
+        var(--shortcut-card-radius) var(--shortcut-card-radius);
 }
 
-.custom-md .shortcut-card-separator:last-child {
-    margin-bottom: -1rem;
+.custom-md .shortcut-card-separator::before {
+    top: calc(-1 * var(--shortcut-card-radius));
+    background-image:
+        radial-gradient(
+            circle at 100% 0,
+            transparent calc(var(--shortcut-card-radius) - 1px),
+            var(--page-bg) var(--shortcut-card-radius)
+        ),
+        radial-gradient(
+            circle at 0 0,
+            transparent calc(var(--shortcut-card-radius) - 1px),
+            var(--page-bg) var(--shortcut-card-radius)
+        );
+    background-position:
+        left top,
+        right top;
+}
+
+.custom-md .shortcut-card-separator::after {
+    bottom: calc(-1 * var(--shortcut-card-radius));
+    background-image:
+        radial-gradient(
+            circle at 100% 100%,
+            transparent calc(var(--shortcut-card-radius) - 1px),
+            var(--page-bg) var(--shortcut-card-radius)
+        ),
+        radial-gradient(
+            circle at 0 100%,
+            transparent calc(var(--shortcut-card-radius) - 1px),
+            var(--page-bg) var(--shortcut-card-radius)
+        );
+    background-position:
+        left bottom,
+        right bottom;
+}
+
+@media (min-width: 768px) {
+    .custom-md .shortcut-card-separator {
+        margin-right: -2.25rem;
+        margin-left: -2.25rem;
+    }
 }
 
 .custom-md .mini-title {
