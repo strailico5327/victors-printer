@@ -10,8 +10,9 @@ import DisplaySettings from "./widget/DisplaySettings.svelte";
 import NavMenuPanel from "./widget/NavMenuPanel.astro";
 
 const className = Astro.props.class;
+const navLinks = Astro.props.links ?? navBarConfig.links;
 
-let links: NavBarLink[] = navBarConfig.links.map(
+let links: NavBarLink[] = navLinks.map(
 	(item: NavBarLink | LinkPreset): NavBarLink => {
 		if (typeof item === "number") {
 			return LinkPresets[item];

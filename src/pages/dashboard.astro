@@ -1,58 +1,13 @@
 ---
-import { Icon } from "astro-icon/components";
-import Layout from "../layouts/Layout.astro";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+const dashboardNavLinks = [{ name: "Publish", url: "/publish/", external: false }];
 ---
 
-<Layout title="Dashboard" description="Private dashboard">
-	<div class="dashboard">
-		<nav class="dashboard-nav" aria-label="Dashboard">
-			<a href="/publish/">
-				<Icon name="material-symbols:send-outline-rounded" />
-				<span>Publish</span>
-			</a>
-		</nav>
-	</div>
-
+<MainGridLayout title="Dashboard" description="Private dashboard" navLinks={dashboardNavLinks}>
 	<script is:inline>
 		if (window.location.hostname === "strailico.me") {
 			window.location.replace(`https://dashboard.strailico.me/${window.location.search}${window.location.hash}`);
 		}
 	</script>
-</Layout>
-
-<style>
-	.dashboard {
-		display: grid;
-		min-height: 100vh;
-		place-items: start center;
-		padding: 1rem;
-		padding-top: max(1rem, env(safe-area-inset-top));
-	}
-
-	.dashboard-nav {
-		display: flex;
-		width: min(100%, 40rem);
-		border-radius: 1rem;
-		padding: 0.4rem;
-		background: var(--card-bg);
-	}
-
-	.dashboard-nav a {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.5rem;
-		min-height: 2.75rem;
-		border-radius: 0.75rem;
-		padding: 0 1rem;
-		color: var(--primary);
-		background: var(--btn-plain-bg-hover);
-		font-weight: 700;
-		text-decoration: none;
-	}
-
-	.dashboard-nav :global(svg) {
-		width: 1.25rem;
-		height: 1.25rem;
-	}
-</style>
+</MainGridLayout>

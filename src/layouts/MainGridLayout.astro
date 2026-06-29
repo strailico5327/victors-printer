@@ -14,6 +14,7 @@ import {
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "../constants/constants";
 import Layout from "./Layout.astro";
+import type { LinkPreset, NavBarLink } from "../types/config";
 
 interface Props {
 	title?: string;
@@ -22,6 +23,7 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	headings?: MarkdownHeading[];
+	navLinks?: (NavBarLink | LinkPreset)[];
 }
 
 const {
@@ -31,6 +33,7 @@ const {
 	lang,
 	setOGTypeArticle,
 	headings = [],
+	navLinks,
 } = Astro.props;
 const hasBannerCredit =
 	siteConfig.banner.enable && siteConfig.banner.credit.enable;
@@ -47,7 +50,7 @@ const mainPanelTop = siteConfig.banner.enable
 <slot slot="head" name="head"></slot>
 <div id="top-row" class="z-50 pointer-events-none relative transition-all duration-700 max-w-[var(--page-width)] px-0 md:px-4 mx-auto" class:list={[""]}>
     <div id="navbar-wrapper" class="pointer-events-auto sticky top-0 transition-all">
-        <Navbar></Navbar>
+        <Navbar links={navLinks}></Navbar>
     </div>
 </div>
 
