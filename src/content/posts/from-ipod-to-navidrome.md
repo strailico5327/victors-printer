@@ -3,7 +3,7 @@ title: "From iPod to Navidrome"
 published: 2026-05-23
 category: "Tech"
 image: "/images/posts/from-ipod-to-navidrome/navidrome_albums_cover_thumb.webp"
-draft: false
+draft: true
 proseStyle: "literary"
 tags:
   - "Music"

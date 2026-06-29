@@ -77,35 +77,6 @@ pnpm exec wrangler secret put PAGES_DEPLOY_HOOK_URL
 
 For local Worker testing, use ignored file `worker/.dev.vars`.
 
-## Agent Workflow
-
-After every change, give the user a commit command using this message template:
-
-- `feat:` new feature
-- `fix:` bug fix
-- `style:` css/ui only
-- `refactor:` code cleanup
-- `docs:` documentation
-- `perf:` performance
-- `chore:` misc
-
-Example:
-
-```powershell
-git add README.md
-git commit -m "docs: update project README"
-git push
-```
-
-After a fix, run:
-
-```powershell
-pnpm build
-pnpm preview
-```
-
-Use `pnpm preview` as a smoke test and stop the preview server after verification unless the user asks to keep it running.
-
 ## License
 
 The source code of this website is licensed under the MIT License, unless otherwise stated.

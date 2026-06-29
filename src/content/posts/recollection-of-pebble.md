@@ -3,7 +3,7 @@ title: "Recollection of Pebble"
 published: 2026-05-02
 category: "Tech"
 lang: "en"
-draft: false
+draft: true
 proseStyle: "literary"
 tags:
   - "Pebble"

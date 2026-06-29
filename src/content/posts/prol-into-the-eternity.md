@@ -2,7 +2,7 @@
 title: "Prol. Into the Eternity"
 published: 2026-05-02
 category: "Fiction"
-draft: false
+draft: true
 proseStyle: "literary"
 tags:
   - "Novel"

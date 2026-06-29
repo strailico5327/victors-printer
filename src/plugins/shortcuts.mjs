@@ -4,6 +4,7 @@ import { transformFormatShortcutParagraph } from "./shortcuts/format.mjs";
 import { transformGridShortcutBlocks } from "./shortcuts/grid.mjs";
 import { transformImageShortcutParagraph } from "./shortcuts/img.mjs";
 import { transformMosaicShortcutBlocks } from "./shortcuts/mosaic.mjs";
+import { transformSeparatorShortcutParagraph } from "./shortcuts/separator.mjs";
 
 export default function shortcuts() {
 	return function transformer(tree, file) {
@@ -31,6 +32,10 @@ function transformChildren(parent, context) {
 		}
 
 		if (transformImageShortcutParagraph(child, context)) {
+			return child;
+		}
+
+		if (transformSeparatorShortcutParagraph(child)) {
 			return child;
 		}
 
@@ -133,7 +138,8 @@ function isShortcutLine(line) {
 		/^:!grid(?:\s+\S+){2,5}$/.test(line) ||
 		/^:!mosaic(?:\s+\S+){0,3}$/.test(line) ||
 		/^:\/(?:\s+\S+)?$/.test(line) ||
-		/^!:(?:flex|grid|mosaic)$/.test(line)
+		/^!:(?:flex|grid|mosaic)$/.test(line) ||
+		/^:===:$/.test(line)
 	);
 }
 

@@ -2,7 +2,7 @@
 title: "I. The Conductor"
 published: 2026-05-29
 category: "Fiction"
-draft: false
+draft: true
 proseStyle: "literary"
 tags:
   - "Novel"

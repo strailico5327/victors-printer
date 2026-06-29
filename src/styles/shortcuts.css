@@ -127,6 +127,21 @@
     text-indent: 0;
 }
 
+.custom-md .shortcut-card-separator {
+    height: 1rem;
+    margin: 1.5rem -2.25rem;
+    background: var(--page-bg);
+    text-indent: 0;
+}
+
+.custom-md .shortcut-card-separator:first-child {
+    margin-top: -1.5rem;
+}
+
+.custom-md .shortcut-card-separator:last-child {
+    margin-bottom: -1rem;
+}
+
 .custom-md .mini-title {
     margin: 1.2rem 0 0.4rem;
     font-size: 1.15em;
