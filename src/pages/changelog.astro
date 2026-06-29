@@ -1,0 +1,19 @@
+---
+import ChangelogMonthPage from "../components/ChangelogMonthPage.astro";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { formatChangelogMonth, getChangelogMonths } from "../utils/changelog";
+
+const months = await getChangelogMonths();
+const month = months[0];
+
+if (!month) {
+	throw new Error("Changelog content not found");
+}
+
+const olderMonth = months[1];
+const newerMonth = undefined;
+---
+
+<MainGridLayout title="Changelog" description={`Changelog ${formatChangelogMonth(month)}`}>
+	<ChangelogMonthPage month={month} newerMonth={newerMonth} olderMonth={olderMonth} />
+</MainGridLayout>

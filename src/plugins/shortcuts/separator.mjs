@@ -7,9 +7,9 @@ export function transformSeparatorShortcutParagraph(node) {
 		return false;
 	}
 
-	const textNode = getOnlyTextChild(node);
+	const text = getParagraphText(node);
 
-	if (!textNode || textNode.value.trim() !== ":===:") {
+	if (text !== ":!===!:") {
 		return false;
 	}
 
@@ -23,22 +23,42 @@ export function transformSeparatorShortcutParagraph(node) {
 	return true;
 }
 
-function getOnlyTextChild(node) {
-	const meaningfulChildren = node.children.filter(
-		(child) => !isBreakNode(child),
-	);
-
-	if (meaningfulChildren.length !== 1) {
+function getParagraphText(node) {
+	if (!node || !Array.isArray(node.children)) {
 		return null;
 	}
 
-	const child = meaningfulChildren[0];
+	const text = collectInlineText(node.children);
+	return text?.trim() || null;
+}
 
-	if (child.type !== "text" || typeof child.value !== "string") {
+function collectInlineText(children) {
+	let text = "";
+
+	for (const child of children) {
+		if (isBreakNode(child)) {
+			continue;
+		}
+
+		if (child.type === "text" && typeof child.value === "string") {
+			text += child.value;
+			continue;
+		}
+
+		if (child.type === "textDirective" && child.name === "!===!") {
+			text += ":!===!:";
+			continue;
+		}
+
+		if (child.type === "textDirective" && typeof child.name === "string") {
+			text += `:${child.name}`;
+			continue;
+		}
+
 		return null;
 	}
 
-	return child;
+	return text;
 }
 
 function isBreakNode(node) {

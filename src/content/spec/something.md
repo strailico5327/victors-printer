@@ -204,7 +204,7 @@ published: 2026-05-19
 
 ---
 
-:> <a href="https://www.bilibili.com/video/BV1guRiBsEnC">AP is a love letter to a marvellous chart.</a>
+:> :!link AP is a love letter to a marvellous chart. https://www.bilibili.com/video/BV1guRiBsEnC
 
 :!img phira_sanctuary_ap_captured.PNG 050526 
 

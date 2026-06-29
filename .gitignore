@@ -43,8 +43,7 @@ yarn.lock
 # local Codex guidance; keep it on disk, do not delete during cleanup
 AGENTS.md
 .agents/
+CONTEXT.md
 
 # Local AI handoff / model-switching notes
-.ai/
-
 *.log

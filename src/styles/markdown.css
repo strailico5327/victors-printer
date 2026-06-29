@@ -29,6 +29,7 @@
         box-decoration-break: clone;
         -webkit-box-decoration-break: clone;
         display: inline-block;
+        text-indent: 0;
     
         &:hover, &:active {
             @apply decoration-transparent;

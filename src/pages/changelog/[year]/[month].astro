@@ -1,0 +1,27 @@
+---
+import ChangelogMonthPage from "../../../components/ChangelogMonthPage.astro";
+import MainGridLayout from "../../../layouts/MainGridLayout.astro";
+import { formatChangelogMonth, getChangelogMonths } from "../../../utils/changelog";
+
+export async function getStaticPaths() {
+	const months = await getChangelogMonths();
+
+	return months.map((month, index) => ({
+		params: {
+			year: String(month.year),
+			month: String(month.month).padStart(2, "0"),
+		},
+		props: {
+			month,
+			newerMonth: months[index - 1],
+			olderMonth: months[index + 1],
+		},
+	}));
+}
+
+const { month, newerMonth, olderMonth } = Astro.props;
+---
+
+<MainGridLayout title="Changelog" description={`Changelog ${formatChangelogMonth(month)}`}>
+	<ChangelogMonthPage month={month} newerMonth={newerMonth} olderMonth={olderMonth} />
+</MainGridLayout>

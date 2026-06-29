@@ -3,16 +3,16 @@ import { getEntry } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
 
-const somethingPost = await getEntry("spec", "something");
+const shortcutsSpec = await getEntry("spec", "shortcuts");
 
-if (!somethingPost) {
-	throw new Error("Something page content not found");
+if (!shortcutsSpec) {
+	throw new Error("Shortcuts page content not found");
 }
 
-const { Content } = await somethingPost.render();
+const { Content } = await shortcutsSpec.render();
 ---
 
-<MainGridLayout title="Something" description="Something">
+<MainGridLayout title="Shortcuts" description="Markdown shortcuts">
 	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
 		<div class="card-base z-10 px-9 py-6 relative w-full">
 			<Markdown class="mt-2 literary-prose">

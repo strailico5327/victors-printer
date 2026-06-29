@@ -3,6 +3,10 @@ import { transformFlexShortcutBlocks } from "./shortcuts/flex.mjs";
 import { transformFormatShortcutParagraph } from "./shortcuts/format.mjs";
 import { transformGridShortcutBlocks } from "./shortcuts/grid.mjs";
 import { transformImageShortcutParagraph } from "./shortcuts/img.mjs";
+import {
+	transformLinkShortcutBlocks,
+	transformLinkShortcutParagraph,
+} from "./shortcuts/link.mjs";
 import { transformMosaicShortcutBlocks } from "./shortcuts/mosaic.mjs";
 import { transformSeparatorShortcutParagraph } from "./shortcuts/separator.mjs";
 
@@ -25,6 +29,7 @@ function transformChildren(parent, context) {
 	transformFlexShortcutBlocks(parent, context);
 	transformGridShortcutBlocks(parent, context);
 	transformMosaicShortcutBlocks(parent, context);
+	transformLinkShortcutBlocks(parent, context);
 
 	parent.children = parent.children.map((child) => {
 		if (transformDateShortcutParagraph(child)) {
@@ -36,6 +41,10 @@ function transformChildren(parent, context) {
 		}
 
 		if (transformSeparatorShortcutParagraph(child)) {
+			return child;
+		}
+
+		if (transformLinkShortcutParagraph(child)) {
 			return child;
 		}
 
@@ -137,9 +146,12 @@ function isShortcutLine(line) {
 		/^:!flex(?:\s+\S+){0,2}$/.test(line) ||
 		/^:!grid(?:\s+\S+){2,5}$/.test(line) ||
 		/^:!mosaic(?:\s+\S+){0,3}$/.test(line) ||
+		/^:!link\s+\S+(?:\s+(?:true|false))?$/.test(line) ||
+		/^(?::(?:>>|>|<)\s+)?\:!link\s+.+\s+\S+(?:\s+(?:true|false))?$/.test(line) ||
 		/^:\/(?:\s+\S+)?$/.test(line) ||
-		/^!:(?:flex|grid|mosaic)$/.test(line) ||
-		/^:===:$/.test(line)
+		/^!:(?:flex|grid|mosaic|link)$/.test(line) ||
+		/^:!===!:$/.test(line) ||
+		/^:!#{1,6}(?:\s+.+)?$/.test(line)
 	);
 }
 

@@ -54,7 +54,7 @@ I tried my best to pull myself back to the reality: Whatever I must have been in
 
 The knocking became louder. I washed my face quickly to make myself look better.
 
-:===:
+:!===!:
 
 'Say something, okay? If you're unable to response we will open the door.'
 
