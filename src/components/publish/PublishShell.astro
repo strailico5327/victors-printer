@@ -1,0 +1,13 @@
+---
+import PublishActions from "./PublishActions.astro";
+import PublishEditor from "./PublishEditor.astro";
+import PublishHiddenInputs from "./PublishHiddenInputs.astro";
+import PublishImagePanel from "./PublishImagePanel.astro";
+---
+
+<div class="publish onload-animation">
+	<PublishEditor />
+	<PublishImagePanel />
+	<PublishActions />
+</div>
+<PublishHiddenInputs />
