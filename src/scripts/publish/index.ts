@@ -11,9 +11,9 @@ import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 	import { OverlayScrollbars } from "overlayscrollbars";
 	import PhotoSwipe from "photoswipe";
 
-	if (window.location.hostname === "strailico.me") {
-		window.location.replace(`https://dashboard.strailico.me/publish/${window.location.search}${window.location.hash}`);
-	}
+	const publishEndpoint =
+		import.meta.env.PUBLIC_PUBLISH_API_ENDPOINT ||
+		(window.location.hostname === "strailico.me" ? "https://dashboard.strailico.me/api/publish" : "/api/publish");
 
 	const imagePanel = document.querySelector("#image-panel");
 	const metaEditor = document.querySelector("#meta-editor");
@@ -107,7 +107,6 @@ import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 	let activeGridDrag = null;
 	let singleWidthEditing = false;
 	const gridCapacity = () => (isSingleCanvasMode() ? 1 : gridRows * gridColumns);
-	const publishEndpoint = import.meta.env.PUBLIC_PUBLISH_API_ENDPOINT || "/api/publish";
 	const datetimeMeasureCanvas = document.createElement("canvas");
 	const datetimeMeasureContext = datetimeMeasureCanvas.getContext("2d");
 	const originalTileFiles = new WeakMap();
