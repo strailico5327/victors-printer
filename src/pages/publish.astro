@@ -1,15 +1,4691 @@
 ---
-import PublishShell from "@components/publish/PublishShell.astro";
-import MainGridLayout from "@layouts/MainGridLayout.astro";
-import "../styles/publish.css";
+import { Icon } from "astro-icon/components";
+import Code from "../../node_modules/astro-expressive-code/components/Code.astro";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
 
+const emptyCodePlaceholder = "\u200b";
 const dashboardNavLinks = [
 	{ name: "Publish", url: "/publish/", external: false },
 ];
 ---
 
 <MainGridLayout title="Publish" description="Timeline publish UI" navLinks={dashboardNavLinks}>
-	<PublishShell />
+	<div class="publish onload-animation">
+		<section class="publish-main card-base">
+			<div class="publish-section-header">
+				<div>
+					<div class="publish-eyebrow">Timeline</div>
+					<h1>New event</h1>
+				</div>
+				<button class="publish-status btn-plain scale-animation" type="button" aria-label="Draft source ready" aria-disabled="true" data-state="ready" disabled>
+					<Icon class="status-cloud" name="material-symbols:cloud-done-outline-rounded" />
+					<Icon class="status-copy" name="material-symbols:content-copy-outline-rounded" />
+					<Icon class="status-sync" name="material-symbols:sync-rounded" />
+					<Icon class="status-done" name="material-symbols:check-rounded" />
+				</button>
+			</div>
+
+			<label class="field text-field" id="editor-pane">
+				<span class="editor-scroll-shell hide-scrollbar">
+					<textarea rows="7"></textarea>
+				</span>
+			</label>
+
+			<div class="publish-footer">
+				<div class="meta-editor" id="meta-editor">
+					<label class="field meta-time">
+						<span class="meta-label">Date & time</span>
+						<span class="date-control">
+							<input id="datetime-input" type="text" />
+							<span class="datetime-caret" aria-hidden="true"></span>
+							<button id="set-now-button" class="date-now-button" type="button" aria-label="Use current date and time">
+								<Icon name="material-symbols:calendar-today-outline-rounded" />
+							</button>
+						</span>
+					</label>
+					<div class="field meta-location">
+						<span class="meta-label">Location</span>
+						<span class="location-control">
+							<input id="location-input" type="text" />
+							<button id="toggle-location-button" class="location-toggle" type="button" aria-label="Show location">
+								<Icon name="material-symbols:location-on-outline-rounded" />
+							</button>
+						</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="image-panel" class="publish-images card-base collapsed">
+			<div class="publish-section-header compact">
+				<div>
+					<h2>Images</h2>
+				</div>
+				<div class="image-header-controls">
+					<div class="image-header-actions">
+						<button id="image-add-button" class="image-icon-button image-add-button" type="button" aria-label="Add image">
+							<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+						</button>
+						<button id="image-trash-button" class="image-icon-button image-trash-button" type="button" aria-label="Clear selected image tile">
+							<Icon name="material-symbols:delete-outline-rounded" />
+						</button>
+					</div>
+					<div class="segmented-control image-mode-control" role="tablist" aria-label="Image editor mode" data-mode="canvas">
+						<button class="segment active" type="button" data-editor-mode="canvas" aria-label="Canvas" disabled aria-disabled="true">
+							<Icon name="material-symbols:image-outline-rounded" />
+						</button>
+						<button class="segment" type="button" data-editor-mode="syntax" aria-label="Syntax" disabled aria-disabled="true">
+							<Icon name="material-symbols:data-object-rounded" />
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<div class="image-panel-body">
+				<div class="image-panel-body-inner">
+					<div id="canvas-editor" class="editor-pane active">
+						<div class="image-grid" aria-label="Selected image grid">
+							<button class="image-tile empty" type="button" data-slot="0">
+								<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+								<span>1</span>
+							</button>
+							<button class="image-tile empty" type="button" data-slot="1">
+								<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+								<span>2</span>
+							</button>
+							<button class="image-tile empty" type="button" data-slot="2">
+								<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+								<span>3</span>
+							</button>
+							<button class="image-tile empty" type="button" data-slot="3">
+								<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+								<span>4</span>
+							</button>
+						</div>
+					</div>
+
+					<div id="syntax-editor" class="editor-pane">
+						<div class="syntax-layout">
+							<div class="image-strip" aria-label="Uploaded images">
+								<button class="image-tile empty" type="button" data-slot="0">
+									<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+									<span>1</span>
+								</button>
+								<button class="image-tile empty" type="button" data-slot="1">
+									<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+									<span>2</span>
+								</button>
+								<button class="image-tile empty" type="button" data-slot="2">
+									<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+									<span>3</span>
+								</button>
+								<button class="image-tile empty" type="button" data-slot="3">
+									<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+									<span>4</span>
+								</button>
+							</div>
+							<div class="native-code-frame syntax-code-frame" data-native-code-frame="syntax">
+								<Code code={emptyCodePlaceholder} lang="md" class="publish-native-code" />
+							</div>
+						</div>
+					</div>
+					<div class="image-panel-footer">
+						<div class="canvas-footer-center" hidden>
+							<div class="canvas-layout-controls">
+								<div id="grid-size-control" class="grid-size-control" aria-label="Grid layout size" hidden>
+									<span class="grid-size-value grid-size-pair" aria-live="polite">
+										<span id="grid-width-value" class="grid-size-number" data-grid-axis="columns">2</span>
+										<span class="grid-size-separator">×</span>
+										<span id="grid-height-value" class="grid-size-number" data-grid-axis="rows">2</span>
+									</span>
+									<span id="single-width-display" class="grid-size-value single-width-display" aria-live="polite" hidden>
+										<span id="single-width-value" class="grid-size-number" data-grid-axis="width">75</span>
+										<span class="grid-size-unit">%</span>
+									</span>
+									<label id="single-width-input-shell" class="single-width-input-shell" hidden>
+										<input id="single-width-input" type="text" inputmode="numeric" value="75" aria-label="Single image width percent" />
+										<span class="grid-size-unit">%</span>
+									</label>
+									<button id="grid-size-apply-button" type="button" aria-label="Apply grid layout">
+										<Icon name="material-symbols:check-rounded" />
+									</button>
+								</div>
+								<div id="grid-ratio-control" class="grid-size-control grid-ratio-control" aria-label="Grid cell ratio" hidden>
+									<span class="grid-size-value grid-ratio-value-shell" aria-live="polite">
+										<span class="grid-ratio-value">
+											<span id="grid-ratio-width-value" class="grid-size-number grid-ratio-number" data-grid-axis="ratio">1</span>
+											<span class="grid-size-separator grid-ratio-separator">:</span>
+											<span id="grid-ratio-height-value" class="grid-size-number grid-ratio-number" data-grid-axis="ratio">1</span>
+										</span>
+									</span>
+									<button id="grid-ratio-rotate-button" type="button" aria-label="Rotate grid cell ratio">
+										<Icon name="material-symbols:screen-rotation-alt-rounded" />
+									</button>
+								</div>
+								<div id="mosaic-ratio-control" class="grid-size-control grid-ratio-control mosaic-ratio-control" aria-label="Mosaic row ratio" hidden>
+									<span class="grid-size-value grid-ratio-value-shell" aria-live="polite">
+										<span class="grid-ratio-value">
+											<span id="mosaic-ratio-width-value" class="grid-size-number grid-ratio-number" data-grid-axis="mosaic-ratio">1</span>
+											<span class="grid-size-separator grid-ratio-separator">:</span>
+											<span id="mosaic-ratio-height-value" class="grid-size-number grid-ratio-number" data-grid-axis="mosaic-ratio">1</span>
+										</span>
+									</span>
+									<button id="mosaic-ratio-swap-button" type="button" aria-label="Rotate mosaic row ratio">
+										<Icon name="material-symbols:screen-rotation-alt-rounded" />
+									</button>
+								</div>
+							</div>
+						</div>
+						<button id="syntax-back-button" class="image-icon-button syntax-back-button" type="button" aria-label="Back to canvas" hidden>
+							<Icon name="material-symbols:arrow-back-rounded" />
+						</button>
+					<div id="canvas-syntax-control" class="canvas-syntax-control" aria-label="Canvas syntax mode" hidden>
+							<button id="canvas-syntax-button" class="btn-plain scale-animation active:scale-90" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Canvas syntax mode">
+								<span class="canvas-syntax-trigger-icon" data-canvas-syntax-trigger="single" aria-hidden="true">
+									<Icon name="material-symbols:image-outline-rounded" />
+								</span>
+								<span class="canvas-syntax-trigger-icon" data-canvas-syntax-trigger="mosaic" aria-hidden="true">
+									<Icon name="material-symbols:dashboard-customize-outline-rounded" />
+								</span>
+								<span class="canvas-syntax-trigger-icon" data-canvas-syntax-trigger="grid" aria-hidden="true">
+									<Icon name="material-symbols:grid-view-rounded" />
+								</span>
+							</button>
+							<div id="canvas-syntax-panel" class="canvas-syntax-panel transition float-panel-closed" hidden>
+								<div class="card-base float-panel canvas-syntax-menu">
+									<button class="btn-plain scale-animation" type="button" data-canvas-syntax-mode="single">
+										<Icon name="material-symbols:image-outline-rounded" />
+										<span>Single</span>
+									</button>
+									<button class="btn-plain scale-animation" type="button" data-canvas-syntax-mode="mosaic">
+										<Icon name="material-symbols:dashboard-customize-outline-rounded" />
+										<span>Mosaic</span>
+									</button>
+									<button class="btn-plain scale-animation" type="button" data-canvas-syntax-mode="grid">
+										<Icon name="material-symbols:grid-view-rounded" />
+										<span>Grid</span>
+									</button>
+								</div>
+							</div>
+						</div>
+						<button id="tile-swap-toggle-button" class="canvas-icon-toggle" type="button" aria-label="Toggle tile swapping" aria-pressed="false">
+							<Icon name="material-symbols:swap-horiz-rounded" />
+						</button>
+						<div class="canvas-next-actions" hidden>
+							<div id="mosaic-row-actions" class="image-clipboard-control mosaic-row-actions" aria-label="Mosaic row tools" hidden>
+								<button id="mosaic-add-row-button" type="button" aria-label="Add mosaic row below">
+									<Icon name="material-symbols:add-row-below-rounded" />
+								</button>
+								<button id="mosaic-add-tile-button" type="button" aria-label="Add image to mosaic row">
+									<Icon name="material-symbols:add-column-right-rounded" />
+								</button>
+							</div>
+							<button id="canvas-next-button" class="image-icon-button canvas-next-button" type="button" aria-label="Continue to syntax">
+								<Icon name="material-symbols:arrow-forward-rounded" />
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="publish-actions">
+			<button id="download-draft-button" class="action-button secondary" type="button">
+				<Icon name="material-symbols:download-rounded" />
+				<span>Save</span>
+			</button>
+			<button id="open-draft-button" class="action-button secondary" type="button">
+				<Icon name="material-symbols:upload-file-outline-rounded" />
+				<span>Load</span>
+			</button>
+			<button id="publish-button" class="action-button primary" type="button">
+				<Icon name="material-symbols:send-rounded" />
+				<span>Publish</span>
+			</button>
+		</section>
+	</div>
+	<input id="image-file-input" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" multiple hidden />
+	<input id="draft-file-input" type="file" accept=".zip,application/zip" hidden />
+
+<script>
+	// @ts-nocheck
+	import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
+	import { OverlayScrollbars } from "overlayscrollbars";
+	import PhotoSwipe from "photoswipe";
+
+	if (window.location.hostname === "strailico.me") {
+		window.location.replace(`https://dashboard.strailico.me/publish/${window.location.search}${window.location.hash}`);
+	}
+
+	const imagePanel = document.querySelector("#image-panel");
+	const metaEditor = document.querySelector("#meta-editor");
+	const metaLocation = document.querySelector(".meta-location");
+	const locationInput = document.querySelector("#location-input");
+	const toggleLocationButton = document.querySelector("#toggle-location-button");
+	const datetimeInput = document.querySelector("#datetime-input");
+	const editorScrollShell = document.querySelector(".editor-scroll-shell");
+	const editorTextarea = document.querySelector("#editor-pane textarea");
+	const syntaxCodeFrame = document.querySelector('[data-native-code-frame="syntax"]');
+	const datetimeCaret = document.querySelector(".datetime-caret");
+	const setNowButton = document.querySelector("#set-now-button");
+	const publishStatus = document.querySelector(".publish-status");
+	const publishButton = document.querySelector("#publish-button");
+	const downloadDraftButton = document.querySelector("#download-draft-button");
+	const openDraftButton = document.querySelector("#open-draft-button");
+	const imageFileInput = document.querySelector("#image-file-input");
+	const draftFileInput = document.querySelector("#draft-file-input");
+	const imageAddButton = document.querySelector("#image-add-button");
+	const imageTrashButton = document.querySelector("#image-trash-button");
+	const canvasFooterCenter = document.querySelector(".canvas-footer-center");
+	const canvasSyntaxControl = document.querySelector("#canvas-syntax-control");
+	const canvasSyntaxButton = document.querySelector("#canvas-syntax-button");
+	const tileSwapToggleButton = document.querySelector("#tile-swap-toggle-button");
+	const canvasSyntaxPanel = document.querySelector("#canvas-syntax-panel");
+	const canvasNextActions = document.querySelector(".canvas-next-actions");
+	const canvasNextButton = document.querySelector("#canvas-next-button");
+	const syntaxBackButton = document.querySelector("#syntax-back-button");
+	const canvasSyntaxModeButtons = Array.from(document.querySelectorAll("[data-canvas-syntax-mode]"));
+	const gridSizeControl = document.querySelector("#grid-size-control");
+	const gridWidthValue = document.querySelector("#grid-width-value");
+	const gridHeightValue = document.querySelector("#grid-height-value");
+	const singleWidthDisplay = document.querySelector("#single-width-display");
+	const singleWidthValue = document.querySelector("#single-width-value");
+	const singleWidthInputShell = document.querySelector("#single-width-input-shell");
+	const singleWidthInput = document.querySelector("#single-width-input");
+	const gridSizeApplyButton = document.querySelector("#grid-size-apply-button");
+	const gridRatioControl = document.querySelector("#grid-ratio-control");
+	const gridRatioWidthValue = document.querySelector("#grid-ratio-width-value");
+	const gridRatioHeightValue = document.querySelector("#grid-ratio-height-value");
+	const gridRatioRotateButton = document.querySelector("#grid-ratio-rotate-button");
+	const mosaicRatioControl = document.querySelector("#mosaic-ratio-control");
+	const mosaicRatioWidthValue = document.querySelector("#mosaic-ratio-width-value");
+	const mosaicRatioHeightValue = document.querySelector("#mosaic-ratio-height-value");
+	const mosaicRatioSwapButton = document.querySelector("#mosaic-ratio-swap-button");
+	const mosaicRowActions = document.querySelector("#mosaic-row-actions");
+	const mosaicAddRowButton = document.querySelector("#mosaic-add-row-button");
+	const mosaicAddTileButton = document.querySelector("#mosaic-add-tile-button");
+	const gridTileContainer = document.querySelector("#canvas-editor .image-grid");
+	let gridTiles = Array.from(document.querySelectorAll("#canvas-editor .image-tile"));
+	const astroScopeAttributes = Array.from(gridTiles[0]?.attributes ?? [])
+		.filter((attribute) => attribute.name.startsWith("data-astro"))
+		.map((attribute) => [attribute.name, attribute.value]);
+	const emptyTileIconMarkup =
+		gridTiles.find((tile) => tile.classList.contains("empty"))?.querySelector("svg")?.outerHTML ??
+		`<svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m0 16H5V5h14zm-5.04-6.71l-2.75 3.54l-1.96-2.36L6.5 17h11zM16 8v2h2v2h2v-2h2V8h-2V6h-2v2z"/></svg>`;
+	const modeButtons = Array.from(document.querySelectorAll("[data-editor-mode]"));
+	const imageSegmentedControl = document.querySelector("[aria-label='Image editor mode']");
+	const panes = {
+		canvas: document.querySelector("#canvas-editor"),
+		syntax: document.querySelector("#syntax-editor"),
+	};
+
+	let gridRows = 2;
+	let gridColumns = 2;
+	let pendingGridRows = gridRows;
+	let pendingGridColumns = gridColumns;
+	let gridCellRatioWidth = 1;
+	let gridCellRatioHeight = 1;
+	let pendingGridCellRatioWidth = gridCellRatioWidth;
+	let pendingGridCellRatioHeight = gridCellRatioHeight;
+	let gridRatioPortraitMode = false;
+	let mosaicRows = [];
+	let mosaicRowRatios = Array.from({ length: 4 }, () => ({ width: 1, height: 1 }));
+	let activeMosaicRowIndex = 0;
+	let pendingMosaicRowRatioWidth = 1;
+	let pendingMosaicRowRatioHeight = 1;
+	const gridRatioPresets = [
+		[1, 1],
+		[16, 9],
+		[16, 10],
+		[5, 4],
+		[7, 5],
+		[4, 3],
+		[5, 3],
+		[3, 2],
+	];
+	let singleWidth = 75;
+	let pendingSingleWidth = singleWidth;
+	let suppressGridApplyReveal = false;
+	let activeGridDrag = null;
+	let singleWidthEditing = false;
+	const gridCapacity = () => (isSingleCanvasMode() ? 1 : gridRows * gridColumns);
+	const maxImages = 16;
+	const tileCount = maxImages;
+	const publishEndpoint = import.meta.env.PUBLIC_PUBLISH_API_ENDPOINT || "/api/publish";
+	const datetimeDigitIndexes = [0, 1, 3, 4, 6, 7, 8, 9, 11, 12, 14, 15];
+	const datetimeMask = "00/00/0000 00:00";
+	const datetimeMeasureCanvas = document.createElement("canvas");
+	const datetimeMeasureContext = datetimeMeasureCanvas.getContext("2d");
+	const originalTileFiles = new WeakMap();
+
+	if (datetimeInput) {
+		datetimeInput.value = datetimeValue();
+	}
+
+	let eventRandomSuffix = randomId();
+	let eventId = currentEventId();
+	let nextImageNumber = 1;
+	let selectedTile = null;
+	let tileSwapEnabled = false;
+	let pendingUploadTarget = null;
+	let imageMode = "off";
+	let canvasSyntaxMode = "grid";
+	let draftState = "ready";
+	let publishSucceeded = false;
+	let publishTimer = 0;
+	let imageTrashTimer = 0;
+	let editorScrollbar = null;
+	const metaTransitionMs = 260;
+	const imagesById = new Map();
+	const imageOrder = [];
+	const gridSlots = Array(tileCount).fill(null);
+
+	function randomId() {
+		const bytes = new Uint8Array(6);
+		crypto.getRandomValues(bytes);
+		return Array.from(bytes, (byte) => byte.toString(36).padStart(2, "0"))
+			.join("")
+			.slice(0, 8);
+	}
+
+	function pad(value) {
+		return String(value).padStart(2, "0");
+	}
+
+	function downloadBlob(blob, filename) {
+		const href = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = href;
+		link.download = filename;
+		document.body.append(link);
+		link.click();
+		link.remove();
+		window.setTimeout(() => URL.revokeObjectURL(href), 1000);
+	}
+
+	function currentDateCode() {
+		const digits = datetimeInput?.value.replace(/\D/g, "") ?? "";
+		return `${digits.slice(0, 2)}${digits.slice(2, 4)}${digits.slice(4, 8)}`;
+	}
+
+	function currentEventId() {
+		const digits = datetimeInput?.value.replace(/\D/g, "") ?? "";
+		const prefix = `${digits.slice(0, 2)}${digits.slice(2, 4)}${digits.slice(6, 8)}${digits.slice(8, 10)}${digits.slice(10, 12)}`;
+		return `${prefix || "0000000000"}-${eventRandomSuffix}`;
+	}
+
+	function datetimeValue(date = new Date()) {
+		return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+	}
+
+	function syncEventIdToDatetime() {
+		const nextEventId = currentEventId();
+		if (nextEventId === eventId) {
+			return;
+		}
+		const updates = imageOrder
+			.map((oldImageId, index) => {
+				const image = imagesById.get(oldImageId);
+				if (!image) {
+					return null;
+				}
+				const number = Number(image.id.match(/-(\d+)$/)?.[1]) || index + 1;
+				const extension = image.outputExtension || image.fileName.split(".").pop()?.toLowerCase() || "png";
+				const nextImageId = `${nextEventId}-${number}`;
+				return { oldImageId, nextImageId, image, extension };
+			})
+			.filter(Boolean);
+		eventId = nextEventId;
+		for (const { oldImageId, nextImageId, image, extension } of updates) {
+			imagesById.delete(oldImageId);
+			image.id = nextImageId;
+			image.fileName = `${nextImageId}.${extension}`;
+			image.thumbName = thumbNameForFileName(image.fileName);
+			imagesById.set(nextImageId, image);
+			for (let index = 0; index < imageOrder.length; index += 1) {
+				if (imageOrder[index] === oldImageId) {
+					imageOrder[index] = nextImageId;
+				}
+			}
+			for (let index = 0; index < gridSlots.length; index += 1) {
+				if (gridSlots[index] === oldImageId) {
+					gridSlots[index] = nextImageId;
+				}
+			}
+			for (const row of mosaicRows) {
+				row.imageIds = (row.imageIds ?? []).map((imageId) => (imageId === oldImageId ? nextImageId : imageId));
+			}
+		}
+	}
+
+	function datetimeToIso(value) {
+		const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/);
+		if (!match) {
+			throw new Error("invalid_datetime");
+		}
+		const [, day, month, year, hour, minute] = match;
+		const date = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), 0);
+		const offsetMinutes = -date.getTimezoneOffset();
+		const sign = offsetMinutes >= 0 ? "+" : "-";
+		const absOffset = Math.abs(offsetMinutes);
+		return `${year}-${month}-${day}T${hour}:${minute}:00${sign}${pad(Math.floor(absOffset / 60))}:${pad(absOffset % 60)}`;
+	}
+
+	function isoToDatetimeValue(value) {
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) {
+			return normalizeDatetimeValue("");
+		}
+		return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+	}
+
+	function setDraftState(state) {
+		draftState = state;
+		publishStatus?.setAttribute("data-state", state);
+		publishStatus?.setAttribute(
+			"aria-label",
+			state === "processing"
+				? "Preparing draft source"
+				: state === "publishing"
+					? "Publishing"
+					: state === "published"
+						? "Published"
+						: "Draft source ready",
+		);
+		publishStatus?.setAttribute("aria-disabled", "true");
+		publishStatus?.setAttribute("disabled", "");
+	}
+
+	function markDirty() {
+		publishSucceeded = false;
+		if (draftState === "published") {
+			setDraftState("ready");
+		}
+		fitEditorTextarea();
+		updateOutput();
+	}
+
+	function resetEditorOnEntry() {
+		if (editorTextarea) {
+			editorTextarea.value = "";
+		}
+		publishSucceeded = false;
+		setDraftState("ready");
+		fitEditorTextarea();
+		updateOutput();
+	}
+
+	function disableSwupFromPublish() {
+		for (const link of document.querySelectorAll("a[href]")) {
+			const href = link.getAttribute("href") || "";
+			if (!href.startsWith("#") && !href.startsWith("http") && !href.startsWith("mailto:")) {
+				link.setAttribute("data-no-swup", "");
+			}
+		}
+	}
+
+	function fitEditorTextarea() {
+		if (!editorTextarea) {
+			return;
+		}
+		editorTextarea.style.height = "auto";
+		editorTextarea.style.height = `${editorTextarea.scrollHeight}px`;
+		editorScrollbar?.update();
+	}
+
+	function initEditorScrollbar() {
+		if (!editorScrollShell || editorScrollbar) {
+			return;
+		}
+		editorScrollbar = OverlayScrollbars(editorScrollShell, {
+			scrollbars: {
+				theme: "scrollbar-base scrollbar-auto",
+				autoHide: "leave",
+				autoHideDelay: 500,
+				autoHideSuspend: false,
+			},
+		});
+	}
+
+	function withViewportAnchor(anchor, callback) {
+		const top = anchor?.getBoundingClientRect?.().top;
+		callback();
+		if (top === undefined) {
+			return;
+		}
+		window.requestAnimationFrame(() => {
+			if (!anchor.isConnected) {
+				return;
+			}
+			window.scrollBy(0, anchor.getBoundingClientRect().top - top);
+		});
+	}
+
+	function updateDatetimeCaret() {
+		if (!datetimeInput || !datetimeCaret || !datetimeMeasureContext) {
+			return;
+		}
+		const dateControl = datetimeInput.closest(".date-control");
+		const inputStyles = window.getComputedStyle(datetimeInput);
+		const controlStyles = dateControl ? window.getComputedStyle(dateControl) : inputStyles;
+		const inputLeft = datetimeInput.offsetLeft + Number.parseFloat(inputStyles.paddingLeft);
+		const textBeforeCaret = datetimeInput.value.slice(0, datetimeInput.selectionStart ?? 0);
+		const activeCharacter = datetimeInput.value[datetimeInput.selectionStart ?? 0] || "0";
+		datetimeMeasureContext.font = inputStyles.font;
+		const caretLeft = inputLeft + datetimeMeasureContext.measureText(textBeforeCaret).width;
+		const caretWidth = datetimeMeasureContext.measureText(activeCharacter).width;
+		datetimeCaret.style.left = `${caretLeft}px`;
+		datetimeCaret.style.width = `${Math.max(caretWidth, 7)}px`;
+		datetimeCaret.style.top = `calc(50% + ${
+			(Number.parseFloat(controlStyles.borderTopWidth) || 0) -
+			(Number.parseFloat(controlStyles.borderBottomWidth) || 0)
+		}px)`;
+		datetimeCaret.classList.toggle(
+			"visible",
+			document.activeElement === datetimeInput,
+		);
+	}
+
+	function getClosestDatetimeDigitIndex(index, direction = 1) {
+		const sortedIndexes = direction < 0 ? [...datetimeDigitIndexes].reverse() : datetimeDigitIndexes;
+		return (
+			sortedIndexes.find((digitIndex) =>
+				direction < 0 ? digitIndex <= index : digitIndex >= index,
+			) ?? sortedIndexes[sortedIndexes.length - 1]
+		);
+	}
+
+	function normalizeDatetimeValue(value) {
+		const digits = value.replace(/\D/g, "").padEnd(12, "0").slice(0, 12);
+		let day = Number(digits.slice(0, 2));
+		let month = Number(digits.slice(2, 4));
+		let year = Number(digits.slice(4, 8));
+		let hour = Number(digits.slice(8, 10));
+		let minute = Number(digits.slice(10, 12));
+
+		year = Math.min(Math.max(year, 1), 9999);
+		month = Math.min(Math.max(month, 1), 12);
+		const maxDay = new Date(year, month, 0).getDate();
+		day = Math.min(Math.max(day, 1), maxDay);
+		hour = Math.min(Math.max(hour, 0), 23);
+		minute = Math.min(Math.max(minute, 0), 59);
+
+		return `${pad(day)}/${pad(month)}/${String(year).padStart(4, "0")} ${pad(hour)}:${pad(minute)}`;
+	}
+
+	function setDatetimeDigit(input, index, digit) {
+		const nextIndex = getClosestDatetimeDigitIndex(index);
+		const chars = input.value.padEnd(datetimeMask.length, "0").split("");
+		chars[nextIndex] = digit;
+		input.value = normalizeDatetimeValue(chars.join(""));
+		const followingIndex = datetimeDigitIndexes.find((digitIndex) => digitIndex > nextIndex) ?? nextIndex;
+		input.setSelectionRange(followingIndex, followingIndex);
+		syncEventIdToDatetime();
+		renderAllImages();
+		markDirty();
+		updateDatetimeCaret();
+	}
+
+	function clearDatetimeDigit(input, direction) {
+		const cursor = input.selectionStart ?? 0;
+		const selectedIndex =
+			input.selectionStart !== input.selectionEnd
+				? getClosestDatetimeDigitIndex(cursor)
+				: direction === "backward"
+					? getClosestDatetimeDigitIndex(cursor - 1, -1)
+					: getClosestDatetimeDigitIndex(cursor);
+		const chars = input.value.padEnd(datetimeMask.length, "0").split("");
+		chars[selectedIndex] = "0";
+		input.value = normalizeDatetimeValue(chars.join(""));
+		input.setSelectionRange(selectedIndex, selectedIndex);
+		syncEventIdToDatetime();
+		renderAllImages();
+		markDirty();
+		updateDatetimeCaret();
+	}
+
+	function makeImageNames() {
+		const number = nextImageNumber;
+		nextImageNumber += 1;
+		const id = `${eventId}-${number}`;
+		return {
+			id,
+			fileName: `${id}.png`,
+			thumbName: `${id}_thumb.webp`,
+		};
+	}
+
+	function extensionForUploadedImage(file) {
+		const nameExtension = file.name.split(".").pop()?.toLowerCase() ?? "";
+		if (["jpg", "jpeg", "png"].includes(nameExtension)) {
+			return nameExtension;
+		}
+		if (file.type === "image/jpeg") {
+			return "jpg";
+		}
+		if (file.type === "image/png") {
+			return "png";
+		}
+		return "png";
+	}
+
+	function mimeTypeForExtension(extension) {
+		return extension === "jpg" || extension === "jpeg" ? "image/jpeg" : "image/png";
+	}
+
+	function thumbNameForFileName(fileName) {
+		return fileName.replace(/\.[^.]+$/, "_thumb.webp");
+	}
+
+	function tileHasImage(tile) {
+		return tile.classList.contains("filled");
+	}
+
+	function clearTileSelection() {
+		for (const tile of getImageTiles()) {
+			tile.classList.remove("selected");
+		}
+		selectedTile = null;
+		if (imageMode === "canvas" && canvasSyntaxMode === "mosaic") {
+			syncMosaicSelectionState();
+		}
+	}
+
+	function pointerIsOverCanvasTile(event) {
+		return gridTiles.some((tile) => {
+			const rect = tile.getBoundingClientRect();
+			return (
+				event.clientX >= rect.left &&
+				event.clientX <= rect.right &&
+				event.clientY >= rect.top &&
+				event.clientY <= rect.bottom
+			);
+		});
+	}
+
+	function suppressCanvasTileHoverUntilPointerLeaves(event) {
+		clearTileSelection();
+		gridTileContainer?.classList.add("tile-hover-suppressed");
+		if (!event || !pointerIsOverCanvasTile(event)) {
+			gridTileContainer?.classList.remove("tile-hover-suppressed");
+			return;
+		}
+		const restoreTileHover = (moveEvent) => {
+			if (pointerIsOverCanvasTile(moveEvent)) {
+				return;
+			}
+			gridTileContainer?.classList.remove("tile-hover-suppressed");
+			document.removeEventListener("pointermove", restoreTileHover);
+			document.removeEventListener("pointerleave", restoreTileHover);
+		};
+		document.addEventListener("pointermove", restoreTileHover);
+		document.addEventListener("pointerleave", restoreTileHover);
+	}
+
+	function selectTile(tile) {
+		clearTileSelection();
+		tile.classList.add("selected");
+		selectedTile = tile;
+		if (imageMode === "canvas" && canvasSyntaxMode === "mosaic") {
+			activeMosaicRowIndex = mosaicRowIndexForTile(tile);
+			syncMosaicSelectionState();
+			updateGridSizeControl();
+		}
+	}
+
+	function getImageTiles() {
+		return Array.from(document.querySelectorAll(".image-tile"));
+	}
+
+	function uniqueImageIds(ids) {
+		const seen = new Set();
+		return ids.filter((id) => {
+			if (!id || seen.has(id)) {
+				return false;
+			}
+			seen.add(id);
+			return true;
+		});
+	}
+
+	function releaseImage(imageId) {
+		const image = imagesById.get(imageId);
+		if (image?.src?.startsWith("blob:")) {
+			URL.revokeObjectURL(image.src);
+		}
+		imagesById.delete(imageId);
+	}
+
+	function removeImageFromPool(imageId) {
+		if (!imageId) {
+			return;
+		}
+		const orderIndex = imageOrder.indexOf(imageId);
+		if (orderIndex !== -1) {
+			imageOrder.splice(orderIndex, 1);
+		}
+		for (let index = 0; index < gridSlots.length; index += 1) {
+			if (gridSlots[index] === imageId) {
+				gridSlots[index] = null;
+			}
+		}
+		mosaicRows = mosaicRows
+			.map((row) => ({
+				imageIds: (row.imageIds ?? []).filter((rowImageId) => rowImageId !== imageId),
+			}))
+			.filter((row) => row.imageIds.length > 0);
+		releaseImage(imageId);
+	}
+
+	function clearTile(tile) {
+		removeImageFromPool(imageIdForTile(tile));
+		renderAllImages();
+		clearTileSelection();
+		markDirty();
+	}
+
+	function clearAllTiles() {
+		const fileNames = Array.from(imagesById.values(), (image) => image.fileName);
+		for (const image of imagesById.values()) {
+			if (image?.src?.startsWith("blob:")) {
+				URL.revokeObjectURL(image.src);
+			}
+		}
+		removeImageSyntaxLines(fileNames);
+		imagesById.clear();
+		imageOrder.splice(0, imageOrder.length);
+		gridSlots.fill(null);
+		mosaicRows = [];
+		renderAllImages();
+		clearTileSelection();
+		markDirty();
+	}
+
+	function tileIndex(tile) {
+		return Number(tile.dataset.slot ?? tile.dataset.index ?? 0);
+	}
+
+	function tileArea(tile) {
+		if (tile.dataset.area === "pool-add") {
+			return "pool-add";
+		}
+		return tile.dataset.area === "pool" ? "pool" : "grid";
+	}
+
+	function imageIdForTile(tile) {
+		const index = tileIndex(tile);
+		if (tileArea(tile) === "pool-add") {
+			return null;
+		}
+		if (imageMode === "canvas" && canvasSyntaxMode === "mosaic" && tile.dataset.imageId) {
+			return tile.dataset.imageId;
+		}
+		return tileArea(tile) === "pool" ? imageOrder[index] ?? null : gridSlots[index] ?? null;
+	}
+
+	function imageRecordFromTile(tile, fallbackIndex) {
+		const img = tile.querySelector("img");
+		if (!img) {
+			return null;
+		}
+		const fileName = img.src.split("/").pop() || `${eventId}-${fallbackIndex + 1}.webp`;
+		const id = fileName.replace(/_thumb\.webp$|\.webp$/g, "");
+		const fullName = fileName.replace(/_thumb\.webp$/, ".webp");
+		nextImageNumber = Math.max(nextImageNumber, (Number(id.match(/-(\d+)$/)?.[1]) || 0) + 1);
+		return {
+			id,
+			fileName: fullName,
+			thumbName: fullName.replace(/\.webp$/, "_thumb.webp"),
+			src: img.currentSrc || img.src,
+			width: 0,
+			height: 0,
+			thumbWidth: 0,
+			thumbHeight: 0,
+			source: null,
+			full: null,
+			thumb: null,
+		};
+	}
+
+	function applyAstroScope(element) {
+		if (!element || astroScopeAttributes.length === 0) {
+			return;
+		}
+		for (const node of [element, ...element.querySelectorAll("*")]) {
+			for (const [name, value] of astroScopeAttributes) {
+				node.setAttribute(name, value);
+			}
+		}
+	}
+
+	async function measureImageSource(source) {
+		const bitmap = await createImageBitmap(source, { imageOrientation: "from-image" });
+		const dimensions = { width: bitmap.width, height: bitmap.height };
+		bitmap.close();
+		return dimensions;
+	}
+
+	function singleCanvasFrameAspectRatio() {
+		if (imageMode === "canvas" && canvasSyntaxMode === "grid") {
+			return `${gridColumns * gridCellRatioWidth} / ${gridRows * gridCellRatioHeight}`;
+		}
+		if (imageMode === "canvas" && canvasSyntaxMode === "mosaic") {
+			return String(canvasFrameLayoutRatio());
+		}
+		if (!isSingleCanvasMode()) {
+			return `${gridColumns} / ${gridRows}`;
+		}
+		const image = imagesById.get(gridSlots[0] ?? "");
+		if (!image?.width || !image?.height) {
+			return "4 / 3";
+		}
+		return `${image.width} / ${image.height}`;
+	}
+
+	function singleCanvasFrameRatioNumber() {
+		const image = imagesById.get(gridSlots[0] ?? "");
+		if (!image?.width || !image?.height) {
+			return 4 / 3;
+		}
+		return Math.max(0.1, image.width / image.height);
+	}
+
+	function canvasFrameLayoutRatio() {
+		if (imageMode === "canvas" && canvasSyntaxMode === "grid") {
+			return Math.max(0.1, (gridColumns * gridCellRatioWidth) / (gridRows * gridCellRatioHeight));
+		}
+		if (imageMode === "canvas" && canvasSyntaxMode === "mosaic") {
+			syncMosaicRowsFromImagePool();
+			const rowHeightUnits = mosaicRows.reduce((total, row, rowIndex) => {
+				const imageCount = Math.max(1, (row.imageIds ?? []).filter((imageId) => imagesById.has(imageId)).length);
+				const ratio = mosaicRatioForRow(rowIndex);
+				return total + ratio.height / Math.max(0.1, imageCount * ratio.width);
+			}, 0);
+			return Math.max(0.1, 1 / Math.max(0.1, rowHeightUnits));
+		}
+		return 1;
+	}
+
+	function syncCanvasFrame() {
+		if (!gridTileContainer) {
+			return;
+		}
+		if (isSingleCanvasMode()) {
+			gridTileContainer.style.width = "100%";
+			gridTileContainer.style.aspectRatio = "";
+			gridTileContainer.style.setProperty("--single-frame-width", `${pendingSingleWidth}%`);
+			gridTileContainer.style.setProperty("--single-frame-ratio", singleCanvasFrameAspectRatio());
+			gridTileContainer.style.setProperty("--single-frame-ratio-number", String(singleCanvasFrameRatioNumber()));
+			return;
+		}
+		const ratio = canvasFrameLayoutRatio();
+		if (imageMode === "canvas" && canvasSyntaxMode === "grid") {
+			gridTileContainer.style.width = `min(100%, calc(${ratio} * var(--canvas-frame-max-height)))`;
+			gridTileContainer.style.aspectRatio = String(ratio);
+			return;
+		}
+		gridTileContainer.style.width = "100%";
+		gridTileContainer.style.aspectRatio = "";
+	}
+
+	function setTileImage(tile, imageId, number = tileIndex(tile) + 1) {
+		const image = imageId ? imagesById.get(imageId) : null;
+		if (image) {
+			tile.innerHTML = `<img src="${image.src}" alt="" loading="lazy" decoding="async" /><span>${number}</span>`;
+			tile.classList.add("filled");
+			tile.classList.remove("empty");
+		} else {
+			tile.innerHTML = `${emptyTileIconMarkup}<span>${number}</span>`;
+			tile.classList.remove("filled");
+			tile.classList.add("empty");
+		}
+		applyAstroScope(tile);
+	}
+
+	function createGridTile(index) {
+		const tile = document.createElement("button");
+		tile.className = "image-tile empty";
+		tile.type = "button";
+		tile.dataset.area = "grid";
+		tile.dataset.slot = String(index);
+		tile.setAttribute("aria-label", `Grid image ${index + 1}`);
+		setTileImage(tile, gridSlots[index] ?? null, index + 1);
+		return tile;
+	}
+
+	function ensureGridTiles() {
+		if (!gridTileContainer) {
+			return;
+		}
+		const capacity = gridCapacity();
+		const singleMode = isSingleCanvasMode();
+		const mosaicMode = imageMode === "canvas" && canvasSyntaxMode === "mosaic";
+		gridTileContainer.classList.toggle("single-mode", singleMode);
+		gridTileContainer.classList.toggle("grid-mode", imageMode === "canvas" && canvasSyntaxMode === "grid");
+		gridTileContainer.classList.toggle("mosaic-mode", mosaicMode);
+		gridTileContainer.style.gridTemplateColumns = singleMode ? "minmax(0, 1fr)" : `repeat(${gridColumns}, minmax(0, 1fr))`;
+		gridTileContainer.style.gridTemplateRows =
+			imageMode === "canvas" && canvasSyntaxMode === "grid"
+				? `repeat(${gridRows}, minmax(0, 1fr))`
+				: "";
+		syncCanvasFrame();
+		gridTileContainer.style.setProperty("--grid-cell-ratio", `${gridCellRatioWidth} / ${gridCellRatioHeight}`);
+		if (mosaicMode) {
+			return;
+		}
+		const hasDirectTiles =
+			gridTiles.length === capacity &&
+			Array.from(gridTileContainer.children).every((child) => child.classList.contains("image-tile"));
+		if (hasDirectTiles) {
+			return;
+		}
+		gridTileContainer.innerHTML = "";
+		gridTiles = [];
+		for (let index = 0; index < capacity; index += 1) {
+			const tile = createGridTile(index);
+			gridTileContainer.append(tile);
+			gridTiles.push(tile);
+		}
+	}
+
+	function renderTiles() {
+		ensureGridTiles();
+		const selectedSlotIndex = selectedTile && tileArea(selectedTile) === "grid" ? tileIndex(selectedTile) : -1;
+		selectedTile = null;
+		if (imageMode === "canvas" && canvasSyntaxMode === "mosaic") {
+			renderMosaicTiles(selectedSlotIndex);
+			return;
+		}
+		for (const tile of gridTiles) {
+			tile.dataset.area = "grid";
+			tile.classList.toggle("single-mode", isSingleCanvasMode());
+			setTileImage(tile, gridSlots[tileIndex(tile)]);
+			if (tileIndex(tile) === selectedSlotIndex) {
+				tile.classList.add("selected");
+				selectedTile = tile;
+			}
+		}
+		gridTileContainer?.classList.toggle("single-filled", isSingleCanvasMode() && Boolean(gridSlots[0]));
+	}
+
+	function renderMosaicTiles(selectedSlotIndex = -1) {
+		if (!gridTileContainer) {
+			return;
+		}
+		syncMosaicRowsFromImagePool();
+		syncMosaicSelectionState();
+		gridTileContainer.innerHTML = "";
+		gridTiles = [];
+		let tileNumber = 1;
+		for (let rowIndex = 0; rowIndex < mosaicRows.length; rowIndex += 1) {
+			const row = mosaicRows[rowIndex];
+			const imageIds = (row.imageIds ?? []).filter((imageId) => imagesById.has(imageId));
+			if (imageIds.length === 0) {
+				continue;
+			}
+			const rowElement = document.createElement("div");
+			rowElement.className = "mosaic-canvas-row";
+			applyAstroScope(rowElement);
+			const ratio = mosaicRatioForRow(rowIndex);
+			rowElement.style.setProperty("--mosaic-row-ratio", `${ratio.width} / ${ratio.height}`);
+			rowElement.style.setProperty("--mosaic-row-columns", String(Math.max(1, imageIds.length)));
+			for (const imageId of imageIds) {
+				const tile = createGridTile(tileNumber - 1);
+				tile.dataset.rowIndex = String(rowIndex);
+				tile.dataset.imageId = imageId;
+				setTileImage(tile, imageId, tileNumber);
+				if (tileIndex(tile) === selectedSlotIndex || selectedTile?.dataset.imageId === imageId) {
+					tile.classList.add("selected");
+					selectedTile = tile;
+				}
+				rowElement.append(tile);
+				gridTiles.push(tile);
+				tileNumber += 1;
+			}
+			gridTileContainer.append(rowElement);
+		}
+		gridTileContainer.classList.remove("single-filled");
+	}
+
+	function renderImageStrip() {
+		const strip = document.querySelector("#syntax-editor .image-strip");
+		if (!strip) {
+			return;
+		}
+		strip.innerHTML = "";
+		const displayCount = Math.min(
+			maxImages,
+			Math.max(gridCapacity(), imageOrder.length + (imageOrder.length < maxImages ? 1 : 0)),
+		);
+		for (let index = 0; index < displayCount; index += 1) {
+			const tile = document.createElement("button");
+			const imageId = imageOrder[index] ?? null;
+			tile.className = `image-tile${imageId ? "" : " empty image-pool-add-tile"}`;
+			tile.type = "button";
+			tile.dataset.area = imageId ? "pool" : "pool-add";
+			tile.dataset.index = String(index);
+			tile.dataset.slot = String(index);
+			tile.disabled = !imageId && imageOrder.length >= maxImages;
+			tile.setAttribute(
+				"aria-label",
+				imageId ? `Image ${index + 1}` : imageOrder.length >= maxImages ? "Image pool is full" : "Add image",
+			);
+			setTileImage(tile, imageId, index + 1);
+			strip.append(tile);
+		}
+	}
+
+	function renderAllImages() {
+		renderTiles();
+		renderImageStrip();
+		updateImageAddButton();
+		updateImageModeAvailability();
+		updateGridSizeControl();
+		syncSyntaxView();
+	}
+
+	function updateImageModeAvailability() {
+		const hasImages = imageOrder.some((imageId) => imagesById.has(imageId));
+		for (const button of modeButtons) {
+			button.disabled = !hasImages;
+			button.setAttribute("aria-disabled", hasImages ? "false" : "true");
+		}
+	}
+
+	function updateImageAddButton() {
+		const isFull = imageOrder.length >= maxImages;
+		imageAddButton?.toggleAttribute("disabled", isFull);
+		for (const addTile of document.querySelectorAll(".image-pool-add-tile")) {
+			addTile.toggleAttribute("disabled", isFull);
+		}
+	}
+
+	function clampGridSize(value) {
+		return Math.min(4, Math.max(1, value));
+	}
+
+	function parseGridRatio(value, fallbackWidth = 1, fallbackHeight = 1) {
+		const match = `${value ?? ""}`.trim().match(/^(\d+)\s*\/\s*(\d+)$/);
+		if (!match) {
+			return {
+				width: clampGridSize(fallbackWidth),
+				height: clampGridSize(fallbackHeight),
+			};
+		}
+		return {
+			width: clampGridSize(Number(match[1]) || fallbackWidth),
+			height: clampGridSize(Number(match[2]) || fallbackHeight),
+		};
+	}
+
+	function gridRatioLabel(width, height) {
+		return `${width}:${height}`;
+	}
+
+	function orientGridRatio(width, height) {
+		if (width === height) {
+			return [width, height];
+		}
+		return gridRatioPortraitMode ? [height, width] : [width, height];
+	}
+
+	function gridRatioPresetIndex(width, height) {
+		return Math.max(
+			0,
+			gridRatioPresets.findIndex(
+				([presetWidth, presetHeight]) =>
+					(presetWidth === width && presetHeight === height) || (presetWidth === height && presetHeight === width),
+			),
+		);
+	}
+
+	function ensureMosaicRowRatiosLength() {
+		const rowCount = Math.max(1, mosaicRows.length || gridRows);
+		while (mosaicRowRatios.length < rowCount) {
+			mosaicRowRatios.push({ width: 1, height: 1 });
+		}
+		if (mosaicRowRatios.length > rowCount) {
+			mosaicRowRatios = mosaicRowRatios.slice(0, rowCount);
+		}
+	}
+
+	function mosaicRatioForRow(rowIndex) {
+		ensureMosaicRowRatiosLength();
+		return mosaicRowRatios[rowIndex] ?? { width: 1, height: 1 };
+	}
+
+	function defaultMosaicRowsForImageIds(imageIds) {
+		const rows = [];
+		let index = 0;
+		let rowSize = 1;
+		while (index < imageIds.length) {
+			const size = Math.min(rowSize, 3, imageIds.length - index);
+			rows.push({ imageIds: imageIds.slice(index, index + size) });
+			index += size;
+			rowSize += 1;
+		}
+		return rows;
+	}
+
+	function flattenedMosaicImageIds() {
+		return uniqueImageIds(mosaicRows.flatMap((row) => row.imageIds ?? []));
+	}
+
+	function syncMosaicRowsFromImagePool({ rebuild = false } = {}) {
+		const validIds = new Set(imageOrder);
+		const existingRows = mosaicRows
+			.map((row) => ({
+				imageIds: uniqueImageIds(row.imageIds ?? []).filter((imageId) => validIds.has(imageId)),
+			}))
+			.filter((row) => row.imageIds.length > 0);
+		const existingIds = new Set(existingRows.flatMap((row) => row.imageIds));
+		const missingIds = imageOrder.filter((imageId) => !existingIds.has(imageId));
+		if (rebuild || existingRows.length === 0) {
+			mosaicRows = defaultMosaicRowsForImageIds(imageOrder);
+		} else {
+			mosaicRows = existingRows;
+			for (const row of defaultMosaicRowsForImageIds(missingIds)) {
+				mosaicRows.push(row);
+			}
+		}
+		if (mosaicRows.length === 0) {
+			mosaicRows = [{ imageIds: [] }];
+		}
+		ensureMosaicRowRatiosLength();
+		activeMosaicRowIndex = Math.min(mosaicRows.length - 1, Math.max(0, activeMosaicRowIndex));
+	}
+
+	function firstPopulatedMosaicRowIndex() {
+		syncMosaicRowsFromImagePool();
+		for (let rowIndex = 0; rowIndex < mosaicRows.length; rowIndex += 1) {
+			if ((mosaicRows[rowIndex]?.imageIds ?? []).some((imageId) => imagesById.has(imageId))) {
+				return rowIndex;
+			}
+		}
+		return 0;
+	}
+
+	function mosaicRowIndexForTile(tile) {
+		return Math.min(Math.max(0, mosaicRows.length - 1), Math.max(0, Number(tile.dataset.rowIndex ?? 0)));
+	}
+
+	function hasLaterMosaicImage(rowIndex) {
+		return mosaicRows.slice(rowIndex + 1).some((row) => (row.imageIds ?? []).some((imageId) => imagesById.has(imageId)));
+	}
+
+	function takeFirstLaterMosaicImage(rowIndex) {
+		for (let nextRowIndex = rowIndex + 1; nextRowIndex < mosaicRows.length; nextRowIndex += 1) {
+			const imageIds = mosaicRows[nextRowIndex]?.imageIds ?? [];
+			const imageIndex = imageIds.findIndex((imageId) => imagesById.has(imageId));
+			if (imageIndex === -1) {
+				continue;
+			}
+			const [imageId] = imageIds.splice(imageIndex, 1);
+			return { imageId, rowIndex: nextRowIndex };
+		}
+		return null;
+	}
+
+	function pruneEmptyMosaicRows() {
+		const nextRows = [];
+		const nextRatios = [];
+		for (let rowIndex = 0; rowIndex < mosaicRows.length; rowIndex += 1) {
+			const imageIds = (mosaicRows[rowIndex]?.imageIds ?? []).filter((imageId) => imagesById.has(imageId));
+			if (imageIds.length === 0) {
+				continue;
+			}
+			nextRows.push({ imageIds });
+			nextRatios.push(mosaicRatioForRow(rowIndex));
+		}
+		mosaicRows = nextRows.length > 0 ? nextRows : [{ imageIds: [] }];
+		mosaicRowRatios = nextRatios.length > 0 ? nextRatios : [{ width: 1, height: 1 }];
+		activeMosaicRowIndex = Math.min(mosaicRows.length - 1, Math.max(0, activeMosaicRowIndex));
+		ensureMosaicRowRatiosLength();
+	}
+
+	function syncMosaicSelectionState() {
+		if (imageMode !== "canvas" || canvasSyntaxMode !== "mosaic") {
+			return;
+		}
+		syncMosaicRowsFromImagePool();
+		if (selectedTile && tileArea(selectedTile) === "grid") {
+			activeMosaicRowIndex = mosaicRowIndexForTile(selectedTile);
+		} else {
+			activeMosaicRowIndex = firstPopulatedMosaicRowIndex();
+		}
+		const ratio = mosaicRatioForRow(activeMosaicRowIndex);
+		pendingMosaicRowRatioWidth = ratio.width;
+		pendingMosaicRowRatioHeight = ratio.height;
+	}
+
+	function canvasSlotRows({ includeEmptyRows = false } = {}) {
+		const rows = [];
+		for (let rowIndex = 0; rowIndex < gridRows; rowIndex += 1) {
+			const start = rowIndex * gridColumns;
+			const slots = [];
+			for (let columnIndex = 0; columnIndex < gridColumns; columnIndex += 1) {
+				const slotIndex = start + columnIndex;
+				slots.push({
+					slotIndex,
+					imageId: gridSlots[slotIndex] ?? null,
+				});
+			}
+			const filled = slots.filter((slot) => slot.imageId);
+			if (includeEmptyRows || filled.length > 0) {
+				rows.push({
+					rowIndex,
+					slots,
+					filledImageIds: filled.map((slot) => slot.imageId),
+				});
+			}
+		}
+		return rows;
+	}
+
+	function clampSingleWidth(value) {
+		return Math.min(100, Math.max(1, value));
+	}
+
+	function isSingleCanvasMode() {
+		return imageMode === "canvas" && canvasSyntaxMode === "single";
+	}
+
+	function selectCanvasSyntaxModeForImageCount() {
+		const imageCount = imageOrder.filter((imageId) => imagesById.has(imageId)).length;
+		canvasSyntaxMode = imageCount <= 1 ? "single" : "mosaic";
+		singleWidthEditing = false;
+		pendingSingleWidth = singleWidth;
+		pendingGridCellRatioWidth = gridCellRatioWidth;
+		pendingGridCellRatioHeight = gridCellRatioHeight;
+		if (canvasSyntaxMode === "mosaic") {
+			syncMosaicRowsFromImagePool();
+		}
+		syncMosaicSelectionState();
+	}
+
+	function canvasFilledImageIds() {
+		return gridSlots.slice(0, gridCapacity()).filter(Boolean);
+	}
+
+	function openImageGallery(imageId) {
+		const imageIds = imageOrder.filter((currentImageId) => imagesById.has(currentImageId));
+		const index = imageIds.indexOf(imageId);
+		if (index === -1) {
+			return;
+		}
+		const dataSource = imageIds
+			.map((currentImageId) => imagesById.get(currentImageId))
+			.filter(Boolean)
+			.map((image) => ({
+				src: image.src,
+				msrc: image.src,
+				width: image.width || 1600,
+				height: image.height || 1200,
+				alt: image.fileName,
+			}));
+		if (dataSource.length === 0) {
+			return;
+		}
+		new PhotoSwipe({
+			dataSource,
+			index,
+			mainClass: "pswp-vivia",
+			bgOpacity: 0.92,
+			showHideAnimationType: "fade",
+			wheelToZoom: true,
+		}).init();
+	}
+
+	function canvasImageRows() {
+		return canvasSlotRows().map((row) => row.filledImageIds);
+	}
+
+	function hideCanvasSyntaxPanel() {
+		canvasSyntaxPanel?.classList.add("float-panel-closed");
+		canvasSyntaxButton?.setAttribute("aria-expanded", "false");
+	}
+
+	function showCanvasSyntaxPanel() {
+		if (imageMode !== "canvas") {
+			return;
+		}
+		canvasSyntaxPanel?.removeAttribute("hidden");
+		canvasSyntaxPanel?.classList.remove("float-panel-closed");
+		canvasSyntaxButton?.setAttribute("aria-expanded", "true");
+	}
+
+	function finishSingleWidthEditing({ commit = true } = {}) {
+		if (!singleWidthInput) {
+			return;
+		}
+		if (commit) {
+			const nextValue = clampSingleWidth(Number.parseInt(singleWidthInput.value, 10) || pendingSingleWidth);
+			pendingSingleWidth = nextValue;
+			singleWidthInput.value = String(nextValue);
+		} else {
+			singleWidthInput.value = String(pendingSingleWidth);
+		}
+		singleWidthEditing = false;
+		updateGridSizeControl();
+		if (commit) {
+			markDirty();
+		}
+	}
+
+	function beginSingleWidthEditing() {
+		if (!isSingleCanvasMode() || !singleWidthInput) {
+			return;
+		}
+		singleWidthEditing = true;
+		updateGridSizeControl();
+		window.requestAnimationFrame(() => {
+			singleWidthInput.focus();
+			singleWidthInput.select();
+		});
+	}
+
+	function renderNativeCodeFrame(frame, value) {
+		const code = frame?.querySelector("code");
+		const pre = frame?.querySelector("pre");
+		if (!code) {
+			return;
+		}
+		const lines = `${value ?? ""}`.split(/\r?\n/);
+		code.replaceChildren(
+			...lines.map((line, index) => {
+				const row = document.createElement("div");
+				row.className = "ec-line";
+				const gutter = document.createElement("div");
+				gutter.className = "gutter";
+				const number = document.createElement("div");
+				number.className = "ln";
+				number.setAttribute("aria-hidden", "true");
+				number.textContent = String(index + 1);
+				const codeCell = document.createElement("div");
+				codeCell.className = "code";
+				const text = document.createElement("span");
+				text.textContent = line || " ";
+				codeCell.append(text);
+				gutter.append(number);
+				row.append(gutter, codeCell);
+				return row;
+			}),
+		);
+		pre?.style.setProperty("--ecMaxLine", `${Math.max(1, ...lines.map((line) => line.length))}ch`);
+	}
+
+	async function copyNativeCodeFrame(button) {
+		const pre = button?.closest("pre");
+		const code = pre?.querySelector("code");
+		const text = Array.from(code?.querySelectorAll(".code:not(summary *)") ?? [])
+			.map((element) => element.textContent)
+			.map((line) => (line === "\n" ? "" : line))
+			.join("\n");
+		await navigator.clipboard?.writeText(text);
+
+		const timeoutId = button.getAttribute("data-timeout-id");
+		if (timeoutId) {
+			window.clearTimeout(Number.parseInt(timeoutId, 10));
+		}
+
+		button.classList.add("success");
+		const nextTimeoutId = window.setTimeout(() => {
+			button.classList.remove("success");
+			button.removeAttribute("data-timeout-id");
+		}, 1000);
+		button.setAttribute("data-timeout-id", String(nextTimeoutId));
+	}
+
+	function applySingleWidthImmediate() {
+		if (!isSingleCanvasMode()) {
+			return;
+		}
+		singleWidth = pendingSingleWidth;
+		suppressGridApplyReveal = false;
+		syncSyntaxView();
+		updateGridSizeControl();
+		markDirty();
+	}
+
+	function updateCanvasSyntaxControl() {
+		const isCanvas = imageMode === "canvas";
+		canvasFooterCenter?.toggleAttribute("hidden", !isCanvas);
+		canvasSyntaxControl?.toggleAttribute("hidden", !isCanvas);
+		tileSwapToggleButton?.toggleAttribute("hidden", !isCanvas);
+		canvasNextActions?.toggleAttribute("hidden", !isCanvas);
+		if (!isCanvas) {
+			hideCanvasSyntaxPanel();
+		}
+		canvasSyntaxControl?.setAttribute("data-mode", canvasSyntaxMode);
+		tileSwapToggleButton?.classList.toggle("active", tileSwapEnabled);
+		tileSwapToggleButton?.setAttribute("aria-pressed", tileSwapEnabled ? "true" : "false");
+		for (const button of canvasSyntaxModeButtons) {
+			const active = button.dataset.canvasSyntaxMode === canvasSyntaxMode;
+			button.classList.toggle("active", active);
+			button.setAttribute("aria-pressed", active ? "true" : "false");
+		}
+	}
+
+	function updateGridSizeControl() {
+		if (!gridSizeControl) {
+			return;
+		}
+		const isSingle = isSingleCanvasMode();
+		const isGridCanvas = imageMode === "canvas" && canvasSyntaxMode === "grid";
+		const isMosaicCanvas = imageMode === "canvas" && canvasSyntaxMode === "mosaic";
+		const hasPendingSize = isSingle
+			? pendingSingleWidth !== singleWidth
+			: pendingGridColumns !== gridColumns || pendingGridRows !== gridRows;
+		const hasPendingRatio =
+			isGridCanvas &&
+			(pendingGridCellRatioWidth !== gridCellRatioWidth || pendingGridCellRatioHeight !== gridCellRatioHeight);
+		const activeMosaicRatio = mosaicRatioForRow(activeMosaicRowIndex);
+		const hasPendingMosaicRatio =
+			isMosaicCanvas &&
+			(pendingMosaicRowRatioWidth !== activeMosaicRatio.width || pendingMosaicRowRatioHeight !== activeMosaicRatio.height);
+		gridSizeControl.toggleAttribute("hidden", imageMode !== "canvas" || isMosaicCanvas);
+		gridSizeControl.classList.toggle("has-pending-grid-size", hasPendingSize);
+		gridSizeControl.classList.toggle("awaiting-pointer-reset", hasPendingSize && suppressGridApplyReveal);
+		gridSizeControl.classList.toggle("single-width-mode", isSingle);
+		gridRatioControl?.toggleAttribute("hidden", !isGridCanvas);
+		gridRatioControl?.classList.toggle("has-pending-grid-size", hasPendingRatio);
+		mosaicRatioControl?.toggleAttribute("hidden", !isMosaicCanvas);
+		mosaicRatioControl?.classList.toggle("has-pending-grid-size", hasPendingMosaicRatio);
+		const activeMosaicRow = isMosaicCanvas ? mosaicRows[activeMosaicRowIndex]?.imageIds ?? [] : [];
+		const canSplitMosaicRow =
+			isMosaicCanvas &&
+			activeMosaicRow.some((imageId) => imagesById.has(imageId)) &&
+			(activeMosaicRow.length > 1 || hasLaterMosaicImage(activeMosaicRowIndex));
+		const canAppendToMosaicRow = isMosaicCanvas && hasLaterMosaicImage(activeMosaicRowIndex);
+		mosaicRowActions?.toggleAttribute("hidden", !isMosaicCanvas);
+		mosaicAddRowButton?.toggleAttribute("disabled", !canSplitMosaicRow);
+		mosaicAddTileButton?.toggleAttribute("disabled", !canAppendToMosaicRow);
+		if (gridWidthValue) {
+			gridWidthValue.textContent = String(pendingGridColumns);
+		}
+		if (gridHeightValue) {
+			gridHeightValue.textContent = String(pendingGridRows);
+		}
+		if (gridRatioWidthValue) {
+			gridRatioWidthValue.textContent = String(pendingGridCellRatioWidth);
+		}
+		if (gridRatioHeightValue) {
+			gridRatioHeightValue.textContent = String(pendingGridCellRatioHeight);
+		}
+		if (mosaicRatioWidthValue) {
+			mosaicRatioWidthValue.textContent = String(pendingMosaicRowRatioWidth);
+		}
+		if (mosaicRatioHeightValue) {
+			mosaicRatioHeightValue.textContent = String(pendingMosaicRowRatioHeight);
+		}
+		if (singleWidthValue) {
+			singleWidthValue.textContent = String(pendingSingleWidth);
+		}
+		if (singleWidthInput) {
+			singleWidthInput.value = String(pendingSingleWidth);
+		}
+		singleWidthDisplay?.toggleAttribute("hidden", !isSingle || singleWidthEditing);
+		singleWidthInputShell?.toggleAttribute("hidden", !isSingle || !singleWidthEditing);
+		gridSizeControl.querySelector(".grid-size-pair")?.toggleAttribute("hidden", isSingle);
+		gridSizeApplyButton?.toggleAttribute("disabled", !hasPendingSize);
+		syncCanvasFrame();
+		gridTileContainer.style.setProperty("--grid-cell-ratio", `${gridCellRatioWidth} / ${gridCellRatioHeight}`);
+	}
+
+	function syncSyntaxView() {
+		renderNativeCodeFrame(syntaxCodeFrame, buildContentMarkdown());
+		updateCanvasSyntaxControl();
+	}
+
+	function generatedImageShortcuts() {
+		const filledSlots = canvasFilledImageIds();
+		if (imageMode === "off" || filledSlots.length === 0) {
+			return "";
+		}
+		if (canvasSyntaxMode === "single") {
+			const image = imagesById.get(filledSlots[0]);
+			return image ? `:!img ${image.fileName} ${pendingSingleWidth}%` : "";
+		}
+		if (canvasSyntaxMode === "mosaic") {
+			syncMosaicRowsFromImagePool();
+			const lines = [":!mosaic 100%"];
+			for (let rowIndex = 0; rowIndex < mosaicRows.length; rowIndex += 1) {
+				const imageIds = (mosaicRows[rowIndex]?.imageIds ?? []).filter((imageId) => imagesById.has(imageId));
+				if (imageIds.length === 0) {
+					continue;
+				}
+				const ratio = mosaicRatioForRow(rowIndex);
+				lines.push(`:/ ${ratio.width}/${ratio.height}`);
+				for (const imageId of imageIds) {
+					const image = imagesById.get(imageId);
+					if (image) {
+						lines.push(`:!img ${image.fileName}`);
+					}
+				}
+			}
+			lines.push("!:mosaic");
+			return lines.join("\n");
+		}
+		const lines = [`:!grid ${gridColumns} ${gridRows} ${gridCellRatioWidth}/${gridCellRatioHeight}`];
+		for (const imageId of filledSlots) {
+			const image = imagesById.get(imageId);
+			if (image) {
+				lines.push(`:!img ${image.fileName}`);
+			}
+		}
+		lines.push("!:grid");
+		return lines.join("\n");
+	}
+
+	function imageBlockMarkdown() {
+		if (imageMode === "off") {
+			return "";
+		}
+		return generatedImageShortcuts();
+	}
+
+	function buildContentMarkdown() {
+		const text = editorTextarea?.value.trimEnd() ?? "";
+		const imageBlock = imageBlockMarkdown();
+		return [text, imageBlock].filter(Boolean).join("\n\n");
+	}
+
+	function updateOutput() {
+		syncSyntaxView();
+	}
+
+	function canvasToBlob(canvas, type, quality) {
+		return new Promise((resolve, reject) => {
+			canvas.toBlob(
+				(blob) => {
+					if (blob) {
+						resolve(blob);
+						return;
+					}
+					reject(new Error("Unable to encode image"));
+				},
+				type,
+				quality,
+			);
+		});
+	}
+
+	async function encodeSafeImage(source, maxSize, type, quality) {
+		const bitmap = await createImageBitmap(source, { imageOrientation: "from-image" });
+		const scale = Number.isFinite(maxSize) ? Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height)) : 1;
+		const width = Math.max(1, Math.round(bitmap.width * scale));
+		const height = Math.max(1, Math.round(bitmap.height * scale));
+		const canvas = document.createElement("canvas");
+		canvas.width = width;
+		canvas.height = height;
+		const context = canvas.getContext("2d");
+		if (!context) {
+			bitmap.close();
+			throw new Error("Canvas is unavailable");
+		}
+		context.drawImage(bitmap, 0, 0, width, height);
+		bitmap.close();
+		const blob = await canvasToBlob(canvas, type, quality);
+		return { blob, width, height };
+	}
+
+	async function sourceBlobForImage(image) {
+		if (image.source) {
+			return image.source;
+		}
+		if (!image.src) {
+			throw new Error(`missing_image_source:${image.fileName}`);
+		}
+		const response = await fetch(image.src);
+		if (!response.ok) {
+			throw new Error(`image_fetch_failed:${image.fileName}`);
+		}
+		return response.blob();
+	}
+
+	async function prepareSafeImageAssets(image) {
+		if (image.full && image.thumb) {
+			return image;
+		}
+		const source = await sourceBlobForImage(image);
+		const sourceType = source.type || image.source?.type || "";
+		const canKeepOriginal =
+			["jpg", "jpeg", "png"].includes(image.outputExtension) &&
+			(sourceType === "image/jpeg" || sourceType === "image/png");
+		const sourceDimensions = canKeepOriginal && (!image.width || !image.height) ? await measureImageSource(source) : null;
+		const full = canKeepOriginal
+			? { blob: source, width: image.width || sourceDimensions.width, height: image.height || sourceDimensions.height }
+			: await encodeSafeImage(source, Infinity, mimeTypeForExtension(image.outputExtension || "png"), 0.9);
+		const thumb = await encodeSafeImage(source, 560, "image/webp", 0.78);
+		image.full = full.blob;
+		image.thumb = thumb.blob;
+		image.width = full.width;
+		image.height = full.height;
+		image.thumbWidth = thumb.width;
+		image.thumbHeight = thumb.height;
+		return image;
+	}
+
+	function recordsForImageIds(ids) {
+		const seen = new Set();
+		return ids
+			.filter(Boolean)
+			.map((imageId) => imagesById.get(imageId))
+			.filter((image) => {
+				if (!image || seen.has(image.id)) {
+					return false;
+				}
+				seen.add(image.id);
+				return true;
+			});
+	}
+
+	function orderedImageRecords({ draft = false } = {}) {
+		if (draft) {
+			return recordsForImageIds(imageOrder);
+		}
+		if (imageMode === "off") {
+			return [];
+		}
+		if (canvasSyntaxMode === "single") {
+			return recordsForImageIds(canvasFilledImageIds().slice(0, 1));
+		}
+		if (canvasSyntaxMode === "mosaic") {
+			syncMosaicRowsFromImagePool();
+			return recordsForImageIds(flattenedMosaicImageIds());
+		}
+		return recordsForImageIds(canvasFilledImageIds());
+	}
+
+	async function prepareAllImageAssets({ draft = false, finalState = "ready" } = {}) {
+		setDraftState("processing");
+		for (const image of orderedImageRecords({ draft })) {
+			await prepareSafeImageAssets(image);
+		}
+		setDraftState(finalState);
+	}
+
+	function syncExportFileNames({ draft = false } = {}) {
+		eventId = currentEventId();
+		const records = orderedImageRecords({ draft });
+		for (let index = 0; index < records.length; index += 1) {
+			const image = records[index];
+			const extension = image.outputExtension || extensionForUploadedImage({ name: image.fileName, type: image.full?.type || image.source?.type || "" });
+			image.fileName = `${eventId}-${index + 1}.${extension}`;
+			image.thumbName = thumbNameForFileName(image.fileName);
+			image.outputExtension = extension;
+		}
+		return records;
+	}
+
+	function yamlString(value) {
+		return JSON.stringify(String(value ?? ""));
+	}
+
+	function buildEventMarkdown() {
+		const published = datetimeToIso(datetimeInput?.value ?? "");
+		const location = metaEditor?.classList.contains("location-expanded") ? locationInput?.value.trim() : "";
+		const lines = [
+			"---",
+			'type: "event"',
+			`id: ${yamlString(eventId)}`,
+			`published: ${published}`,
+			"draft: true",
+			`location: ${yamlString(location)}`,
+			"---",
+			"",
+			buildContentMarkdown().trimEnd(),
+			"",
+		];
+		return lines.join("\n");
+	}
+
+	async function buildDraftZip({ finalState = "ready" } = {}) {
+		const imageRecords = syncExportFileNames({ draft: true });
+		await prepareAllImageAssets({ draft: true, finalState });
+		const files = {
+			[`${eventId}.md`]: strToU8(buildEventMarkdown()),
+		};
+		for (const image of imageRecords) {
+			if (!image.full || !image.thumb) {
+				continue;
+			}
+			files[`images/${image.fileName}`] = new Uint8Array(await image.full.arrayBuffer());
+			files[`images/${image.thumbName}`] = new Uint8Array(await image.thumb.arrayBuffer());
+		}
+		return new Blob([zipSync(files)], { type: "application/zip" });
+	}
+
+	async function publishEntry() {
+		publishButton?.setAttribute("aria-busy", "true");
+		const zip = await buildDraftZip({ finalState: "publishing" });
+		const form = new FormData();
+		form.set("draft", zip, `${eventId}-draft.zip`);
+		const response = await fetch(publishEndpoint, { method: "POST", body: form, credentials: "include" });
+		if (!response.ok) {
+			throw new Error(await publishErrorMessage(response));
+		}
+		publishSucceeded = true;
+		setDraftState("published");
+	}
+
+	async function publishErrorMessage(response) {
+		try {
+			const body = await response.json();
+			return body?.message || body?.error || `Publish failed (${response.status})`;
+		} catch {
+			return `Publish failed (${response.status})`;
+		}
+	}
+
+	function parseFrontmatterMarkdown(text) {
+		const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+		if (!match) {
+			return { data: {}, body: text };
+		}
+		const data = {};
+		for (const line of match[1].split(/\r?\n/)) {
+			const field = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+			if (!field) {
+				continue;
+			}
+			const value = field[2].trim();
+			data[field[1]] = value.replace(/^["']|["']$/g, "");
+		}
+		return { data, body: text.slice(match[0].length).replace(/^(?:[ \t]*\r?\n)+/, "") };
+	}
+
+	function isDraftShortcutLine(line) {
+		return (
+			/^:!img\s+\S+(?:\s+\S+){0,3}$/.test(line) ||
+			/^:!grid(?:\s+\S+){2,5}$/.test(line) ||
+			/^:!mosaic(?:\s+\S+){0,3}$/.test(line) ||
+			/^:\/(?:\s+\S+)?$/.test(line) ||
+			/^!:(?:grid|mosaic)$/.test(line)
+		);
+	}
+
+	function splitDraftBodyAndImageBlock(body) {
+		const lines = body.trimEnd().split(/\r?\n/);
+		let start = lines.length;
+		while (start > 0 && (lines[start - 1].trim() === "" || isDraftShortcutLine(lines[start - 1].trim()))) {
+			start -= 1;
+		}
+		const shortcutLines = lines.slice(start).map((line) => line.trim()).filter(Boolean);
+		return {
+			text: lines.slice(0, start).join("\n").trimEnd(),
+			shortcutLines,
+		};
+	}
+
+	function imageIdFromDraftFileName(fileName) {
+		return fileName.replace(/\.[^.]+$/, "");
+	}
+
+	function restoreLayoutFromShortcuts(shortcutLines, fileNameToImageId) {
+		if (shortcutLines.length === 0) {
+			setImageMode(imagesById.size ? "canvas" : "off");
+			return;
+		}
+		const first = shortcutLines[0]?.split(/\s+/) ?? [];
+		const imageIds = shortcutLines
+			.filter((line) => line.startsWith(":!img "))
+			.map((line) => fileNameToImageId.get(line.split(/\s+/)[1]))
+			.filter(Boolean);
+		if (first[0] === ":!mosaic") {
+			canvasSyntaxMode = "mosaic";
+			mosaicRows = [];
+			mosaicRowRatios = [];
+			let currentRow = { imageIds: [] };
+			let currentRatio = { width: 1, height: 1 };
+			for (const line of shortcutLines.slice(1)) {
+				const parts = line.split(/\s+/);
+				if (parts[0] === ":/") {
+					if (currentRow.imageIds.length > 0) {
+						mosaicRows.push(currentRow);
+						mosaicRowRatios.push(currentRatio);
+					}
+					currentRow = { imageIds: [] };
+					currentRatio = parseGridRatio(parts[1], 1, 1);
+				} else if (parts[0] === ":!img") {
+					const imageId = fileNameToImageId.get(parts[1]);
+					if (imageId) {
+						currentRow.imageIds.push(imageId);
+					}
+				}
+			}
+			if (currentRow.imageIds.length > 0) {
+				mosaicRows.push(currentRow);
+				mosaicRowRatios.push(currentRatio);
+			}
+			setImageMode("canvas");
+			return;
+		}
+		if (first[0] === ":!grid") {
+			canvasSyntaxMode = "grid";
+			gridColumns = Math.min(4, Math.max(1, Number(first[1]) || 2));
+			gridRows = Math.min(4, Math.max(1, Number(first[2]) || 2));
+			const ratio = parseGridRatio(first[3], 1, 1);
+			gridCellRatioWidth = ratio.width;
+			gridCellRatioHeight = ratio.height;
+		} else {
+			canvasSyntaxMode = "single";
+		}
+		gridSlots.fill(null);
+		for (let index = 0; index < Math.min(gridSlots.length, imageIds.length); index += 1) {
+			gridSlots[index] = imageIds[index];
+		}
+		setImageMode(imageIds.length ? "canvas" : "off");
+	}
+
+	function restoreDraft(zipBytes) {
+		setDraftState("processing");
+		const files = unzipSync(zipBytes);
+		const markdownPaths = Object.keys(files).filter((name) => !name.includes("/") && name.toLowerCase().endsWith(".md"));
+		if (markdownPaths.length !== 1) {
+			throw new Error("invalid_draft_zip");
+		}
+		const markdownPath = markdownPaths[0];
+		const parsedMarkdown = parseFrontmatterMarkdown(strFromU8(files[markdownPath]));
+		eventId = parsedMarkdown.data.id || markdownPath.split("/").pop().replace(/\.md$/i, "");
+		eventRandomSuffix = eventId.match(/-([a-z0-9]{8})$/)?.[1] ?? randomId();
+		nextImageNumber = 1;
+		for (const image of imagesById.values()) {
+			if (image?.src?.startsWith("blob:")) {
+				URL.revokeObjectURL(image.src);
+			}
+		}
+		imagesById.clear();
+		imageOrder.splice(0, imageOrder.length);
+		gridSlots.fill(null);
+		mosaicRows = [];
+		if (datetimeInput && parsedMarkdown.data.published) {
+			datetimeInput.value = isoToDatetimeValue(parsedMarkdown.data.published);
+		}
+		if (locationInput) {
+			locationInput.value = parsedMarkdown.data.location || "";
+		}
+		setMetaMode(Boolean(parsedMarkdown.data.location), { focus: false });
+		const { text: restoredContent, shortcutLines } = splitDraftBodyAndImageBlock(parsedMarkdown.body);
+		if (editorTextarea) {
+			editorTextarea.value = restoredContent;
+		}
+		const fileNameToImageId = new Map();
+		for (const filePath of Object.keys(files).filter((name) => name.startsWith("images/") && !name.endsWith("_thumb.webp"))) {
+			const fullBytes = files[filePath];
+			const fileName = filePath.split("/").pop();
+			const thumbName = thumbNameForFileName(fileName);
+			const thumbBytes = files[`images/${thumbName}`];
+			if (!fullBytes || !fileName) {
+				continue;
+			}
+			const outputExtension = fileName.split(".").pop()?.toLowerCase() ?? "png";
+			const full = new Blob([fullBytes], { type: mimeTypeForExtension(outputExtension) });
+			const thumb = thumbBytes ? new Blob([thumbBytes], { type: "image/webp" }) : full;
+			const imageId = imageIdFromDraftFileName(fileName);
+			imagesById.set(imageId, {
+				id: imageId,
+				fileName,
+				thumbName,
+				src: URL.createObjectURL(full),
+				source: full,
+				outputExtension,
+				full,
+				thumb,
+				width: 0,
+				height: 0,
+				thumbWidth: 0,
+				thumbHeight: 0,
+			});
+			fileNameToImageId.set(fileName, imageId);
+			imageOrder.push(imageId);
+			nextImageNumber = Math.max(nextImageNumber, (Number(imageId.match(/-(\d+)$/)?.[1]) || 0) + 1);
+		}
+		restoreLayoutFromShortcuts(shortcutLines, fileNameToImageId);
+		syncEventIdToDatetime();
+		activeMosaicRowIndex = Math.min(mosaicRows.length - 1, Math.max(0, activeMosaicRowIndex));
+		pendingMosaicRowRatioWidth = mosaicRatioForRow(activeMosaicRowIndex).width;
+		pendingMosaicRowRatioHeight = mosaicRatioForRow(activeMosaicRowIndex).height;
+		renderTiles();
+		renderImageStrip();
+		updateOutput();
+		markDirty();
+		setDraftState("ready");
+	}
+
+	function setImageMode(mode) {
+		imageMode = mode === "syntax" ? "syntax" : mode === "canvas" ? "canvas" : "off";
+		pendingGridColumns = gridColumns;
+		pendingGridRows = gridRows;
+		pendingGridCellRatioWidth = gridCellRatioWidth;
+		pendingGridCellRatioHeight = gridCellRatioHeight;
+		pendingSingleWidth = singleWidth;
+		syncMosaicSelectionState();
+		singleWidthEditing = false;
+		suppressGridApplyReveal = false;
+		if (imageMode === "canvas") {
+			syncGridSlotsFromImagePool();
+		}
+		imageSegmentedControl?.setAttribute("data-mode", imageMode);
+		imagePanel?.classList.toggle("collapsed", imageMode === "off");
+		for (const button of modeButtons) {
+			button.classList.toggle("active", button.dataset.editorMode === imageMode);
+		}
+		updateImageModeAvailability();
+		panes.canvas?.classList.toggle("active", imageMode === "canvas");
+		panes.syntax?.classList.toggle("active", imageMode === "syntax");
+		canvasNextActions?.toggleAttribute("hidden", imageMode !== "canvas");
+		syntaxBackButton?.toggleAttribute("hidden", imageMode !== "syntax");
+		updateCanvasSyntaxControl();
+		updateGridSizeControl();
+		updateOutput();
+	}
+
+	function applyGridSize() {
+		if (isSingleCanvasMode()) {
+			singleWidth = pendingSingleWidth;
+		} else {
+			gridColumns = pendingGridColumns;
+			gridRows = pendingGridRows;
+			gridCellRatioWidth = pendingGridCellRatioWidth;
+			gridCellRatioHeight = pendingGridCellRatioHeight;
+		}
+		suppressGridApplyReveal = false;
+		syncGridSlotsFromImagePool();
+		renderAllImages();
+		clearTileSelection();
+		markDirty();
+	}
+
+	function setMetaMode(locationExpanded, { focus = true } = {}) {
+		if (!metaEditor) {
+			return;
+		}
+		metaEditor.classList.toggle("location-expanded", locationExpanded);
+		toggleLocationButton?.toggleAttribute("disabled", locationExpanded);
+		toggleLocationButton?.setAttribute("aria-disabled", locationExpanded ? "true" : "false");
+		toggleLocationButton?.setAttribute(
+			"aria-label",
+			locationExpanded ? "Hide location" : "Show location",
+		);
+		updateDatetimeCaret();
+		if (locationExpanded && focus) {
+			window.setTimeout(() => {
+				locationInput?.focus();
+			}, metaTransitionMs);
+		} else if (!locationExpanded && document.activeElement === locationInput) {
+			locationInput?.blur();
+		}
+	}
+
+	function toggleLocationMode() {
+		setMetaMode(!metaEditor?.classList.contains("location-expanded"));
+		markDirty();
+	}
+
+	function handleLocationFocusRequest(event) {
+		if (event.target?.closest?.("#toggle-location-button")) {
+			return;
+		}
+		if (!metaEditor?.classList.contains("location-expanded")) {
+			event.preventDefault();
+			setMetaMode(true);
+			markDirty();
+			return;
+		}
+		window.setTimeout(() => {
+			locationInput?.focus();
+			updateDatetimeCaret();
+		}, 0);
+	}
+
+	function collapseEmptyLocationOnOutsidePointer(event) {
+		if (
+			!metaEditor?.classList.contains("location-expanded") ||
+			locationInput?.value.trim()
+		) {
+			return;
+		}
+		if (event.target?.closest?.(".meta-location")) {
+			return;
+		}
+		setMetaMode(false);
+		markDirty();
+	}
+
+	function requestImageUpload(target) {
+		if (imageOrder.length >= maxImages && !target.replaceImageId) {
+			alert(`Image limit is ${maxImages}.`);
+			return;
+		}
+		pendingUploadTarget = target;
+		imageFileInput?.click();
+	}
+
+	async function addImageFile(file, uploadTarget) {
+		const replaceIndex = Number.isInteger(uploadTarget.index) ? uploadTarget.index : -1;
+		const replacedMosaicPositions = uploadTarget.replaceImageId
+			? mosaicRows.flatMap((row, rowIndex) =>
+					(row.imageIds ?? [])
+						.map((imageId, imageIndex) =>
+							imageId === uploadTarget.replaceImageId ? { rowIndex, imageIndex } : null,
+						)
+						.filter(Boolean),
+				)
+			: [];
+		const replacedGridSlots = uploadTarget.replaceImageId
+			? gridSlots
+					.map((imageId, index) => (imageId === uploadTarget.replaceImageId ? index : -1))
+					.filter((index) => index !== -1)
+			: [];
+		if (uploadTarget.replaceImageId) {
+			removeImageFromPool(uploadTarget.replaceImageId);
+		}
+		const names = makeImageNames();
+		const outputExtension = extensionForUploadedImage(file);
+		names.fileName = `${names.id}.${outputExtension}`;
+		names.thumbName = thumbNameForFileName(names.fileName);
+		const src = URL.createObjectURL(file);
+		let dimensions = { width: 0, height: 0 };
+		try {
+			dimensions = await measureImageSource(file);
+		} catch {}
+		const image = {
+			...names,
+			src,
+			source: file,
+			originalName: file.name,
+			outputExtension,
+			full: null,
+			thumb: null,
+			width: dimensions.width,
+			height: dimensions.height,
+			thumbWidth: 0,
+			thumbHeight: 0,
+		};
+		imagesById.set(image.id, image);
+		if (uploadTarget.area === "pool" && replaceIndex >= 0) {
+			imageOrder.splice(Math.min(replaceIndex, imageOrder.length), 0, image.id);
+		} else if (!imageOrder.includes(image.id)) {
+			imageOrder.push(image.id);
+		}
+		if (uploadTarget.area === "grid") {
+			gridSlots[uploadTarget.index] = image.id;
+		} else if (uploadTarget.area === "mosaic" && replacedMosaicPositions.length > 0) {
+			for (const position of replacedMosaicPositions) {
+				while (mosaicRows.length <= position.rowIndex) {
+					mosaicRows.push({ imageIds: [] });
+				}
+				mosaicRows[position.rowIndex].imageIds.splice(
+					Math.min(position.imageIndex, mosaicRows[position.rowIndex].imageIds.length),
+					0,
+					image.id,
+				);
+			}
+		} else if (uploadTarget.area === "mosaic" && Number.isInteger(uploadTarget.rowIndex)) {
+			while (mosaicRows.length <= uploadTarget.rowIndex) {
+				mosaicRows.push({ imageIds: [] });
+			}
+			mosaicRows[uploadTarget.rowIndex].imageIds.push(image.id);
+		} else if (uploadTarget.area === "pool" && replacedGridSlots.length > 0) {
+			for (const index of replacedGridSlots) {
+				gridSlots[index] = image.id;
+			}
+		} else {
+			const emptyIndex = firstEmptyGridSlot();
+			if (emptyIndex !== -1) {
+				gridSlots[emptyIndex] = image.id;
+			}
+		}
+		originalTileFiles.set(image, file);
+		return image;
+	}
+
+	async function importImageFiles(files, uploadTarget = { area: "append" }) {
+		const selectedFiles = Array.from(files).filter((file) => file.type.startsWith("image/"));
+		if (selectedFiles.length === 0) {
+			return;
+		}
+		const filesToImport = uploadTarget.replaceImageId ? selectedFiles.slice(0, 1) : selectedFiles;
+		const nextCount = imageOrder.length + filesToImport.length - (uploadTarget.replaceImageId ? 1 : 0);
+		if (nextCount > maxImages) {
+			alert(`Image limit is ${maxImages}. Nothing was imported.`);
+			return;
+		}
+		for (const file of filesToImport) {
+			await addImageFile(file, uploadTarget);
+			if (uploadTarget.replaceImageId) {
+				break;
+			}
+		}
+		selectCanvasSyntaxModeForImageCount();
+		setImageMode("canvas");
+		syncGridSlotsFromImagePool();
+		renderAllImages();
+		clearTileSelection();
+		markDirty();
+	}
+
+	function firstEmptyGridSlot() {
+		return gridSlots.findIndex((imageId, index) => index < gridCapacity() && !imageId);
+	}
+
+	function syncGridSlotsFromImagePool() {
+		const visibleSlots = gridSlots.slice(0, gridCapacity());
+		const usedImageIds = new Set(visibleSlots.filter(Boolean));
+		let nextPoolIndex = 0;
+		for (let index = 0; index < visibleSlots.length; index += 1) {
+			if (gridSlots[index]) {
+				continue;
+			}
+			while (nextPoolIndex < imageOrder.length && usedImageIds.has(imageOrder[nextPoolIndex])) {
+				nextPoolIndex += 1;
+			}
+			const imageId = imageOrder[nextPoolIndex];
+			if (!imageId) {
+				return;
+			}
+			gridSlots[index] = imageId;
+			usedImageIds.add(imageId);
+			nextPoolIndex += 1;
+		}
+	}
+
+	function handleGridTileClick(tile, event) {
+		event.stopPropagation();
+		if (imageMode === "canvas" && canvasSyntaxMode === "mosaic") {
+			activeMosaicRowIndex = mosaicRowIndexForTile(tile);
+			syncMosaicSelectionState();
+			updateGridSizeControl();
+			const imageId = imageIdForTile(tile);
+			if (selectedTile === tile) {
+				if (!imageId) {
+					requestImageUpload({ area: "mosaic", rowIndex: activeMosaicRowIndex });
+					return;
+				}
+				if (tileSwapEnabled) {
+					requestImageUpload({ area: "mosaic", replaceImageId: imageId });
+					return;
+				}
+				openImageGallery(imageId);
+				return;
+			}
+			if (tileSwapEnabled && selectedTile && tileArea(selectedTile) === "grid" && tileHasImage(selectedTile)) {
+				const firstImageId = imageIdForTile(selectedTile);
+				if (firstImageId && imageId && firstImageId !== imageId) {
+					for (const row of mosaicRows) {
+						row.imageIds = (row.imageIds ?? []).map((rowImageId) =>
+							rowImageId === firstImageId ? imageId : rowImageId === imageId ? firstImageId : rowImageId,
+						);
+					}
+					renderAllImages();
+					clearTileSelection();
+					markDirty();
+					return;
+				}
+			}
+			selectTile(tile);
+			return;
+		}
+		const index = tileIndex(tile);
+		const imageId = gridSlots[index];
+		if (!imageId) {
+			requestImageUpload({ area: "grid", index });
+			return;
+		}
+		if (selectedTile === tile) {
+			if (tileSwapEnabled) {
+				requestImageUpload({ area: "grid", index, replaceImageId: imageId });
+				return;
+			}
+			openImageGallery(imageId);
+			return;
+		}
+		if (tileSwapEnabled && selectedTile && tileArea(selectedTile) === "grid" && tileHasImage(selectedTile)) {
+			const firstIndex = tileIndex(selectedTile);
+			[gridSlots[firstIndex], gridSlots[index]] = [gridSlots[index], gridSlots[firstIndex]];
+			renderAllImages();
+			clearTileSelection();
+			markDirty();
+			return;
+		}
+		selectTile(tile);
+	}
+
+	function handlePoolTileClick(tile, event) {
+		event.stopPropagation();
+		if (tileArea(tile) === "pool-add") {
+			requestImageUpload({ area: "append" });
+			return;
+		}
+		const imageId = imageIdForTile(tile);
+		if (selectedTile === tile && imageId) {
+			openImageGallery(imageId);
+			return;
+		}
+		selectTile(tile);
+	}
+
+	document.querySelector("#canvas-editor")?.addEventListener("click", (event) => {
+		const tile = event.target?.closest?.(".image-tile");
+		if (tile) {
+			handleGridTileClick(tile, event);
+		}
+	});
+
+	document.querySelector("#syntax-editor .image-strip")?.addEventListener("click", (event) => {
+		const tile = event.target?.closest?.(".image-tile");
+		if (tile) {
+			handlePoolTileClick(tile, event);
+		}
+	});
+
+	document.addEventListener("pointerdown", (event) => {
+		if (event.target?.closest?.(".image-tile, #image-add-button, #image-trash-button, .image-clipboard-control, .grid-size-control")) {
+			return;
+		}
+		clearTileSelection();
+	}, { capture: true });
+
+	gridSizeControl?.addEventListener("pointerdown", (event) => {
+		const number = event.target?.closest?.(".grid-size-number");
+		if (!number || imageMode !== "canvas") {
+			return;
+		}
+		event.preventDefault();
+		suppressGridApplyReveal =
+			number.dataset.gridAxis === "width"
+				? pendingSingleWidth === singleWidth
+				: pendingGridColumns === gridColumns && pendingGridRows === gridRows;
+		activeGridDrag = {
+			pointerId: event.pointerId,
+			axis: number.dataset.gridAxis,
+			anchor: number.closest(".grid-size-control"),
+			startY: event.clientY,
+			lastOffset: 0,
+			startRatioIndex: gridRatioPresetIndex(pendingGridCellRatioWidth, pendingGridCellRatioHeight),
+		};
+		number.setPointerCapture?.(event.pointerId);
+		updateGridSizeControl();
+	});
+
+	gridRatioControl?.addEventListener("pointerdown", (event) => {
+		const number = event.target?.closest?.(".grid-size-number");
+		if (!number || imageMode !== "canvas" || canvasSyntaxMode !== "grid") {
+			return;
+		}
+		event.preventDefault();
+		suppressGridApplyReveal =
+			pendingGridCellRatioWidth === gridCellRatioWidth && pendingGridCellRatioHeight === gridCellRatioHeight;
+		activeGridDrag = {
+			pointerId: event.pointerId,
+			axis: number.dataset.gridAxis,
+			anchor: number.closest(".grid-size-control"),
+			startY: event.clientY,
+			lastOffset: 0,
+			startRatioIndex: gridRatioPresetIndex(pendingGridCellRatioWidth, pendingGridCellRatioHeight),
+		};
+		number.setPointerCapture?.(event.pointerId);
+		updateGridSizeControl();
+	});
+
+	mosaicRatioControl?.addEventListener("pointerdown", (event) => {
+		const number = event.target?.closest?.(".grid-size-number");
+		if (!number || imageMode !== "canvas" || canvasSyntaxMode !== "mosaic") {
+			return;
+		}
+		event.preventDefault();
+		syncMosaicSelectionState();
+		activeGridDrag = {
+			pointerId: event.pointerId,
+			axis: number.dataset.gridAxis,
+			anchor: number.closest(".grid-size-control"),
+			startY: event.clientY,
+			lastOffset: 0,
+			startRatioIndex: gridRatioPresetIndex(pendingMosaicRowRatioWidth, pendingMosaicRowRatioHeight),
+		};
+		number.setPointerCapture?.(event.pointerId);
+		updateGridSizeControl();
+	});
+
+	document.addEventListener("pointermove", (event) => {
+		if (!activeGridDrag || event.pointerId !== activeGridDrag.pointerId || imageMode !== "canvas") {
+			return;
+		}
+		event.preventDefault();
+		const offset = Math.trunc((activeGridDrag.startY - event.clientY) / 20);
+		if (offset === activeGridDrag.lastOffset) {
+			return;
+		}
+		const delta = offset - activeGridDrag.lastOffset;
+		activeGridDrag.lastOffset = offset;
+		if (activeGridDrag.axis === "width") {
+			pendingSingleWidth = clampSingleWidth(pendingSingleWidth + delta);
+			applySingleWidthImmediate();
+		} else if (activeGridDrag.axis === "columns") {
+			pendingGridColumns = clampGridSize(pendingGridColumns + delta);
+		} else if (activeGridDrag.axis === "rows") {
+			pendingGridRows = clampGridSize(pendingGridRows + delta);
+		} else if (activeGridDrag.axis === "ratio") {
+			const nextIndex = Math.min(
+				gridRatioPresets.length - 1,
+				Math.max(0, activeGridDrag.startRatioIndex + offset),
+			);
+			const [presetWidth, presetHeight] = gridRatioPresets[nextIndex];
+			const [nextWidth, nextHeight] = orientGridRatio(presetWidth, presetHeight);
+			pendingGridCellRatioWidth = nextWidth;
+			pendingGridCellRatioHeight = nextHeight;
+		} else if (activeGridDrag.axis === "mosaic-ratio") {
+			const nextIndex = Math.min(
+				gridRatioPresets.length - 1,
+				Math.max(0, activeGridDrag.startRatioIndex + offset),
+			);
+			const [presetWidth, presetHeight] = gridRatioPresets[nextIndex];
+			pendingMosaicRowRatioWidth = presetWidth;
+			pendingMosaicRowRatioHeight = presetHeight;
+		}
+		updateGridSizeControl();
+	});
+
+	document.addEventListener("pointerup", (event) => {
+		if (!activeGridDrag || event.pointerId !== activeGridDrag.pointerId) {
+			return;
+		}
+		const shouldEnterSingleInput =
+			isSingleCanvasMode() && activeGridDrag.axis === "width" && activeGridDrag.lastOffset === 0;
+		const shouldApplyGridRatio =
+			activeGridDrag.axis === "ratio" &&
+			(activeGridDrag.lastOffset !== 0 ||
+				pendingGridCellRatioWidth !== gridCellRatioWidth ||
+				pendingGridCellRatioHeight !== gridCellRatioHeight);
+		const shouldApplyMosaicRatio =
+			activeGridDrag.axis === "mosaic-ratio" &&
+			(activeGridDrag.lastOffset !== 0 ||
+				pendingMosaicRowRatioWidth !== mosaicRatioForRow(activeMosaicRowIndex).width ||
+				pendingMosaicRowRatioHeight !== mosaicRatioForRow(activeMosaicRowIndex).height);
+		const viewportAnchor = activeGridDrag.anchor;
+		suppressGridApplyReveal = false;
+		activeGridDrag = null;
+		if (shouldApplyGridRatio) {
+			gridCellRatioWidth = pendingGridCellRatioWidth;
+			gridCellRatioHeight = pendingGridCellRatioHeight;
+		}
+		if (shouldApplyMosaicRatio) {
+			mosaicRowRatios[activeMosaicRowIndex] = {
+				width: pendingMosaicRowRatioWidth,
+				height: pendingMosaicRowRatioHeight,
+			};
+		}
+		updateGridSizeControl();
+		if (shouldApplyGridRatio || shouldApplyMosaicRatio) {
+			withViewportAnchor(viewportAnchor, () => {
+				suppressCanvasTileHoverUntilPointerLeaves(event);
+				if (shouldApplyMosaicRatio) {
+					renderAllImages();
+				}
+				updateOutput();
+				markDirty();
+			});
+		}
+		if (shouldEnterSingleInput) {
+			beginSingleWidthEditing();
+		}
+	});
+
+	document.addEventListener("pointercancel", (event) => {
+		if (!activeGridDrag || event.pointerId !== activeGridDrag.pointerId) {
+			return;
+		}
+		suppressGridApplyReveal = false;
+		activeGridDrag = null;
+		updateGridSizeControl();
+	});
+
+	gridSizeApplyButton?.addEventListener("click", () => {
+		if (imageMode !== "canvas") {
+			return;
+		}
+		withViewportAnchor(gridSizeControl, applyGridSize);
+	});
+
+	gridRatioRotateButton?.addEventListener("click", () => {
+		if (imageMode !== "canvas" || canvasSyntaxMode !== "grid") {
+			return;
+		}
+		withViewportAnchor(gridRatioControl, () => {
+			gridRatioPortraitMode = !gridRatioPortraitMode;
+			[gridCellRatioWidth, gridCellRatioHeight] = [gridCellRatioHeight, gridCellRatioWidth];
+			pendingGridCellRatioWidth = gridCellRatioWidth;
+			pendingGridCellRatioHeight = gridCellRatioHeight;
+			suppressGridApplyReveal = false;
+			updateGridSizeControl();
+			updateOutput();
+			markDirty();
+		});
+	});
+
+	mosaicRatioSwapButton?.addEventListener("click", () => {
+		if (imageMode !== "canvas" || canvasSyntaxMode !== "mosaic") {
+			return;
+		}
+		withViewportAnchor(mosaicRatioControl, () => {
+			syncMosaicSelectionState();
+			const ratio = mosaicRatioForRow(activeMosaicRowIndex);
+			mosaicRowRatios[activeMosaicRowIndex] = {
+				width: ratio.height,
+				height: ratio.width,
+			};
+			pendingMosaicRowRatioWidth = ratio.height;
+			pendingMosaicRowRatioHeight = ratio.width;
+			renderAllImages();
+			updateOutput();
+			markDirty();
+		});
+	});
+
+	mosaicAddRowButton?.addEventListener("click", () => {
+		if (imageMode !== "canvas" || canvasSyntaxMode !== "mosaic") {
+			return;
+		}
+		syncMosaicSelectionState();
+		const rowIndex = activeMosaicRowIndex;
+		const row = mosaicRows[rowIndex];
+		if (!row) {
+			return;
+		}
+		let movedImageId = null;
+		const imageId =
+			selectedTile && tileArea(selectedTile) === "grid" && mosaicRowIndexForTile(selectedTile) === rowIndex
+				? selectedTile.dataset.imageId
+				: null;
+		const selectedImageIndex = imageId ? row.imageIds.indexOf(imageId) : -1;
+		if (row.imageIds.length > 1 && selectedImageIndex !== -1) {
+			[movedImageId] = row.imageIds.splice(selectedImageIndex, 1);
+		} else if (row.imageIds.length > 1) {
+			movedImageId = row.imageIds.pop() ?? null;
+		} else {
+			movedImageId = takeFirstLaterMosaicImage(rowIndex)?.imageId ?? null;
+		}
+		if (!movedImageId) {
+			return;
+		}
+		withViewportAnchor(mosaicRowActions, () => {
+			mosaicRows.splice(rowIndex + 1, 0, { imageIds: [movedImageId] });
+			mosaicRowRatios.splice(rowIndex + 1, 0, { ...mosaicRatioForRow(rowIndex) });
+			activeMosaicRowIndex = rowIndex + 1;
+			pruneEmptyMosaicRows();
+			renderAllImages();
+			syncMosaicSelectionState();
+			updateGridSizeControl();
+			updateOutput();
+			markDirty();
+		});
+	});
+
+	mosaicAddTileButton?.addEventListener("click", () => {
+		if (imageMode !== "canvas" || canvasSyntaxMode !== "mosaic") {
+			return;
+		}
+		syncMosaicSelectionState();
+		const rowIndex = activeMosaicRowIndex;
+		const moved = takeFirstLaterMosaicImage(rowIndex);
+		if (!moved?.imageId || !mosaicRows[rowIndex]) {
+			return;
+		}
+		withViewportAnchor(mosaicRowActions, () => {
+			mosaicRows[rowIndex].imageIds.push(moved.imageId);
+			activeMosaicRowIndex = rowIndex;
+			pruneEmptyMosaicRows();
+			renderAllImages();
+			syncMosaicSelectionState();
+			updateGridSizeControl();
+			updateOutput();
+			markDirty();
+		});
+	});
+
+	tileSwapToggleButton?.addEventListener("click", () => {
+		tileSwapEnabled = !tileSwapEnabled;
+		if (!tileSwapEnabled) {
+			clearTileSelection();
+		}
+		updateCanvasSyntaxControl();
+	});
+
+	canvasSyntaxControl?.addEventListener("mouseenter", showCanvasSyntaxPanel);
+	canvasSyntaxControl?.addEventListener("mouseleave", hideCanvasSyntaxPanel);
+	canvasSyntaxButton?.addEventListener("click", (event) => {
+		event.preventDefault();
+		withViewportAnchor(canvasSyntaxControl, () => {
+			const modes = ["single", "mosaic", "grid"];
+			const currentIndex = Math.max(0, modes.indexOf(canvasSyntaxMode));
+			canvasSyntaxMode = modes[(currentIndex + 1) % modes.length];
+			singleWidthEditing = false;
+			pendingSingleWidth = singleWidth;
+			pendingGridCellRatioWidth = gridCellRatioWidth;
+			pendingGridCellRatioHeight = gridCellRatioHeight;
+			syncMosaicSelectionState();
+			syncGridSlotsFromImagePool();
+			renderAllImages();
+			clearTileSelection();
+			updateCanvasSyntaxControl();
+			updateGridSizeControl();
+			markDirty();
+		});
+	});
+
+	for (const button of canvasSyntaxModeButtons) {
+		button.addEventListener("click", () => {
+			withViewportAnchor(canvasSyntaxControl, () => {
+				canvasSyntaxMode = button.dataset.canvasSyntaxMode || "grid";
+				singleWidthEditing = false;
+				pendingSingleWidth = singleWidth;
+				pendingGridCellRatioWidth = gridCellRatioWidth;
+				pendingGridCellRatioHeight = gridCellRatioHeight;
+				syncMosaicSelectionState();
+				hideCanvasSyntaxPanel();
+				syncGridSlotsFromImagePool();
+				renderAllImages();
+				clearTileSelection();
+				updateCanvasSyntaxControl();
+				updateGridSizeControl();
+				markDirty();
+			});
+		});
+	}
+
+	document.addEventListener("pointerdown", (event) => {
+		if (!canvasSyntaxControl?.contains(event.target)) {
+			hideCanvasSyntaxPanel();
+		}
+	});
+
+	singleWidthInput?.addEventListener("input", () => {
+		singleWidthInput.value = singleWidthInput.value.replace(/[^\d]/g, "").slice(0, 3);
+		pendingSingleWidth = clampSingleWidth(Number.parseInt(singleWidthInput.value, 10) || singleWidth);
+		applySingleWidthImmediate();
+	});
+	singleWidthInput?.addEventListener("keydown", (event) => {
+		if (event.key === "Enter") {
+			event.preventDefault();
+			finishSingleWidthEditing({ commit: true });
+		} else if (event.key === "Escape") {
+			event.preventDefault();
+			finishSingleWidthEditing({ commit: false });
+		}
+	});
+	singleWidthInput?.addEventListener("blur", () => {
+		if (singleWidthEditing) {
+			finishSingleWidthEditing({ commit: true });
+		}
+	});
+
+	imageAddButton?.addEventListener("click", () => {
+		requestImageUpload({ area: "append" });
+	});
+
+	canvasNextButton?.addEventListener("click", () => {
+		if (imageMode !== "canvas") {
+			return;
+		}
+		setImageMode("syntax");
+		markDirty();
+	});
+
+	imageTrashButton?.addEventListener("click", () => {
+		window.clearTimeout(imageTrashTimer);
+		if (imageTrashButton.dataset.pendingClear === "true") {
+			imageTrashButton.dataset.pendingClear = "false";
+			clearAllTiles();
+			setImageMode("off");
+			return;
+		}
+		imageTrashButton.dataset.pendingClear = "true";
+		imageTrashTimer = window.setTimeout(() => {
+			imageTrashButton.dataset.pendingClear = "false";
+			if (selectedTile) {
+				clearTile(selectedTile);
+			}
+		}, 240);
+	});
+
+	imageFileInput?.addEventListener("change", async () => {
+		const files = imageFileInput.files;
+		if (!files?.length || !pendingUploadTarget) {
+			return;
+		}
+		try {
+			await importImageFiles(files, pendingUploadTarget);
+		} finally {
+			pendingUploadTarget = null;
+			imageFileInput.value = "";
+		}
+	});
+
+	imagePanel?.addEventListener("dragover", (event) => {
+		if (!imagePanel.classList.contains("collapsed")) {
+			return;
+		}
+		event.preventDefault();
+	});
+
+	imagePanel?.addEventListener("drop", async (event) => {
+		if (!imagePanel.classList.contains("collapsed")) {
+			return;
+		}
+		event.preventDefault();
+		await importImageFiles(event.dataTransfer?.files ?? [], { area: "append" });
+	});
+
+	metaLocation?.addEventListener("pointerdown", handleLocationFocusRequest, { capture: true });
+	toggleLocationButton?.addEventListener("pointerdown", (event) => {
+		event.stopPropagation();
+	});
+	toggleLocationButton?.addEventListener("click", (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		toggleLocationMode();
+	});
+	document.addEventListener("pointerdown", collapseEmptyLocationOnOutsidePointer, { capture: true });
+
+	setNowButton?.addEventListener("click", () => {
+		if (!datetimeInput) {
+			return;
+		}
+		datetimeInput.value = datetimeValue();
+		datetimeInput.focus();
+		syncEventIdToDatetime();
+		renderAllImages();
+		markDirty();
+		updateDatetimeCaret();
+	});
+
+	datetimeInput?.addEventListener("keydown", (event) => {
+		if (!datetimeInput) {
+			return;
+		}
+		if (event.ctrlKey || event.metaKey) {
+			if (["a", "c", "v"].includes(event.key.toLowerCase())) {
+				return;
+			}
+			event.preventDefault();
+			return;
+		}
+		if (/^\d$/.test(event.key)) {
+			event.preventDefault();
+			setDatetimeDigit(datetimeInput, datetimeInput.selectionStart ?? 0, event.key);
+			return;
+		}
+		if (event.key === "Backspace" || event.key === "Delete") {
+			event.preventDefault();
+			clearDatetimeDigit(datetimeInput, event.key === "Backspace" ? "backward" : "forward");
+			return;
+		}
+		if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+			event.preventDefault();
+			const direction = event.key === "ArrowLeft" ? -1 : 1;
+			const cursor = datetimeInput.selectionStart ?? 0;
+			const nextIndex = getClosestDatetimeDigitIndex(cursor + direction, direction);
+			datetimeInput.setSelectionRange(nextIndex, nextIndex);
+			updateDatetimeCaret();
+			return;
+		}
+		if (event.key === "Home" || event.key === "End") {
+			event.preventDefault();
+			datetimeInput.setSelectionRange(event.key === "Home" ? 0 : 15, event.key === "Home" ? 0 : 15);
+			updateDatetimeCaret();
+			return;
+		}
+		if (!["Tab", "Shift", "Control", "Alt", "Meta", "Escape", "Enter"].includes(event.key)) {
+			event.preventDefault();
+		}
+	});
+
+	datetimeInput?.addEventListener("beforeinput", (event) => {
+		if (!datetimeInput || !(event instanceof InputEvent)) {
+			return;
+		}
+		if (event.inputType.startsWith("delete")) {
+			event.preventDefault();
+			clearDatetimeDigit(
+				datetimeInput,
+				event.inputType.toLowerCase().includes("backward") ? "backward" : "forward",
+			);
+			return;
+		}
+		if (event.inputType === "insertText") {
+			event.preventDefault();
+			if (/^\d$/.test(event.data ?? "")) {
+				setDatetimeDigit(datetimeInput, datetimeInput.selectionStart ?? 0, event.data);
+			}
+		}
+	});
+
+	datetimeInput?.addEventListener("input", () => {
+		datetimeInput.value = normalizeDatetimeValue(datetimeInput.value);
+		syncEventIdToDatetime();
+		renderAllImages();
+		markDirty();
+		updateDatetimeCaret();
+	});
+
+	datetimeInput?.addEventListener("paste", (event) => {
+		if (!datetimeInput) {
+			return;
+		}
+		event.preventDefault();
+		const pastedDigits = event.clipboardData?.getData("text").replace(/\D/g, "");
+		if (!pastedDigits) {
+			return;
+		}
+		const chars = datetimeInput.value.split("");
+		let digitCursor = 0;
+		for (const index of datetimeDigitIndexes) {
+			if (index < (datetimeInput.selectionStart ?? 0)) {
+				continue;
+			}
+			if (!pastedDigits[digitCursor]) {
+				break;
+			}
+			chars[index] = pastedDigits[digitCursor];
+			digitCursor += 1;
+		}
+		datetimeInput.value = normalizeDatetimeValue(chars.join(""));
+		const nextIndex =
+			datetimeDigitIndexes.find((index) => index >= (datetimeInput.selectionStart ?? 0) + digitCursor) ?? 15;
+		datetimeInput.setSelectionRange(nextIndex, nextIndex);
+		syncEventIdToDatetime();
+		renderAllImages();
+		markDirty();
+		updateDatetimeCaret();
+	});
+
+	datetimeInput?.addEventListener("focus", () => {
+		datetimeInput.value = normalizeDatetimeValue(datetimeInput.value);
+		const index = getClosestDatetimeDigitIndex(datetimeInput.selectionStart ?? 0);
+		datetimeInput.setSelectionRange(index, index);
+		updateDatetimeCaret();
+	});
+	datetimeInput?.addEventListener("click", () => {
+		const index = getClosestDatetimeDigitIndex(datetimeInput.selectionStart ?? 0);
+		datetimeInput.setSelectionRange(index, index);
+		updateDatetimeCaret();
+	});
+	datetimeInput?.addEventListener("drop", (event) => event.preventDefault());
+	datetimeInput?.addEventListener("blur", updateDatetimeCaret);
+	window.addEventListener("resize", updateDatetimeCaret);
+
+	for (const button of modeButtons) {
+		button.addEventListener("click", () => {
+			if (button.disabled) {
+				return;
+			}
+			const mode =
+				button.dataset.editorMode === "syntax"
+					? "syntax"
+					: button.dataset.editorMode === "canvas"
+						? "canvas"
+						: "off";
+			setImageMode(mode);
+			publishSucceeded = false;
+			setDraftState(mode === "off" ? "ready" : "processing");
+			if (mode !== "off") {
+				window.setTimeout(() => {
+					if (draftState === "processing") {
+						setDraftState("ready");
+					}
+				}, 900);
+			}
+		});
+	}
+
+	syntaxBackButton?.addEventListener("click", () => {
+		setImageMode("canvas");
+		renderAllImages();
+		clearTileSelection();
+	});
+
+	document.addEventListener("click", async (event) => {
+		const button = event.target?.closest?.(".native-code-frame .copy-btn");
+		if (!button) {
+			return;
+		}
+		event.preventDefault();
+		await copyNativeCodeFrame(button);
+	});
+
+	downloadDraftButton?.addEventListener("click", async () => {
+		try {
+			const zip = await buildDraftZip();
+			downloadBlob(zip, `${eventId}-draft.zip`);
+		} catch (error) {
+			console.error(error);
+			setDraftState("ready");
+			alert(error instanceof Error ? error.message : "Unable to create draft zip");
+		}
+	});
+
+	openDraftButton?.addEventListener("click", () => draftFileInput?.click());
+	draftFileInput?.addEventListener("change", async () => {
+		const file = draftFileInput.files?.[0];
+		if (!file) {
+			return;
+		}
+		try {
+			restoreDraft(new Uint8Array(await file.arrayBuffer()));
+		} catch (error) {
+			console.error(error);
+			setDraftState("ready");
+			alert(error instanceof Error ? error.message : "Unable to open draft zip");
+		} finally {
+			draftFileInput.value = "";
+		}
+	});
+
+	publishButton?.addEventListener("click", async () => {
+		window.clearTimeout(publishTimer);
+		try {
+			await publishEntry();
+		} catch (error) {
+			console.error(error);
+			setDraftState("ready");
+			alert(error instanceof Error ? error.message : "Publish failed");
+		} finally {
+			publishButton.removeAttribute("aria-busy");
+		}
+	});
+
+	editorTextarea?.addEventListener("input", markDirty);
+	initEditorScrollbar();
+	fitEditorTextarea();
+	locationInput?.addEventListener("input", markDirty);
+	window.addEventListener("beforeunload", (event) => {
+		if (publishSucceeded) {
+			return;
+		}
+		event.preventDefault();
+		event.returnValue = "";
+	});
+	resetEditorOnEntry();
+	disableSwupFromPublish();
+	setImageMode("off");
+	renderAllImages();
+	updateDatetimeCaret();
+	window.timelinePublish = { prepareSafeImageAssets, originalTileFiles };
+</script>
+
 </MainGridLayout>
 
-<script src="../scripts/publish/index.ts"></script>
+<style>
+	.publish {
+		--publish-accent: var(--primary);
+		--publish-muted-text: rgba(0, 0, 0, 0.6);
+		--publish-card-bg: var(--card-bg);
+		--publish-surface-bg: var(--page-bg);
+		--publish-control-text: var(--btn-content);
+		--publish-title-text: rgba(0, 0, 0, 0.9);
+		--publish-active-icon: var(--btn-content);
+		--publish-control-bg: var(--btn-regular-bg);
+		--publish-control-hover-bg: var(--btn-regular-bg-hover);
+		--publish-control-active-bg: var(--btn-regular-bg-active);
+		--publish-input-hover-bg: var(--btn-regular-bg-hover);
+		--main-editor-min-height: 12rem;
+		--main-editor-max-height: min(52vh, 32rem);
+		--canvas-frame-max-height: min(68vh, 44rem);
+		display: grid;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	:global(.dark) .publish {
+		--publish-muted-text: rgba(255, 255, 255, 0.62);
+		--publish-title-text: rgba(255, 255, 255, 0.9);
+		--publish-input-hover-bg: var(--btn-regular-bg-hover);
+	}
+
+	.publish-main,
+	.publish-images,
+	.publish-output {
+		padding: 1.6rem;
+	}
+
+	.publish-main {
+		display: grid;
+		gap: 0.85rem;
+	}
+
+	.publish-images {
+		transition:
+			padding 260ms cubic-bezier(0.2, 0, 0, 1),
+			background-color 160ms ease;
+	}
+
+	.publish-images.collapsed {
+		padding-top: 1.15rem;
+		padding-bottom: 1.15rem;
+	}
+
+	.publish-section-header {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 1.25rem;
+		margin-bottom: 0.65rem;
+	}
+
+	.publish-main > .publish-section-header {
+		margin-bottom: 0;
+		padding-left: 0.25rem;
+	}
+
+	.publish-section-header.compact {
+		align-items: center;
+		margin-bottom: 1.2rem;
+	}
+
+	.publish-images.collapsed .publish-section-header.compact {
+		margin-bottom: 0;
+	}
+
+	.publish-eyebrow {
+		color: var(--publish-accent);
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0;
+		text-transform: uppercase;
+	}
+
+	h1,
+	h2 {
+		margin: 0;
+		color: var(--publish-title-text);
+		font-weight: 800;
+		letter-spacing: 0;
+		line-height: 1.15;
+	}
+
+	h1 {
+		font-size: 2rem;
+	}
+
+	h2 {
+		font-size: 1.35rem;
+	}
+
+	.publish-status {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.35rem;
+		height: 2.35rem;
+		border: 0;
+		border-radius: 0.75rem;
+		color: var(--publish-muted-text);
+		background: transparent;
+		font-weight: 600;
+		white-space: nowrap;
+		cursor: default;
+		transition: color 160ms ease;
+	}
+
+	.publish-status :global(svg) {
+		position: absolute;
+		font-size: 1.3rem;
+		color: currentColor;
+		opacity: 0;
+		transform: scale(1);
+		transition:
+			opacity 150ms ease,
+			transform 180ms ease,
+			color 160ms ease;
+	}
+
+	.publish-status[data-state="ready"] :global(.status-cloud),
+	.publish-status[data-state="published"] :global(.status-done) {
+		color: var(--publish-active-icon);
+		opacity: 1;
+	}
+
+	.publish-status[data-state="processing"] :global(.status-sync),
+	.publish-status[data-state="publishing"] :global(.status-sync) {
+		opacity: 1;
+		animation: status-spin 900ms linear infinite;
+	}
+
+	.publish-status:disabled {
+		pointer-events: none;
+	}
+
+	@keyframes status-spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	.field {
+		display: grid;
+		gap: 0.6rem;
+		margin-bottom: 1rem;
+		color: var(--publish-muted-text);
+		font-size: 0.9rem;
+		font-weight: 600;
+	}
+
+	.field > span {
+		padding-left: 0.1rem;
+	}
+
+	.text-field {
+		gap: 0;
+		margin: 0;
+	}
+
+	.publish-footer {
+		display: block;
+		margin-top: 0.1rem;
+	}
+
+	.meta-editor {
+		--meta-icon-size: 2.35rem;
+		--meta-pin-size: 1.05rem;
+		--meta-gap: 0.5rem;
+		--meta-time-width: 12rem;
+		--meta-transition-duration: 260ms;
+		display: flex;
+		align-items: end;
+		gap: var(--meta-gap);
+		width: 100%;
+		min-width: 0;
+		padding-top: 0.05rem;
+	}
+
+	.meta-time,
+	.meta-location {
+		position: relative;
+		min-width: 0;
+		display: grid;
+		grid-template-rows: 1rem var(--meta-icon-size);
+	}
+
+	.meta-time {
+		flex: 0 0 min(var(--meta-time-width), 100%);
+		width: min(var(--meta-time-width), 100%);
+	}
+
+	.meta-location {
+		flex: 0 0 var(--meta-icon-size);
+		width: var(--meta-icon-size);
+		transition:
+			flex-basis var(--meta-transition-duration) cubic-bezier(0.2, 0, 0, 1),
+			width var(--meta-transition-duration) cubic-bezier(0.2, 0, 0, 1);
+	}
+
+	.meta-editor.location-expanded .meta-location {
+		flex-basis: calc(100% - var(--meta-time-width) - var(--meta-gap));
+		width: calc(100% - var(--meta-time-width) - var(--meta-gap));
+	}
+
+	.meta-editor .field {
+		margin-bottom: 0;
+		gap: 0.28rem;
+		font-size: 0.78rem;
+	}
+
+	.meta-label {
+		padding-left: 0.25rem;
+		overflow: hidden;
+		white-space: nowrap;
+		color: var(--publish-muted-text);
+		transition:
+			opacity 180ms ease,
+			transform var(--meta-transition-duration) cubic-bezier(0.2, 0, 0, 1);
+	}
+
+	.meta-time .meta-label {
+		opacity: 1;
+		transform: translateX(0);
+	}
+
+	.meta-location .meta-label {
+		opacity: 0;
+		transform: translateX(-0.3rem);
+	}
+
+	.meta-editor.location-expanded .meta-location .meta-label {
+		opacity: 1;
+		transform: translateX(0);
+	}
+
+	.date-control {
+		position: relative;
+		display: block;
+		width: 100%;
+		height: var(--meta-icon-size);
+		box-sizing: border-box;
+		overflow: hidden;
+		border-radius: 0.75rem;
+		background: var(--publish-control-bg);
+		outline: 2px solid transparent;
+		transition:
+			background-color 160ms ease,
+			outline-color 160ms ease;
+	}
+
+	.meta-editor:not(.location-expanded) .date-control:focus-within {
+		outline-color: var(--publish-accent);
+		background: var(--publish-control-bg);
+	}
+
+	.date-now-button {
+		position: absolute;
+		top: 0;
+		right: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--meta-icon-size);
+		height: var(--meta-icon-size);
+		border: 0;
+		box-sizing: border-box;
+		border-radius: 0.75rem;
+		color: var(--publish-muted-text);
+		background: transparent;
+		cursor: pointer;
+		transition:
+			background-color 160ms ease,
+			color 160ms ease,
+			transform 120ms ease;
+	}
+
+	.date-now-button:hover {
+		color: var(--publish-active-icon);
+		background: var(--publish-control-hover-bg);
+	}
+
+	.date-now-button:active {
+		transform: scale(0.9);
+	}
+
+	.date-now-button :global(svg) {
+		display: block;
+		font-size: 1.1rem;
+	}
+
+	.datetime-caret {
+		position: absolute;
+		top: 50%;
+		left: 0.85rem;
+		z-index: 1;
+		width: 0.55rem;
+		height: 1.35rem;
+		border-radius: 0;
+		background: var(--publish-accent);
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(-50%);
+		transition: opacity 100ms ease;
+	}
+
+	.datetime-caret.visible {
+		opacity: 0.28;
+	}
+
+	.location-control {
+		position: relative;
+		display: block;
+		width: 100%;
+		height: var(--meta-icon-size);
+		overflow: hidden;
+		border-radius: 0.75rem;
+		background: transparent;
+		outline: 2px solid transparent;
+		transition:
+			background-color 160ms ease,
+			outline-color 160ms ease;
+	}
+
+	.meta-editor.location-expanded .location-control {
+		background: var(--publish-control-bg);
+	}
+
+	.meta-editor.location-expanded .location-control:focus-within {
+		outline-color: var(--publish-accent);
+		background: var(--publish-control-bg);
+	}
+
+	.location-toggle {
+		position: absolute;
+		top: 0;
+		right: 0;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--meta-icon-size);
+		height: var(--meta-icon-size);
+		border: 0;
+		box-sizing: border-box;
+		border-radius: 0.75rem;
+		color: var(--publish-muted-text);
+		background: var(--publish-control-bg);
+		cursor: pointer;
+		transition:
+			background-color 160ms ease,
+			color 160ms ease,
+			transform 120ms ease;
+	}
+
+	.location-toggle:hover {
+		color: var(--btn-content);
+		background: var(--publish-control-hover-bg);
+	}
+
+	.meta-editor.location-expanded .location-toggle:hover {
+		color: var(--publish-muted-text);
+		background: transparent;
+	}
+
+	.location-toggle:disabled {
+		cursor: default;
+		pointer-events: none;
+	}
+
+	.location-toggle:active {
+		transform: scale(0.9);
+	}
+
+	.location-toggle :global(svg) {
+		display: block;
+		font-size: var(--meta-pin-size);
+	}
+
+	:global(.dark) .field {
+		color: var(--btn-content);
+	}
+
+	input,
+	textarea {
+		box-sizing: border-box;
+		width: 100%;
+		border: 0;
+		border-radius: 0.75rem;
+		padding: 0.75rem 0.85rem;
+		color: rgba(0, 0, 0, 0.82);
+		background: var(--publish-control-bg);
+		font-weight: 400;
+		outline: 2px solid transparent;
+		transition:
+			background-color 160ms ease,
+			outline-color 160ms ease;
+	}
+
+	input:hover {
+		background: var(--publish-input-hover-bg);
+	}
+
+	.meta-editor:not(.location-expanded) .date-control:hover {
+		background: var(--publish-input-hover-bg);
+	}
+
+	.meta-editor:not(.location-expanded) .date-control:has(.date-now-button:hover) {
+		background: var(--publish-control-bg);
+	}
+
+	.meta-editor input {
+		min-width: 0;
+		min-height: var(--meta-icon-size);
+		height: var(--meta-icon-size);
+		padding-top: 0.35rem;
+		padding-bottom: 0.35rem;
+		font-size: 0.88rem;
+	}
+
+	.meta-editor .date-control input {
+		width: 100%;
+		height: var(--meta-icon-size);
+		padding-right: 2.35rem;
+		background: transparent;
+		caret-color: transparent;
+		overflow: hidden;
+		outline: 0;
+		text-overflow: clip;
+		white-space: nowrap;
+		transition:
+			color 120ms ease,
+			padding 180ms ease,
+			background-color 160ms ease;
+	}
+
+	.meta-editor .date-control input:hover,
+	.meta-editor .date-control input:focus {
+		background: transparent;
+	}
+
+	.meta-editor .meta-location input {
+		width: 100%;
+		height: var(--meta-icon-size);
+		padding: 0 var(--meta-icon-size) 0 0.75rem;
+		color: transparent;
+		caret-color: transparent;
+		outline: 0;
+		pointer-events: none;
+		text-align: center;
+		overflow: hidden;
+		text-overflow: clip;
+		white-space: nowrap;
+	}
+
+	.meta-editor .meta-location input:hover {
+		background: transparent;
+	}
+
+	.meta-editor.location-expanded .meta-location input {
+		padding-right: 2.35rem;
+		padding-left: 0.75rem;
+		color: rgba(0, 0, 0, 0.82);
+		caret-color: auto;
+		outline: 2px solid transparent;
+		pointer-events: auto;
+		text-align: left;
+		background: transparent;
+	}
+
+	.meta-editor.location-expanded .meta-location input:hover {
+		background: transparent;
+	}
+
+	.meta-editor.location-expanded .location-control:hover {
+		background: var(--publish-control-hover-bg);
+	}
+
+	.meta-editor.location-expanded .location-control:hover .location-toggle {
+		background: var(--publish-control-hover-bg);
+	}
+
+	:global(.dark) .meta-editor.location-expanded .meta-location input {
+		color: rgba(255, 255, 255, 0.82);
+	}
+
+	:global(.dark) input,
+	:global(.dark) textarea {
+		color: rgba(255, 255, 255, 0.82);
+	}
+
+	input:focus,
+	textarea:focus {
+		outline-color: var(--publish-accent);
+	}
+
+	textarea {
+		min-height: 10rem;
+		resize: vertical;
+		line-height: 1.55;
+	}
+
+	.text-field textarea {
+		min-height: var(--main-editor-min-height);
+		resize: none;
+	}
+
+	#editor-pane {
+		border-radius: 0.85rem;
+		outline: 2px solid transparent;
+		transition: outline-color 160ms ease;
+	}
+
+	.editor-scroll-shell {
+		display: block;
+		max-height: var(--main-editor-max-height);
+		overflow: auto;
+		border-radius: inherit;
+		padding-left: 0;
+	}
+
+	.editor-scroll-shell :global([data-overlayscrollbars-viewport]) {
+		max-height: var(--main-editor-max-height);
+	}
+
+	#editor-pane textarea {
+		display: block;
+		border-radius: inherit;
+		outline-color: transparent;
+		overflow: hidden;
+		resize: none;
+	}
+
+	#editor-pane:focus-within {
+		outline-color: var(--publish-accent);
+	}
+
+	.image-header-controls {
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.65rem;
+		min-width: 0;
+	}
+
+	.image-header-actions {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+	}
+
+	.segmented-control {
+		--segment-size: 2.1rem;
+		--segment-gap: 0.25rem;
+		--segment-padding: 0.25rem;
+		--segment-slider-x: 0%;
+		position: relative;
+		display: flex;
+		gap: var(--segment-gap);
+		width: calc((var(--segment-size) * 2) + var(--segment-gap) + (var(--segment-padding) * 2));
+		max-width: calc((var(--segment-size) * 2) + var(--segment-gap) + (var(--segment-padding) * 2));
+		overflow: hidden;
+		padding: var(--segment-padding);
+		border-radius: 0.8rem;
+		background: var(--publish-control-bg);
+		transition:
+			max-width 220ms cubic-bezier(0.2, 0, 0, 1),
+			padding 220ms cubic-bezier(0.2, 0, 0, 1),
+			opacity 180ms ease,
+			transform 180ms ease;
+	}
+
+	.segmented-control::before {
+		position: absolute;
+		content: "";
+		top: var(--segment-padding);
+		left: var(--segment-padding);
+		z-index: 0;
+		width: var(--segment-size);
+		height: var(--segment-size);
+		border-radius: 0.6rem;
+		background: var(--publish-card-bg);
+		transform: translateX(var(--segment-slider-x));
+		transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.image-mode-control {
+		width: calc((var(--segment-size) * 2) + var(--segment-gap) + (var(--segment-padding) * 2));
+		max-width: calc((var(--segment-size) * 2) + var(--segment-gap) + (var(--segment-padding) * 2));
+	}
+
+	.image-mode-control[data-mode="syntax"] {
+		--segment-slider-x: calc(var(--segment-size) + var(--segment-gap));
+	}
+
+	.publish-images.collapsed .segmented-control {
+		opacity: 1;
+	}
+
+	.segment,
+	.tool-button,
+	.option-chip,
+	.icon-button,
+	.action-button,
+	.image-tile,
+	.image-trash-button,
+	.image-icon-button,
+	.image-clipboard-control button {
+		border: 0;
+		color: inherit;
+		font: inherit;
+		cursor: pointer;
+	}
+
+	.segment {
+		position: relative;
+		z-index: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.35rem;
+		flex: 0 0 var(--segment-size);
+		width: var(--segment-size);
+		height: var(--segment-size);
+		min-height: var(--segment-size);
+		padding: 0;
+		border-radius: 0.6rem;
+		color: var(--publish-muted-text);
+		background: transparent;
+		font-weight: 600;
+		white-space: nowrap;
+		transition:
+			color 190ms ease,
+			opacity 190ms ease;
+	}
+
+	.segment.active {
+		color: var(--publish-active-icon);
+	}
+
+	.segment:not(.active):not(:disabled):hover {
+		color: var(--publish-active-icon);
+	}
+
+	.segment:disabled {
+		cursor: not-allowed;
+		opacity: 0.38;
+	}
+
+	.segment :global(svg) {
+		display: block;
+		font-size: 1.2rem;
+		color: currentColor;
+	}
+
+	.editor-pane {
+		display: none;
+	}
+
+	.editor-pane.active {
+		display: block;
+	}
+
+	.image-panel-body {
+		display: grid;
+		grid-template-rows: 1fr;
+		overflow: visible;
+		transition:
+			grid-template-rows 260ms cubic-bezier(0.2, 0, 0, 1),
+			opacity 180ms ease,
+			margin-top 260ms cubic-bezier(0.2, 0, 0, 1);
+	}
+
+	.image-panel-body-inner {
+		min-height: 0;
+		overflow: visible;
+	}
+
+	.image-panel-footer {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		grid-template-areas: "mode layout next";
+		align-items: center;
+		gap: 0.55rem;
+		margin-top: 0.75rem;
+	}
+
+	.canvas-footer-center,
+	.canvas-syntax-control,
+	.canvas-next-actions,
+	.syntax-back-button {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+	}
+
+	.canvas-footer-center {
+		grid-area: layout;
+		align-self: center;
+		justify-self: center;
+	}
+
+	.canvas-syntax-control {
+		grid-area: mode;
+		align-self: center;
+		justify-self: start;
+	}
+
+	#tile-swap-toggle-button {
+		grid-area: mode;
+		align-self: center;
+		justify-self: start;
+		margin-left: 3.3rem;
+	}
+
+	.syntax-back-button {
+		grid-area: mode;
+		align-self: center;
+		justify-self: start;
+	}
+
+	.canvas-next-actions {
+		grid-area: next;
+		align-self: center;
+		justify-self: end;
+	}
+
+	.canvas-next-actions {
+		align-items: center;
+	}
+
+	.canvas-layout-controls {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+	}
+
+	.grid-size-control {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 2.35rem;
+		width: 4.35rem;
+		max-width: 4.35rem;
+		overflow: hidden;
+		border-radius: 0.75rem;
+		padding: 0;
+		color: var(--publish-muted-text);
+		background: var(--publish-control-bg);
+		font-weight: 700;
+		transition:
+			width 260ms cubic-bezier(0.2, 0, 0, 1),
+			max-width 260ms cubic-bezier(0.2, 0, 0, 1),
+			background-color 160ms ease;
+	}
+
+	.grid-size-control.has-pending-grid-size:not(.awaiting-pointer-reset) {
+		width: 6.7rem;
+		max-width: 6.7rem;
+	}
+
+	.grid-size-control.single-width-mode {
+		width: 3.85rem;
+		max-width: 3.85rem;
+	}
+
+	.grid-size-control.single-width-mode.has-pending-grid-size:not(.awaiting-pointer-reset),
+	.grid-size-control.single-width-mode:focus-within {
+		width: 5.9rem;
+		max-width: 5.9rem;
+	}
+
+	.grid-ratio-control:hover,
+	.grid-ratio-control:focus-within {
+		width: 6.7rem;
+		max-width: 6.7rem;
+	}
+
+	.grid-size-value {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.34rem;
+		width: 4.35rem;
+		min-width: 4.35rem;
+		height: 100%;
+		padding: 0;
+		transform: translateX(0);
+		transition: transform 260ms cubic-bezier(0.2, 0, 0, 1);
+	}
+
+	.grid-size-pair {
+		gap: 0.42rem;
+		padding-inline: 0.28rem;
+		box-sizing: border-box;
+	}
+
+	.grid-ratio-value-shell {
+		padding-inline: 0.34rem;
+		box-sizing: border-box;
+	}
+
+	.grid-ratio-value {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.42rem;
+		min-width: 3.8rem;
+		padding-inline: 0.28rem;
+		letter-spacing: 0;
+		box-sizing: border-box;
+	}
+
+	.grid-ratio-number {
+		min-width: 2ch;
+		text-align: center;
+	}
+
+	.grid-size-control.has-pending-grid-size:not(.awaiting-pointer-reset) .grid-size-value {
+		transform: translateX(-1.175rem);
+	}
+
+	.grid-ratio-control:hover .grid-size-value,
+	.grid-ratio-control:focus-within .grid-size-value {
+		transform: translateX(-1.175rem);
+	}
+
+	.grid-size-control.single-width-mode .grid-size-value {
+		width: 3.85rem;
+		min-width: 3.85rem;
+		gap: 0.18rem;
+	}
+
+	.grid-size-control.single-width-mode.has-pending-grid-size:not(.awaiting-pointer-reset) .grid-size-value,
+	.grid-size-control.single-width-mode:focus-within .grid-size-value {
+		transform: translateX(-1.05rem);
+	}
+
+	.grid-size-number {
+		min-width: 1ch;
+		color: var(--publish-active-icon);
+		text-align: center;
+		cursor: ns-resize;
+		touch-action: none;
+		user-select: none;
+	}
+
+	.grid-size-separator {
+		color: var(--publish-muted-text);
+	}
+
+	.grid-size-unit {
+		color: var(--publish-muted-text);
+	}
+
+	.single-width-input-shell {
+		position: absolute;
+		inset: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.18rem;
+		width: 3.85rem;
+		min-width: 3.85rem;
+		height: 100%;
+		transform: translateX(0);
+	}
+
+	.single-width-input-shell input {
+		width: 2.2rem;
+		border: 0;
+		padding: 0;
+		color: var(--publish-active-icon);
+		background: transparent;
+		text-align: right;
+		font: inherit;
+		outline: 0;
+	}
+
+	.grid-size-control button {
+		position: absolute;
+		top: 0;
+		right: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.35rem;
+		height: 2.35rem;
+		border: 0;
+		border-radius: 0.75rem;
+		padding: 0;
+		background: transparent;
+		font: inherit;
+		line-height: 1;
+		cursor: pointer;
+		opacity: 0;
+		transform: translateX(-1.175rem);
+		transition:
+			opacity 180ms ease,
+			transform 260ms cubic-bezier(0.2, 0, 0, 1),
+			background-color 160ms ease;
+	}
+
+	.grid-size-control.has-pending-grid-size:not(.awaiting-pointer-reset) button {
+		opacity: 1;
+		transform: translateX(0);
+	}
+
+	.grid-ratio-control:hover button,
+	.grid-ratio-control:focus-within button {
+		opacity: 1;
+		transform: translateX(0);
+	}
+
+	.grid-size-control button:hover {
+		background: var(--publish-control-hover-bg);
+	}
+
+	.grid-size-control button:active {
+		transform: scale(0.9);
+	}
+
+	.grid-size-control button :global(svg) {
+		display: block;
+		font-size: 1.2rem;
+		color: currentColor;
+	}
+
+	.grid-size-control button:disabled {
+		cursor: default;
+		opacity: 0;
+		pointer-events: none;
+		transform: translateX(-1.175rem);
+	}
+
+	.canvas-syntax-control {
+		position: relative;
+		z-index: 8;
+	}
+
+	#canvas-syntax-button {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.75rem;
+		height: 2.75rem;
+		border: 0;
+		border-radius: 0.75rem;
+		padding: 0;
+		color: var(--publish-muted-text);
+		background: transparent;
+		font: inherit;
+		cursor: pointer;
+	}
+
+	#canvas-syntax-button:hover,
+	#canvas-syntax-button[aria-expanded="true"] {
+		color: var(--publish-accent);
+		background: transparent;
+	}
+
+	.canvas-icon-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.75rem;
+		height: 2.75rem;
+		border: 0;
+		border-radius: 0.75rem;
+		padding: 0;
+		color: var(--publish-muted-text);
+		background: transparent;
+		font: inherit;
+		cursor: pointer;
+		transition: color 160ms ease, transform 120ms ease;
+	}
+
+	.canvas-icon-toggle:hover,
+	.canvas-icon-toggle.active {
+		color: var(--publish-accent);
+	}
+
+	.canvas-icon-toggle:active {
+		transform: scale(0.9);
+	}
+
+	.canvas-icon-toggle :global(svg) {
+		display: block;
+		font-size: 1.3rem;
+	}
+
+	.canvas-syntax-trigger-icon {
+		position: absolute;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		transition: opacity 160ms ease;
+	}
+
+	.canvas-syntax-control[data-mode="single"] [data-canvas-syntax-trigger="single"],
+	.canvas-syntax-control[data-mode="mosaic"] [data-canvas-syntax-trigger="mosaic"],
+	.canvas-syntax-control[data-mode="grid"] [data-canvas-syntax-trigger="grid"] {
+		opacity: 1;
+	}
+
+	.canvas-syntax-trigger-icon :global(svg),
+	.canvas-syntax-menu button :global(svg) {
+		font-size: 1.15rem;
+	}
+
+	.canvas-syntax-panel {
+		position: absolute;
+		left: 0;
+		bottom: 100%;
+		padding-bottom: 0.65rem;
+	}
+
+	.canvas-syntax-panel.float-panel-closed {
+		transform: translateY(0.25rem);
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.canvas-syntax-menu {
+		min-width: 8.5rem;
+		padding: 0.45rem;
+	}
+
+	.canvas-syntax-menu button {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 0.75rem;
+		width: 100%;
+		height: 2.35rem;
+		border: 0;
+		border-radius: 0.75rem;
+		padding: 0 0.75rem;
+		color: var(--publish-muted-text);
+		background: transparent;
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+		text-align: left;
+	}
+
+	.canvas-syntax-menu button.active {
+		color: var(--publish-accent);
+	}
+
+	.canvas-syntax-menu button.active::before {
+		transform: scale(1);
+		opacity: 1;
+		background: var(--btn-plain-bg-hover);
+	}
+
+	.image-panel-footer [hidden] {
+		display: none !important;
+	}
+
+	.publish-images.collapsed .image-panel-body {
+		grid-template-rows: 0fr;
+		margin-top: -0.2rem;
+		opacity: 0;
+		overflow: hidden;
+	}
+
+	.publish-images.collapsed .image-panel-body-inner {
+		overflow: hidden;
+	}
+
+	.tool-button,
+	.option-chip,
+	.icon-button,
+	.action-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.45rem;
+		min-height: 2.35rem;
+		border-radius: 0.75rem;
+		padding: 0 0.8rem;
+		color: var(--btn-content);
+		background: var(--publish-control-bg);
+		font-weight: 600;
+		transition:
+			background-color 160ms ease,
+			transform 120ms ease;
+	}
+
+	.tool-button:hover,
+	.option-chip:hover,
+	.icon-button:hover,
+	.action-button:hover {
+		background: var(--publish-control-hover-bg);
+	}
+
+	.tool-button:active,
+	.option-chip:active,
+	.icon-button:active,
+	.action-button:active {
+		transform: scale(0.9);
+	}
+
+	.tool-button.primary,
+	.action-button.primary,
+	.option-chip.active {
+		color: white;
+		background: var(--publish-accent);
+	}
+
+	.action-button.secondary :global(svg) {
+		filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.62))
+			drop-shadow(0 1px 2px rgba(0, 0, 0, 0.14));
+	}
+
+	.image-icon-button {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.35rem;
+		height: 2.35rem;
+		border-radius: 0.75rem;
+		color: var(--publish-muted-text);
+		background: var(--publish-control-bg);
+		transition:
+			background-color 160ms ease,
+			transform 120ms ease;
+	}
+
+	.image-icon-button:hover {
+		color: var(--publish-active-icon);
+		background: var(--publish-control-hover-bg);
+	}
+
+	.image-icon-button:active {
+		transform: scale(0.9);
+	}
+
+	.image-icon-button:disabled {
+		cursor: not-allowed;
+		opacity: 0.42;
+		transform: none;
+	}
+
+	.image-icon-button :global(svg) {
+		display: block;
+		font-size: 1.3rem;
+	}
+
+	.canvas-next-button :global(svg) {
+		font-size: 1.45rem;
+	}
+
+	.image-clipboard-control {
+		display: inline-flex;
+		align-items: center;
+		gap: 0;
+		height: 2.35rem;
+		padding: 0;
+		border-radius: 0.75rem;
+		background: var(--publish-control-bg);
+		overflow: hidden;
+	}
+
+	.image-clipboard-control button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.35rem;
+		height: 2.35rem;
+		padding: 0;
+		border-radius: 0.75rem;
+		color: var(--publish-muted-text);
+		background: transparent;
+		transition:
+			background-color 160ms ease,
+			color 160ms ease,
+			transform 120ms ease;
+	}
+
+	.image-clipboard-control button:hover {
+		color: var(--publish-active-icon);
+		background: var(--publish-control-hover-bg);
+	}
+
+	.image-clipboard-control button:disabled {
+		cursor: not-allowed;
+		opacity: 0.42;
+		background: transparent;
+		transform: none;
+	}
+
+	.mosaic-row-actions button:disabled {
+		opacity: 1;
+	}
+
+	.image-clipboard-control button:active {
+		transform: scale(0.9);
+	}
+
+	.image-clipboard-control button :global(svg) {
+		display: block;
+		font-size: 1.25rem;
+	}
+
+	.grid-options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	.image-grid {
+		display: grid;
+		gap: 0.55rem;
+		width: 100%;
+		max-width: 100%;
+		margin-inline: auto;
+		aspect-ratio: 1 / 1;
+		max-height: var(--canvas-frame-max-height);
+		overflow: hidden;
+	}
+
+	.image-grid.single-mode {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		aspect-ratio: auto;
+		max-height: none;
+		overflow: visible;
+	}
+
+	.image-grid.grid-mode {
+		display: grid;
+		grid-auto-rows: minmax(0, 1fr);
+	}
+
+	.image-grid.mosaic-mode {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		aspect-ratio: auto;
+		max-height: none;
+		overflow: visible;
+	}
+
+	.mosaic-canvas-row {
+		display: grid;
+		grid-template-columns: repeat(var(--mosaic-row-columns), minmax(0, 1fr));
+		gap: 0.55rem;
+		width: 100%;
+		min-height: 0;
+	}
+
+	.image-tile {
+		position: relative;
+		aspect-ratio: 1 / 1;
+		overflow: hidden;
+		border-radius: 0.85rem;
+		padding: 0;
+		background: var(--publish-control-bg);
+		outline: 3px solid transparent;
+		outline-offset: -3px;
+		transition:
+			background-color 160ms ease,
+			outline-color 160ms ease,
+			transform 120ms ease;
+	}
+
+	.image-grid.grid-mode .image-tile {
+		width: 100%;
+		height: 100%;
+		aspect-ratio: auto;
+	}
+
+	.image-grid.single-mode .image-tile {
+		flex: 0 1 auto;
+		width: min(
+			var(--single-frame-width, 100%),
+			calc(var(--single-frame-ratio-number, 1.333) * var(--canvas-frame-max-height))
+		);
+		max-width: 100%;
+		height: auto;
+		max-height: var(--canvas-frame-max-height);
+		aspect-ratio: var(--single-frame-ratio, 4 / 3);
+	}
+
+	.image-grid.mosaic-mode .image-tile {
+		width: 100%;
+		height: auto;
+		aspect-ratio: var(--mosaic-row-ratio, 1 / 1);
+		min-width: 0;
+	}
+
+	.image-tile :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.image-grid.single-mode.single-filled .image-tile :global(img) {
+		object-fit: contain;
+	}
+
+	.image-tile :global(span) {
+		position: absolute;
+		top: 0.5rem;
+		left: 0.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.65rem;
+		height: 1.65rem;
+		border-radius: 0.55rem;
+		color: var(--btn-content);
+		background: var(--publish-control-hover-bg);
+		font-size: 0.85rem;
+		font-weight: 900;
+	}
+
+	.image-tile.empty {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--btn-content);
+		transition:
+			background-color 160ms ease,
+			transform 120ms ease;
+	}
+
+	.image-tile:hover {
+		background: var(--publish-control-hover-bg);
+	}
+
+	.image-grid.tile-hover-suppressed .image-tile {
+		pointer-events: none;
+	}
+
+	.image-grid.tile-hover-suppressed .image-tile:hover {
+		background: var(--publish-control-bg);
+	}
+
+	.image-tile.selected {
+		color: var(--publish-accent);
+		outline-color: var(--publish-accent);
+	}
+
+	.image-tile.selected :global(span) {
+		color: #fff;
+		background: color-mix(in srgb, var(--publish-accent) 50%, transparent);
+	}
+
+	.image-tile:active {
+		transform: scale(0.99);
+	}
+
+	.image-tile:disabled {
+		cursor: not-allowed;
+		opacity: 0.42;
+		transform: none;
+	}
+
+	.image-tile.empty :global(svg) {
+		width: 2.25rem;
+		height: 2.25rem;
+		flex: 0 0 2.25rem;
+		font-size: 2.25rem;
+	}
+
+	:global(.image-grid .image-tile > span) {
+		position: absolute !important;
+		top: 0.5rem !important;
+		left: 0.5rem !important;
+		right: auto !important;
+		bottom: auto !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		width: 1.65rem !important;
+		height: 1.65rem !important;
+		border-radius: 0.55rem !important;
+		color: var(--btn-content) !important;
+		background: color-mix(in srgb, var(--publish-control-hover-bg) 50%, transparent) !important;
+		font-size: 0.85rem !important;
+		font-weight: 900 !important;
+		line-height: 1 !important;
+		transform: none !important;
+	}
+
+	:global(.image-grid.single-mode .image-tile > span) {
+		display: none !important;
+	}
+
+	:global(.image-grid .image-tile.selected > span) {
+		color: #fff !important;
+		background: color-mix(in srgb, var(--publish-accent) 50%, transparent) !important;
+	}
+
+	:global(.image-grid .image-tile.empty > svg),
+	:global(.image-strip .image-tile.empty > svg) {
+		display: block !important;
+		width: 2.25rem !important;
+		height: 2.25rem !important;
+		min-width: 2.25rem !important;
+		max-width: 2.25rem !important;
+		min-height: 2.25rem !important;
+		max-height: 2.25rem !important;
+		flex: 0 0 2.25rem !important;
+		font-size: 2.25rem !important;
+		transform: none !important;
+	}
+
+	.syntax-layout {
+		display: grid;
+		grid-template-columns: 4.5rem minmax(0, 1fr);
+		gap: 0.75rem;
+	}
+
+	.native-code-frame {
+		position: relative;
+		height: 100%;
+		border-radius: 0.75rem;
+		overflow: hidden;
+	}
+
+	.native-code-frame :global(.expressive-code),
+	.native-code-frame :global(.frame) {
+		height: 100%;
+		margin: 0;
+		border-radius: inherit;
+	}
+
+	.native-code-frame :global(pre.wrap) {
+		position: relative;
+		height: 100%;
+		min-height: 10rem;
+		border-radius: inherit;
+	}
+
+	.native-code-frame :global(.copy-btn) {
+		all: initial;
+		position: absolute;
+		top: 0.75rem;
+		right: 0.75rem;
+		z-index: 20;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 0.5rem;
+		background: oklch(0.45 0.01 var(--hue));
+		box-shadow:
+			0 10px 15px -3px rgb(0 0 0 / 50%),
+			0 4px 6px -4px rgb(0 0 0 / 50%);
+		opacity: 0;
+		cursor: pointer;
+		transition:
+			opacity 160ms ease,
+			background-color 160ms ease,
+			transform 120ms ease;
+	}
+
+	:global(.dark) .native-code-frame :global(.copy-btn) {
+		background: oklch(0.3 0.02 var(--hue));
+	}
+
+	.native-code-frame :global(.frame:hover .copy-btn) {
+		opacity: 1;
+	}
+
+	.native-code-frame :global(.copy-btn:hover) {
+		background: oklch(0.5 0.01 var(--hue));
+	}
+
+	:global(.dark) .native-code-frame :global(.copy-btn:hover) {
+		background: oklch(0.35 0.03 var(--hue));
+	}
+
+	.native-code-frame :global(.copy-btn:active) {
+		background: oklch(0.55 0.01 var(--hue));
+		transform: scale(0.9);
+	}
+
+	:global(.dark) .native-code-frame :global(.copy-btn:active) {
+		background: oklch(0.4 0.03 var(--hue));
+	}
+
+	.native-code-frame :global(.copy-btn-icon) {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 1rem;
+		height: 1rem;
+		pointer-events: none;
+		transform: translate(-50%, -50%);
+		transition:
+			opacity 160ms ease,
+			fill 160ms ease;
+	}
+
+	.native-code-frame :global(.copy-btn .copy-icon) {
+		fill: #fff;
+		opacity: 1;
+	}
+
+	.native-code-frame :global(.copy-btn:hover .copy-icon),
+	.native-code-frame :global(.copy-btn:active .copy-icon) {
+		fill: var(--publish-accent);
+	}
+
+	.native-code-frame :global(.copy-btn.success .copy-icon) {
+		fill: var(--deep-text);
+		opacity: 0;
+	}
+
+	.native-code-frame :global(.copy-btn .success-icon) {
+		fill: #fff;
+		opacity: 0;
+	}
+
+	.native-code-frame :global(.copy-btn.success .success-icon) {
+		fill: var(--publish-accent);
+		opacity: 1;
+	}
+
+	.native-code-frame :global([data-language]::before) {
+		z-index: 4;
+	}
+
+	.image-strip {
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+	}
+
+	:global(.image-strip .image-tile) {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		aspect-ratio: 1 / 1;
+		flex: 0 0 auto;
+		overflow: hidden;
+		border: 0;
+		border-radius: 0.75rem;
+		padding: 0;
+		color: var(--btn-content);
+		background: var(--publish-control-bg);
+		outline: 3px solid transparent;
+		outline-offset: -3px;
+		font: inherit;
+		cursor: pointer;
+		transition:
+			background-color 160ms ease,
+			outline-color 160ms ease,
+			transform 120ms ease;
+	}
+
+	:global(.image-strip .image-tile:hover) {
+		background: var(--publish-control-hover-bg);
+	}
+
+	:global(.image-strip .image-tile.selected) {
+		color: var(--publish-accent);
+		outline-color: var(--publish-accent);
+	}
+
+	:global(.image-strip .image-tile img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	:global(.image-strip .image-tile svg) {
+		width: 2.25rem;
+		height: 2.25rem;
+		flex: 0 0 2.25rem;
+		font-size: 2.25rem;
+	}
+
+	:global(.image-strip .image-tile span) {
+		position: absolute;
+		top: 0.4rem;
+		left: 0.45rem;
+		display: block;
+		width: auto;
+		height: auto;
+		border-radius: 0;
+		color: #fff;
+		background: transparent;
+		font-size: 0.68rem;
+		font-weight: 800;
+		line-height: 1;
+		-webkit-text-stroke: 0.025rem var(--publish-muted-text);
+		text-shadow: 0 0 1px var(--publish-muted-text);
+	}
+
+	.image-strip .image-tile {
+		width: 100%;
+		flex: 0 0 auto;
+		border-radius: 0.75rem;
+	}
+
+	.image-strip .image-tile :global(span) {
+		top: 0.4rem;
+		left: 0.45rem;
+		display: block;
+		width: auto;
+		height: auto;
+		border-radius: 0;
+		color: #fff;
+		background: transparent;
+		font-size: 0.68rem;
+		font-weight: 800;
+		line-height: 1;
+		-webkit-text-stroke: 0.025rem var(--publish-muted-text);
+		text-shadow: 0 0 1px var(--publish-muted-text);
+	}
+
+	:global(.image-strip .image-tile > span) {
+		position: absolute !important;
+		top: 0.4rem !important;
+		left: 0.45rem !important;
+		right: auto !important;
+		bottom: auto !important;
+		display: block !important;
+		width: auto !important;
+		height: auto !important;
+		border-radius: 0 !important;
+		color: #fff !important;
+		background: transparent !important;
+		font-size: 0.68rem !important;
+		font-weight: 800 !important;
+		line-height: 1 !important;
+		transform: none !important;
+		-webkit-text-stroke: 0.025rem var(--publish-muted-text) !important;
+		text-shadow: 0 0 1px var(--publish-muted-text) !important;
+	}
+
+	:global(.image-strip .image-tile.empty > span) {
+		color: var(--publish-control-text) !important;
+		-webkit-text-stroke: 0 !important;
+		text-shadow: none !important;
+	}
+
+	.image-strip .image-tile.selected :global(span) {
+		color: var(--publish-accent);
+		background: transparent;
+	}
+
+	:global(.image-strip .image-tile.selected > span) {
+		color: var(--publish-accent) !important;
+		background: transparent !important;
+		-webkit-text-stroke-color: var(--publish-accent) !important;
+		text-shadow: 0 0 1px var(--publish-accent) !important;
+	}
+
+	.publish-actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.65rem;
+	}
+
+	.action-button {
+		min-height: 2.75rem;
+		padding: 0 1rem;
+		font-family: "HarmonyOS Sans", "HarmonyOS Sans SC", system-ui, sans-serif;
+	}
+
+	#publish-button {
+		min-width: 7rem;
+	}
+
+	#publish-button :global(svg) {
+		transform: translateX(-0.04rem);
+	}
+
+	.hidden-panel {
+		display: none;
+	}
+
+	@media (max-width: 640px) {
+		.publish-main,
+		.publish-images,
+		.publish-output {
+			padding: 1.2rem;
+		}
+
+		.publish-images.collapsed {
+			padding-top: 1rem;
+			padding-bottom: 1rem;
+		}
+
+		.publish-section-header {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.publish-main > .publish-section-header {
+			flex-direction: row;
+			align-items: end;
+		}
+
+		.publish-section-header.compact {
+			flex-direction: row;
+			align-items: center;
+			justify-content: space-between;
+		}
+
+		h1 {
+			font-size: 1.65rem;
+		}
+
+		.meta-editor {
+			width: auto;
+			flex: 1 1 auto;
+		}
+
+		.publish-footer {
+			align-items: end;
+			gap: 0.65rem;
+		}
+
+		.publish-status,
+		.icon-button {
+			flex: 0 0 2.35rem;
+			width: 2.35rem;
+			height: 2.35rem;
+			padding: 0;
+		}
+
+		.syntax-layout {
+			grid-template-columns: 1fr;
+		}
+
+		.image-strip {
+			flex-direction: row;
+			overflow-x: auto;
+			padding-bottom: 0.2rem;
+		}
+
+		.image-strip .image-tile {
+			width: 4rem;
+			flex: 0 0 4rem;
+		}
+
+		.publish-actions {
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-end;
+			gap: 0.55rem;
+		}
+
+		.action-button {
+			flex: 0 1 auto;
+			min-width: 0;
+			padding: 0 0.75rem;
+		}
+	}
+</style>
