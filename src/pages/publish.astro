@@ -12,9 +12,4 @@ const dashboardNavLinks = [
 	<PublishShell />
 </MainGridLayout>
 
-<script is:inline>
-	if (window.location.hostname === "strailico.me") {
-		window.location.replace(`https://dashboard.strailico.me/publish/${window.location.search}${window.location.hash}`);
-	}
-</script>
 <script src="../scripts/publish/index.ts"></script>
