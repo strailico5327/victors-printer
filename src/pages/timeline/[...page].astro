@@ -1,0 +1,120 @@
+---
+import type { GetStaticPaths, Page } from "astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+import TimelineLikePage from "@components/TimelineLikePage.astro";
+import { formatDateTimeForDisplay } from "@utils/date-utils";
+import { getTagUrl } from "@utils/url-utils";
+import { siteConfig } from "../../config";
+
+type TimelineEntry = CollectionEntry<"timeline">;
+
+type TimelineMonth = {
+	key: string;
+	label: string;
+	events: TimelineEntry[];
+	tags: string[];
+};
+
+interface Props {
+	page: Page<TimelineMonth>;
+}
+
+export const getStaticPaths = (async ({ paginate }) => {
+	const events = (
+		await getCollection("timeline", ({ data }) => {
+			return import.meta.env.PROD ? data.draft !== true : true;
+		})
+	).sort((a, b) => b.data.published.getTime() - a.data.published.getTime());
+
+	const groups = new Map<string, TimelineEntry[]>();
+
+	for (const event of events) {
+		const date = event.data.published;
+		const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+		const group = groups.get(key) ?? [];
+		group.push(event);
+		groups.set(key, group);
+	}
+
+	const months = [...groups.entries()].map(([key, group]) => {
+		const tags = new Set<string>();
+
+		for (const event of group) {
+			const tag = event.data.tag?.trim();
+			if (tag) {
+				tags.add(tag);
+			}
+		}
+
+		return {
+			key,
+			label: new Intl.DateTimeFormat("en", { month: "long" }).format(group[0].data.published)
+				+ `, ${group[0].data.published.getFullYear()}`,
+			events: group,
+			tags: [...tags],
+		};
+	});
+
+	return paginate(months, { pageSize: 1 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const month = page.data[0] as TimelineMonth | undefined;
+
+if (!month) {
+	throw new Error("Timeline month content not found");
+}
+
+const renderedEvents = await Promise.all(
+	month.events.map(async (entry) => ({
+		Content: (await entry.render()).Content,
+		meta: [
+			{
+				icon: "material-symbols:calendar-today-outline-rounded",
+				label: formatDateTimeForDisplay(entry.data.published, entry.id),
+				datetime: entry.data.published.toISOString(),
+			},
+			...(entry.data.tag
+				? [{
+					icon: "material-symbols:tag-rounded",
+					label: entry.data.tag.trim(),
+					href: getTagUrl(entry.data.tag),
+					ariaLabel: `View all posts with the ${entry.data.tag.trim()} tag`,
+				}]
+				: []),
+			...(entry.data.location
+				? [{
+					icon: "material-symbols:location-on-outline-rounded",
+					label: entry.data.location,
+				}]
+				: []),
+		],
+	})),
+);
+---
+
+<TimelineLikePage
+	pageTitle="Timeline"
+	description="Timeline"
+	titleHref="/nothing/"
+	headerMeta={[
+		{
+			icon: "material-symbols:calendar-today-outline-rounded",
+			label: month.label,
+		},
+		{
+			icon: "material-symbols:tag-rounded",
+			label: "Tags",
+			links: month.tags.map((tag) => ({
+				label: tag.trim(),
+				href: getTagUrl(tag),
+				ariaLabel: `View all posts with the ${tag.trim()} tag`,
+			})),
+		},
+	]}
+	subtitle={siteConfig.timelineSubtitle}
+	items={renderedEvents}
+	page={page}
+	basePath="/timeline"
+	classPrefix="timeline"
+/>

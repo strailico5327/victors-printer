@@ -3,6 +3,8 @@ import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
 export type SiteConfig = {
 	title: string;
 	subtitle: string;
+	timelineSubtitle: string;
+	nothingSubtitle: string;
 
 	lang:
 		| "en"
@@ -69,6 +71,13 @@ export type ProfileConfig = {
 		url: string;
 		icon: string;
 	}[];
+};
+
+export type NowPlayingConfig = {
+	enable: boolean;
+	user: string;
+	profileUrl: string;
+	endpointUrl: string;
 };
 
 export type LicenseConfig = {

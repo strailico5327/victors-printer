@@ -1,6 +1,25 @@
 import { defineCollection, z } from "astro:content";
 import type { BaseSchema, CollectionConfig } from "astro/content/config";
 
+const unknownTimelineDateTime = /^(\d{4})-(\d{2})-(\d{2})TXX:XX(?::(?:\d{2}|XX))?(?:Z|[+-]\d{2}:\d{2})?$/i;
+
+function coercePublishedDate(value: unknown): unknown {
+	if (value instanceof Date) {
+		return value;
+	}
+	if (typeof value !== "string") {
+		return value;
+	}
+	const unknownTime = value.trim().match(unknownTimelineDateTime);
+	if (unknownTime) {
+		const [, year, month, day] = unknownTime;
+		return new Date(Number(year), Number(month) - 1, Number(day));
+	}
+	return value;
+}
+
+const publishedDate = z.preprocess(coercePublishedDate, z.date());
+
 const postsCollection = defineCollection({
 	schema: z.object({
 		title: z.string(),
@@ -22,19 +41,32 @@ const postsCollection = defineCollection({
 	}),
 });
 const specCollection = defineCollection({
-	schema: z.object({}),
+	schema: z.object({
+		title: z.string().optional(),
+		published: z.date().optional(),
+	}).strict(),
+});
+const nothingCollection = defineCollection({
+	schema: z.object({
+		type: z.literal("thought"),
+		id: z.string().regex(/^(?:\d{6}|\d{8})(?:\d{4}|X{4})-[a-z0-9]{8}$/),
+		published: publishedDate,
+		draft: z.boolean().optional().default(false),
+	}),
 });
 const timelineCollection = defineCollection({
 	schema: z.object({
 		type: z.literal("event"),
-		id: z.string().regex(/^\d{10}-[a-z0-9]{8}$/),
-		published: z.date(),
+		id: z.string().regex(/^\d{6}(?:\d{4}|X{4})-[a-z0-9]{8}$/),
+		published: publishedDate,
 		draft: z.boolean().optional().default(false),
 		location: z.string().optional().default(""),
+		tag: z.string(),
 	}),
 });
 export const collections: Record<string, CollectionConfig<BaseSchema>> = {
 	posts: postsCollection,
 	spec: specCollection,
+	nothing: nothingCollection,
 	timeline: timelineCollection,
 };

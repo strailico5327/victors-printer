@@ -13,7 +13,7 @@ import { transformSeparatorShortcutParagraph } from "./shortcuts/separator.mjs";
 export default function shortcuts() {
 	return function transformer(tree, file) {
 		const context = {
-			assetBase: getContentAssetBase(file?.path),
+			assetBase: getContentAssetBase(file),
 		};
 
 		transformChildren(tree, context);
@@ -150,19 +150,53 @@ function isShortcutLine(line) {
 		/^(?::(?:>>|>|<)\s+)?:!link\s+.+\s+\S+(?:\s+(?:true|false))?$/.test(line) ||
 		/^:\/(?:\s+\S+)?$/.test(line) ||
 		/^!:(?:flex|grid|mosaic|link)$/.test(line) ||
+		/^:!==!:$/.test(line) ||
 		/^:!===!:$/.test(line) ||
 		/^:!#{1,6}(?:\s+.+)?$/.test(line)
 	);
 }
 
-function getContentAssetBase(filePath) {
-	if (typeof filePath !== "string") {
-		return null;
+function getContentAssetBase(file) {
+	for (const filePath of getFilePathCandidates(file)) {
+		const assetBase = getContentAssetBaseFromPath(filePath);
+		if (assetBase) {
+			return assetBase;
+		}
 	}
 
+	return null;
+}
+
+function getFilePathCandidates(file) {
+	if (typeof file === "string") {
+		return [file];
+	}
+
+	if (!file || typeof file !== "object") {
+		return [];
+	}
+
+	const candidates = [];
+
+	if (typeof file.path === "string") {
+		candidates.push(file.path);
+	}
+
+	if (Array.isArray(file.history)) {
+		candidates.push(...file.history.filter((path) => typeof path === "string"));
+	}
+
+	if (typeof file.dirname === "string" && typeof file.basename === "string") {
+		candidates.push(`${file.dirname}/${file.basename}`);
+	}
+
+	return candidates;
+}
+
+function getContentAssetBaseFromPath(filePath) {
 	const normalisedPath = filePath.replace(/\\/g, "/");
 	const match = normalisedPath.match(
-		/\/src\/content\/(posts|spec|timeline)\/(.+)$/,
+		/\/src\/content\/(posts|spec|timeline|nothing)\/(.+)$/,
 	);
 
 	if (!match) {
@@ -180,8 +214,13 @@ function getContentAssetBase(filePath) {
 	if (collection === "timeline") {
 		const [year, month] = parts;
 		return year && month
-			? `/images/timeline/${year}/${month}`
-			: "/images/timeline";
+			? `/images/${collection}/${year}/${month}`
+			: `/images/${collection}`;
+	}
+
+	if (collection === "nothing") {
+		const [year] = parts;
+		return year ? `/images/nothing/${year}` : "/images/nothing";
 	}
 
 	const filename = parts.at(-1) || "";

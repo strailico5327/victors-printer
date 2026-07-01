@@ -1,0 +1,74 @@
+---
+import type { GetStaticPaths, Page } from "astro";
+import { getCollection, type CollectionEntry } from "astro:content";
+import TimelineLikePage from "@components/TimelineLikePage.astro";
+import { formatDateForDisplay } from "@utils/date-utils";
+import { siteConfig } from "../../config";
+
+type NothingEntry = CollectionEntry<"nothing">;
+
+type NothingYear = {
+	year: string;
+	entries: NothingEntry[];
+};
+
+interface Props {
+	page: Page<NothingYear>;
+}
+
+export const getStaticPaths = (async ({ paginate }) => {
+	const entries = (
+		await getCollection("nothing", ({ data }) => {
+			return import.meta.env.PROD ? data.draft !== true : true;
+		})
+	).sort((a, b) => b.data.published.getTime() - a.data.published.getTime());
+
+	const groups = new Map<string, NothingEntry[]>();
+
+	for (const entry of entries) {
+		const year = String(entry.data.published.getFullYear());
+		const group = groups.get(year) ?? [];
+		group.push(entry);
+		groups.set(year, group);
+	}
+
+	const years = [...groups.entries()].map(([year, group]) => ({
+		year,
+		entries: group,
+	}));
+
+	return paginate(years, { pageSize: 1 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const year = page.data[0] as NothingYear | undefined;
+
+if (!year) {
+	throw new Error("Nothing year content not found");
+}
+
+const renderedEntries = await Promise.all(
+	year.entries.map(async (entry) => ({
+		Content: (await entry.render()).Content,
+		meta: [
+			{
+				icon: "material-symbols:calendar-today-outline-rounded",
+				label: formatDateForDisplay(entry.data.published),
+				datetime: entry.data.published.toISOString(),
+			},
+		],
+	})),
+);
+---
+
+<TimelineLikePage
+	pageTitle="Nothing"
+	description="Nothing"
+	titleHref="/timeline/"
+	subtitle={siteConfig.nothingSubtitle}
+	items={renderedEntries}
+	page={page}
+	basePath="/nothing"
+	classPrefix="nothing"
+	showPagination={page.lastPage > 1}
+/>
