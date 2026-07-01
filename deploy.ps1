@@ -1,8 +1,37 @@
+param(
+	[string]$CommitMessage = "deploy: update site"
+)
+
 $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $workerRoot = Join-Path $projectRoot "worker"
 $distPath = Join-Path $projectRoot "dist"
+
+Write-Host "Syncing local changes with GitHub..." -ForegroundColor Cyan
+Push-Location $projectRoot
+try {
+	git add -A
+
+	$stagedChanges = git diff --cached --name-only
+	if ($stagedChanges) {
+		git commit -m $CommitMessage
+	}
+	else {
+		Write-Host "No local file changes to commit." -ForegroundColor DarkGray
+	}
+
+	$branch = git branch --show-current
+	if (-not $branch) {
+		throw "Could not detect the current Git branch."
+	}
+
+	git pull --rebase origin $branch
+	git push origin $branch
+}
+finally {
+	Pop-Location
+}
 
 Write-Host "Building Victor's Printer..." -ForegroundColor Cyan
 Push-Location $projectRoot
