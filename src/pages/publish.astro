@@ -1771,7 +1771,7 @@ const dashboardNavLinks = [
 		const full = canKeepOriginal
 			? { blob: source, width: image.width || sourceDimensions.width, height: image.height || sourceDimensions.height }
 			: await encodeSafeImage(source, Infinity, mimeTypeForExtension(image.outputExtension || "png"), 0.9);
-		const thumb = await encodeSafeImage(source, 560, "image/webp", 0.78);
+		const thumb = await encodeSafeImage(source, 1200, "image/webp", 0.8);
 		image.full = full.blob;
 		image.thumb = thumb.blob;
 		image.width = full.width;
