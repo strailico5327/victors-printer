@@ -59,9 +59,15 @@ const {
 					data-pagefind-body
 					data-pagefind-weight="10"
 					data-pagefind-meta="title"
-					class="post-title post-title-accent"
+					class="post-title post-title-accent post-title-link group"
 				>
-					{pageTitle}
+					<span class="post-title-link-row">
+						<span>{pageTitle}</span>
+						<Icon
+							name="material-symbols:chevron-right-rounded"
+							class="post-title-link-arrow"
+						/>
+					</span>
 				</a>
 			</div>
 
