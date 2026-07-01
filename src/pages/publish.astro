@@ -284,8 +284,6 @@ const dashboardNavLinks = [
 
 	const imagePanel = document.querySelector("#image-panel");
 	const metaEditor = document.querySelector("#meta-editor");
-	let locationTransitionToken = 0;
-	let locationTransitionPending = false;
 	const metaLocation = document.querySelector(".meta-location");
 	const locationInput = document.querySelector("#location-input");
 	const tagInput = document.querySelector("#tag-input");
@@ -2132,12 +2130,6 @@ const dashboardNavLinks = [
 		if (!metaEditor) {
 			return;
 		}
-		const isAlready = metaEditor.classList.contains("location-expanded");
-		if (locationExpanded === isAlready) {
-			return;
-		}
-		const token = ++locationTransitionToken;
-		locationTransitionPending = true;
 		metaEditor.classList.toggle("location-expanded", locationExpanded);
 		toggleLocationButton?.toggleAttribute("disabled", locationExpanded);
 		toggleLocationButton?.setAttribute("aria-disabled", locationExpanded ? "true" : "false");
@@ -2148,23 +2140,14 @@ const dashboardNavLinks = [
 		updateDatetimeCaret();
 		if (locationExpanded && focus) {
 			window.setTimeout(() => {
-				if (token !== locationTransitionToken) return;
-				locationTransitionPending = false;
 				locationInput?.focus();
 			}, metaTransitionMs);
-		} else {
-			window.setTimeout(() => {
-				if (token !== locationTransitionToken) return;
-				locationTransitionPending = false;
-			}, metaTransitionMs);
-		}
-		if (!locationExpanded && document.activeElement === locationInput) {
+		} else if (!locationExpanded && document.activeElement === locationInput) {
 			locationInput?.blur();
 		}
 	}
 
 	function toggleLocationMode() {
-		if (locationTransitionPending) return;
 		setMetaMode(!metaEditor?.classList.contains("location-expanded"));
 		markDirty();
 	}
