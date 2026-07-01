@@ -11,6 +11,6 @@ draft: false
 :> Only when you get some things for free do they become keepsakes.
 
 :!flex 75
-:!img 1705261834-bd44cdbz-1.png
-:!img 1705261834-bd44cdbz-2.png
+:!img 170526xxxx-bd44cdbz-1.png
+:!img 170526xxxx-bd44cdbz-2.png
 !:flex

@@ -10,4 +10,4 @@ draft: false
 
 :> The minijacks in this chart are so horrible.
 
-:!img 0604261025-6vcw6nbg-1.png
+:!img 060426xxxx-6vcw6nbg-1.png

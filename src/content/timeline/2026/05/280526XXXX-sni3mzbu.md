@@ -8,4 +8,4 @@ draft: false
 
 :> Bloody ironic. It has been one month since that day, a turning point.
 
-:!img 2805261539-sni3mzbu-1.png 50
+:!img 280526xxxx-sni3mzbu-1.png 50

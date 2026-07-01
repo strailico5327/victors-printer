@@ -8,4 +8,4 @@ draft: false
 
 :> What a relief to be with someone you can get along well with.
 
-:!img 0805262141-jstr6pbn-1.png
+:!img 080526xxxx-jstr6pbn-1.png

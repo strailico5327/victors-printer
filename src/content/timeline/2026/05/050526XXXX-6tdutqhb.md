@@ -8,4 +8,4 @@ draft: false
 
 :> :!link AP is a love letter to a marvellous chart. https://www.bilibili.com/video/BV1guRiBsEnC
 
-:!img 0505261523-6tdutqhb-1.PNG
+:!img 050526xxxx-6tdutqhb-1.PNG

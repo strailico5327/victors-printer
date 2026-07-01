@@ -52,9 +52,9 @@ const JSON_HEADERS = {
 };
 const PUBLIC_SITE_ORIGIN = "https://strailico.me";
 
-const ID_PATTERN = /^\d{6}(?:\d{4}|x{4})-[a-z0-9]{8}$/i;
+const ID_PATTERN = /^\d{6}(?:\d{4}|x{4})-[a-z0-9]{8}$/;
 const ISO_WITH_ZONE =
-	/^(\d{4})-(\d{2})-(\d{2})T(\d{2}|xx):(\d{2}|xx)(?::(\d{2}|xx))?(?:\.\d+)?(Z|[+-]\d{2}:\d{2})$/i;
+	/^(\d{4})-(\d{2})-(\d{2})T(\d{2}|xx):(\d{2}|xx)(?::(\d{2}|xx))?(?:\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
 
 let accessCertsCache: { expiresAt: number; certs: AccessCerts } | undefined;
 

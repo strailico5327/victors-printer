@@ -1,7 +1,7 @@
 import { defineCollection, z } from "astro:content";
 import type { BaseSchema, CollectionConfig } from "astro/content/config";
 
-const unknownTimelineDateTime = /^(\d{4})-(\d{2})-(\d{2})Txx:xx(?::(?:\d{2}|xx))?(?:Z|[+-]\d{2}:\d{2})?$/i;
+const unknownTimelineDateTime = /^(\d{4})-(\d{2})-(\d{2})Txx:xx(?::(?:\d{2}|xx))?(?:Z|[+-]\d{2}:\d{2})?$/;
 
 function coercePublishedDate(value: unknown): unknown {
 	if (value instanceof Date) {
@@ -53,7 +53,7 @@ const specCollection = defineCollection({
 const nothingCollection = defineCollection({
 	schema: z.object({
 		type: z.literal("thought"),
-		id: z.string().regex(/^(?:\d{6}|\d{8})(?:\d{4}|x{4})-[a-z0-9]{8}$/i),
+		id: z.string().regex(/^(?:\d{6}|\d{8})(?:\d{4}|x{4})-[a-z0-9]{8}$/),
 		published: publishedDate,
 		draft: z.boolean().optional().default(false),
 	}),
@@ -61,7 +61,7 @@ const nothingCollection = defineCollection({
 const timelineCollection = defineCollection({
 	schema: z.object({
 		type: z.literal("event"),
-		id: z.string().regex(/^\d{6}(?:\d{4}|x{4})-[a-z0-9]{8}$/i),
+		id: z.string().regex(/^\d{6}(?:\d{4}|x{4})-[a-z0-9]{8}$/),
 		published: publishedDate,
 		draft: z.boolean().optional().default(false),
 		location: z.string().optional().default(""),
