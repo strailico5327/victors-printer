@@ -214,7 +214,7 @@ const { enable, endpointUrl, profileUrl } = nowPlayingConfig;
 		const fitSongTitle = () => {
 			if (!songEl) return;
 
-			const words = currentSongTitle.trim().split(/\s+/).filter(Boolean);
+			const text = currentSongTitle.trim();
 			const style = window.getComputedStyle(songEl);
 			const font = `${style.fontStyle} ${style.fontVariant} ${style.fontWeight} ${style.fontSize} / ${style.lineHeight} ${style.fontFamily}`;
 			const canvas = document.createElement("canvas");
@@ -222,18 +222,35 @@ const { enable, endpointUrl, profileUrl } = nowPlayingConfig;
 			const availableWidth = songEl.getBoundingClientRect().width - 14;
 
 			if (!context || availableWidth <= 0) {
-				songEl.textContent = currentSongTitle;
-				songEl.title = currentSongTitle;
+				songEl.textContent = text;
+				songEl.title = text;
 				return;
 			}
 
 			context.font = font;
-			songEl.textContent = currentSongTitle;
-			songEl.title = currentSongTitle;
+			songEl.textContent = text;
+			songEl.title = text;
 
-			if (context.measureText(currentSongTitle).width <= availableWidth || words.length <= 1) {
+			if (context.measureText(text).width <= availableWidth) {
 				return;
 			}
+
+			const hasCJK = /[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/.test(text);
+
+			if (hasCJK) {
+				for (let i = text.length - 1; i > 0; i -= 1) {
+					const candidate = `${text.slice(0, i)}...`;
+					if (context.measureText(candidate).width <= availableWidth) {
+						songEl.textContent = candidate;
+						return;
+					}
+				}
+				songEl.textContent = "...";
+				return;
+			}
+
+			const words = text.split(/\s+/).filter(Boolean);
+			if (words.length <= 1) return;
 
 			const firstCandidateWordCount = Math.max(1, words.length - 2);
 
