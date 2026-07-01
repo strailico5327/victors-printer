@@ -1,7 +1,7 @@
 ---
 type: "event"
-id: "170526XXXX-bd44cdbz"
-published: 2026-05-17TXX:XX:00+08:00
+id: "170526xxxx-bd44cdbz"
+published: 2026-05-17Txx:xx:00+08:00
 tag: "UNKNOWN"
 draft: false
 ---

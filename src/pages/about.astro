@@ -1,9 +1,11 @@
 ---
 import { getEntry } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
+import { Icon } from "astro-icon/components";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { formatDateForDisplay } from "../utils/date-utils";
 
 const aboutPost = await getEntry("spec", "about");
 
@@ -12,10 +14,32 @@ if (!aboutPost) {
 }
 
 const { Content } = await aboutPost.render();
+
+const aboutTitle = aboutPost.data.title || i18n(I18nKey.about);
+const aboutDate = aboutPost.data.published;
 ---
 <MainGridLayout title={i18n(I18nKey.about)} description={i18n(I18nKey.about)}>
     <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
         <div class="card-base z-10 px-9 py-6 relative w-full ">
+            <div
+                data-pagefind-body
+                data-pagefind-weight="10"
+                data-pagefind-meta="title"
+                class="post-title post-title-accent onload-animation"
+            >
+                {aboutTitle}
+            </div>
+            {aboutDate && (
+                <div class="flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2 mb-5 onload-animation">
+                    <div class="flex items-center">
+                        <div class="meta-icon">
+                            <Icon name="material-symbols:calendar-today-outline-rounded" class="text-xl" />
+                        </div>
+                        <span class="text-50 text-sm font-medium">{formatDateForDisplay(aboutDate)}</span>
+                    </div>
+                </div>
+            )}
+            <div class="border-[var(--line-divider)] border-dashed border-b-[1px] mb-5 onload-animation"></div>
             <Markdown class="mt-2 literary-prose">
                 <Content />
             </Markdown>

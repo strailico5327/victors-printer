@@ -129,13 +129,15 @@ id: "2106262315-a8f3k2p9"
 published: 2026-06-21T23:15:00+08:00
 draft: true
 location: ""
+tag: "UNKNOWN"
 ---
 ```
 
 Rules:
 
 - `type` must be `"event"`.
-- `id` must match `ddmmyyhhmm-8 lowercase letters or digits`.
-- `published` must be ISO 8601 with timezone.
+- `id` must match `ddmmyyhhmm-8 lowercase letters or digits`; use `ddmmyyxxxx` when the time is unknown.
+- `published` must be ISO 8601 with timezone; use `Txx:xx:00+08:00` when the time is unknown.
+- `tag` is required and must be a single string.
 - Original images must be jpg, jpeg, or png.
 - Thumbnails must be `{eventId}-n_thumb.webp`.

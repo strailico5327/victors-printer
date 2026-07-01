@@ -9,6 +9,17 @@ export function transformSeparatorShortcutParagraph(node) {
 
 	const text = getParagraphText(node);
 
+	if (text === ":!==!:") {
+		node.type = "html";
+		node.value = '<div class="shortcut-inner-separator" aria-hidden="true"></div>';
+
+		delete node.children;
+		delete node.data;
+		delete node.properties;
+
+		return true;
+	}
+
 	if (text !== ":!===!:") {
 		return false;
 	}
@@ -45,8 +56,11 @@ function collectInlineText(children) {
 			continue;
 		}
 
-		if (child.type === "textDirective" && child.name === "!===!") {
-			text += ":!===!:";
+		if (
+			child.type === "textDirective" &&
+			(child.name === "!===!" || child.name === "!==!")
+		) {
+			text += `:${child.name}:`;
 			continue;
 		}
 

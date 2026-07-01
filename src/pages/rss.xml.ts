@@ -1,7 +1,7 @@
 import { getCollection } from "astro:content";
 import rss from "@astrojs/rss";
 import { getSortedPosts } from "@utils/content-utils";
-import { formatDateForDisplay } from "@utils/date-utils";
+import { formatDateTimeForDisplay } from "@utils/date-utils";
 import { url } from "@utils/url-utils";
 import type { APIContext } from "astro";
 import MarkdownIt from "markdown-it";
@@ -42,9 +42,8 @@ export async function GET(context: APIContext) {
 			const content =
 				typeof event.body === "string" ? event.body : String(event.body || "");
 			const cleanedContent = stripInvalidXmlChars(content);
-			const time = `${String(event.data.published.getHours()).padStart(2, "0")}:${String(event.data.published.getMinutes()).padStart(2, "0")}`;
 			return {
-				title: `Timeline: ${formatDateForDisplay(event.data.published)} ${time}`,
+				title: `Timeline: ${formatDateTimeForDisplay(event.data.published, event.id)}`,
 				pubDate: event.data.published,
 				description: event.data.location || "",
 				link: url("/timeline/"),

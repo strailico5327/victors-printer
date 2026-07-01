@@ -9,6 +9,7 @@ id: "${eventId}"
 published: 2026-06-21T23:15:00+08:00
 draft: true
 location: "Fuzhou"
+tag: "UNKNOWN"
 ---
 
 Saw a strange sky on the way back.

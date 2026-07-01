@@ -43,6 +43,31 @@ const dashboardNavLinks = [
 							</button>
 						</span>
 					</label>
+					<label class="field meta-tag">
+						<span class="meta-label">Tag</span>
+						<span class="tag-control">
+							<input id="tag-input" type="text" readonly />
+							<button id="tag-action-button" class="tag-action-button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Choose tag">
+								<Icon name="material-symbols:tag-rounded" />
+							</button>
+							<span id="tag-menu-panel" class="tag-menu-panel transition float-panel-closed" hidden>
+								<span class="card-base float-panel tag-menu">
+									<button class="btn-plain scale-animation active:scale-95" type="button" data-tag-action="new">
+										<Icon name="material-symbols:add-rounded" />
+										<span>New</span>
+									</button>
+									<button class="btn-plain scale-animation active:scale-95" type="button" data-tag-value="Games">
+										<Icon name="material-symbols:sports-esports-outline-rounded" />
+										<span>Games</span>
+									</button>
+									<button class="btn-plain scale-animation active:scale-95" type="button" data-tag-value="Life">
+										<Icon name="material-symbols:favorite-outline-rounded" />
+										<span>Life</span>
+									</button>
+								</span>
+							</span>
+						</span>
+					</label>
 					<div class="field meta-location">
 						<span class="meta-label">Location</span>
 						<span class="location-control">
@@ -261,6 +286,10 @@ const dashboardNavLinks = [
 	const metaEditor = document.querySelector("#meta-editor");
 	const metaLocation = document.querySelector(".meta-location");
 	const locationInput = document.querySelector("#location-input");
+	const tagInput = document.querySelector("#tag-input");
+	const tagActionButton = document.querySelector("#tag-action-button");
+	const tagMenuPanel = document.querySelector("#tag-menu-panel");
+	const tagMenuButtons = Array.from(document.querySelectorAll("[data-tag-value], [data-tag-action]"));
 	const toggleLocationButton = document.querySelector("#toggle-location-button");
 	const datetimeInput = document.querySelector("#datetime-input");
 	const editorScrollShell = document.querySelector(".editor-scroll-shell");
@@ -353,6 +382,7 @@ const dashboardNavLinks = [
 	const tileCount = maxImages;
 	const publishEndpoint = import.meta.env.PUBLIC_PUBLISH_API_ENDPOINT || "/api/publish";
 	const datetimeDigitIndexes = [0, 1, 3, 4, 6, 7, 8, 9, 11, 12, 14, 15];
+	const datetimeTimeIndexes = [11, 12, 14, 15];
 	const datetimeMask = "00/00/0000 00:00";
 	const datetimeMeasureCanvas = document.createElement("canvas");
 	const datetimeMeasureContext = datetimeMeasureCanvas.getContext("2d");
@@ -404,13 +434,13 @@ const dashboardNavLinks = [
 	}
 
 	function currentDateCode() {
-		const digits = datetimeInput?.value.replace(/\D/g, "") ?? "";
-		return `${digits.slice(0, 2)}${digits.slice(2, 4)}${digits.slice(4, 8)}`;
+		const value = normalizeDatetimeValue(datetimeInput?.value ?? "");
+		return `${value.slice(0, 2)}${value.slice(3, 5)}${value.slice(6, 10)}`;
 	}
 
 	function currentEventId() {
-		const digits = datetimeInput?.value.replace(/\D/g, "") ?? "";
-		const prefix = `${digits.slice(0, 2)}${digits.slice(2, 4)}${digits.slice(6, 8)}${digits.slice(8, 10)}${digits.slice(10, 12)}`;
+		const value = normalizeDatetimeValue(datetimeInput?.value ?? "");
+		const prefix = `${value.slice(0, 2)}${value.slice(3, 5)}${value.slice(8, 10)}${value.slice(11, 13)}${value.slice(14, 16)}`;
 		return `${prefix || "0000000000"}-${eventRandomSuffix}`;
 	}
 
@@ -459,19 +489,33 @@ const dashboardNavLinks = [
 	}
 
 	function datetimeToIso(value) {
-		const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/);
+		const match = normalizeDatetimeValue(value).match(/^(\d{2})\/(\d{2})\/(\d{4}) ([\dx]{2}):([\dx]{2})$/i);
 		if (!match) {
 			throw new Error("invalid_datetime");
 		}
 		const [, day, month, year, hour, minute] = match;
-		const date = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), 0);
+		const hasUnknownTime = hour.toLowerCase().includes("x") || minute.toLowerCase().includes("x");
+		const date = new Date(
+			Number(year),
+			Number(month) - 1,
+			Number(day),
+			hasUnknownTime ? 0 : Number(hour),
+			hasUnknownTime ? 0 : Number(minute),
+			0,
+		);
 		const offsetMinutes = -date.getTimezoneOffset();
 		const sign = offsetMinutes >= 0 ? "+" : "-";
 		const absOffset = Math.abs(offsetMinutes);
-		return `${year}-${month}-${day}T${hour}:${minute}:00${sign}${pad(Math.floor(absOffset / 60))}:${pad(absOffset % 60)}`;
+		const time = hasUnknownTime ? "xx:xx" : `${hour}:${minute}`;
+		return `${year}-${month}-${day}T${time}:00${sign}${pad(Math.floor(absOffset / 60))}:${pad(absOffset % 60)}`;
 	}
 
 	function isoToDatetimeValue(value) {
+		const unknownTime = `${value ?? ""}`.match(/^(\d{4})-(\d{2})-(\d{2})Txx:xx(?::xx|:00)?(?:Z|[+-]\d{2}:\d{2})?$/i);
+		if (unknownTime) {
+			const [, year, month, day] = unknownTime;
+			return `${day}/${month}/${year} xx:xx`;
+		}
 		const date = new Date(value);
 		if (Number.isNaN(date.getTime())) {
 			return normalizeDatetimeValue("");
@@ -596,12 +640,13 @@ const dashboardNavLinks = [
 	}
 
 	function normalizeDatetimeValue(value) {
-		const digits = value.replace(/\D/g, "").padEnd(12, "0").slice(0, 12);
-		let day = Number(digits.slice(0, 2));
-		let month = Number(digits.slice(2, 4));
-		let year = Number(digits.slice(4, 8));
-		let hour = Number(digits.slice(8, 10));
-		let minute = Number(digits.slice(10, 12));
+		const tokens = value.toLowerCase().replace(/[^0-9x]/g, "").padEnd(12, "0").slice(0, 12);
+		let day = Number(tokens.slice(0, 2).replace(/x/g, "0"));
+		let month = Number(tokens.slice(2, 4).replace(/x/g, "0"));
+		let year = Number(tokens.slice(4, 8).replace(/x/g, "0"));
+		let hour = Number(tokens.slice(8, 10).replace(/x/g, "0"));
+		let minute = Number(tokens.slice(10, 12).replace(/x/g, "0"));
+		const hasUnknownTime = tokens.slice(8, 12).includes("x");
 
 		year = Math.min(Math.max(year, 1), 9999);
 		month = Math.min(Math.max(month, 1), 12);
@@ -610,12 +655,18 @@ const dashboardNavLinks = [
 		hour = Math.min(Math.max(hour, 0), 23);
 		minute = Math.min(Math.max(minute, 0), 59);
 
-		return `${pad(day)}/${pad(month)}/${String(year).padStart(4, "0")} ${pad(hour)}:${pad(minute)}`;
+		const time = hasUnknownTime ? "xx:xx" : `${pad(hour)}:${pad(minute)}`;
+		return `${pad(day)}/${pad(month)}/${String(year).padStart(4, "0")} ${time}`;
 	}
 
 	function setDatetimeDigit(input, index, digit) {
 		const nextIndex = getClosestDatetimeDigitIndex(index);
 		const chars = input.value.padEnd(datetimeMask.length, "0").split("");
+		if (datetimeTimeIndexes.includes(nextIndex) && datetimeTimeIndexes.some((timeIndex) => chars[timeIndex]?.toLowerCase() === "x")) {
+			for (const timeIndex of datetimeTimeIndexes) {
+				chars[timeIndex] = "0";
+			}
+		}
 		chars[nextIndex] = digit;
 		input.value = normalizeDatetimeValue(chars.join(""));
 		const followingIndex = datetimeDigitIndexes.find((digitIndex) => digitIndex > nextIndex) ?? nextIndex;
@@ -624,6 +675,24 @@ const dashboardNavLinks = [
 		renderAllImages();
 		markDirty();
 		updateDatetimeCaret();
+	}
+
+	function setDatetimeUnknownTime(input) {
+		const selectedIndex = getClosestDatetimeDigitIndex(input.selectionStart ?? 0);
+		if (!datetimeTimeIndexes.includes(selectedIndex)) {
+			return false;
+		}
+		const chars = input.value.padEnd(datetimeMask.length, "0").split("");
+		for (const timeIndex of datetimeTimeIndexes) {
+			chars[timeIndex] = "x";
+		}
+		input.value = normalizeDatetimeValue(chars.join(""));
+		input.setSelectionRange(datetimeTimeIndexes[datetimeTimeIndexes.length - 1], datetimeTimeIndexes[datetimeTimeIndexes.length - 1]);
+		syncEventIdToDatetime();
+		renderAllImages();
+		markDirty();
+		updateDatetimeCaret();
+		return true;
 	}
 
 	function clearDatetimeDigit(input, direction) {
@@ -1354,6 +1423,52 @@ const dashboardNavLinks = [
 		canvasSyntaxButton?.setAttribute("aria-expanded", "true");
 	}
 
+	function hideTagMenu() {
+		tagMenuPanel?.classList.add("float-panel-closed");
+		tagActionButton?.setAttribute("aria-expanded", "false");
+	}
+
+	function showTagMenu() {
+		tagMenuPanel?.removeAttribute("hidden");
+		tagMenuPanel?.classList.remove("float-panel-closed");
+		tagActionButton?.setAttribute("aria-expanded", "true");
+	}
+
+	function toggleTagMenu() {
+		if (tagActionButton?.getAttribute("aria-expanded") === "true") {
+			hideTagMenu();
+		} else {
+			showTagMenu();
+		}
+	}
+
+	function setTagEditing(enabled) {
+		tagInput?.toggleAttribute("readonly", !enabled);
+		updateTagMenuState();
+	}
+
+	function updateTagMenuState() {
+		const tag = tagInput?.value.trim() ?? "";
+		const editable = !tagInput?.hasAttribute("readonly");
+		for (const button of tagMenuButtons) {
+			const active =
+				button.dataset.tagValue === tag ||
+				(button.dataset.tagAction === "new" && editable && !tagMenuButtons.some((item) => item.dataset.tagValue === tag));
+			button.classList.toggle("current-theme-btn", active);
+			button.classList.toggle("active", active);
+			button.setAttribute("aria-pressed", active ? "true" : "false");
+		}
+	}
+
+	function validateRequiredTag() {
+		if (tagInput?.value.trim()) {
+			return true;
+		}
+		alert("Please fill in a tag before publishing.");
+		tagInput?.focus();
+		return false;
+	}
+
 	function finishSingleWidthEditing({ commit = true } = {}) {
 		if (!singleWidthInput) {
 			return;
@@ -1725,11 +1840,13 @@ const dashboardNavLinks = [
 	function buildEventMarkdown() {
 		const published = datetimeToIso(datetimeInput?.value ?? "");
 		const location = metaEditor?.classList.contains("location-expanded") ? locationInput?.value.trim() : "";
+		const tag = tagInput?.value.trim() ?? "";
 		const lines = [
 			"---",
 			'type: "event"',
 			`id: ${yamlString(eventId)}`,
 			`published: ${published}`,
+			`tag: ${yamlString(tag)}`,
 			"draft: true",
 			`location: ${yamlString(location)}`,
 			"---",
@@ -1790,6 +1907,14 @@ const dashboardNavLinks = [
 				continue;
 			}
 			const value = field[2].trim();
+			if (value.startsWith("[") && value.endsWith("]")) {
+				data[field[1]] = value
+					.slice(1, -1)
+					.split(",")
+					.map((item) => item.trim().replace(/^["']|["']$/g, ""))
+					.filter(Boolean);
+				continue;
+			}
 			data[field[1]] = value.replace(/^["']|["']$/g, "");
 		}
 		return { data, body: text.slice(match[0].length).replace(/^(?:[ \t]*\r?\n)+/, "") };
@@ -1904,6 +2029,10 @@ const dashboardNavLinks = [
 		}
 		if (locationInput) {
 			locationInput.value = parsedMarkdown.data.location || "";
+		}
+		if (tagInput) {
+			tagInput.value = parsedMarkdown.data.tag || (Array.isArray(parsedMarkdown.data.tags) ? parsedMarkdown.data.tags[0] || "" : parsedMarkdown.data.tags || "");
+			setTagEditing(Boolean(tagInput.value) && !tagMenuButtons.some((button) => button.dataset.tagValue === tagInput.value));
 		}
 		setMetaMode(Boolean(parsedMarkdown.data.location), { focus: false });
 		const { text: restoredContent, shortcutLines } = splitDraftBodyAndImageBlock(parsedMarkdown.body);
@@ -2716,6 +2845,11 @@ const dashboardNavLinks = [
 			setDatetimeDigit(datetimeInput, datetimeInput.selectionStart ?? 0, event.key);
 			return;
 		}
+		if (event.key.toLowerCase() === "x") {
+			event.preventDefault();
+			setDatetimeUnknownTime(datetimeInput);
+			return;
+		}
 		if (event.key === "Backspace" || event.key === "Delete") {
 			event.preventDefault();
 			clearDatetimeDigit(datetimeInput, event.key === "Backspace" ? "backward" : "forward");
@@ -2757,6 +2891,8 @@ const dashboardNavLinks = [
 			event.preventDefault();
 			if (/^\d$/.test(event.data ?? "")) {
 				setDatetimeDigit(datetimeInput, datetimeInput.selectionStart ?? 0, event.data);
+			} else if ((event.data ?? "").toLowerCase() === "x") {
+				setDatetimeUnknownTime(datetimeInput);
 			}
 		}
 	});
@@ -2774,8 +2910,8 @@ const dashboardNavLinks = [
 			return;
 		}
 		event.preventDefault();
-		const pastedDigits = event.clipboardData?.getData("text").replace(/\D/g, "");
-		if (!pastedDigits) {
+		const pastedTokens = event.clipboardData?.getData("text").toLowerCase().replace(/[^0-9x]/g, "");
+		if (!pastedTokens) {
 			return;
 		}
 		const chars = datetimeInput.value.split("");
@@ -2784,10 +2920,10 @@ const dashboardNavLinks = [
 			if (index < (datetimeInput.selectionStart ?? 0)) {
 				continue;
 			}
-			if (!pastedDigits[digitCursor]) {
+			if (!pastedTokens[digitCursor]) {
 				break;
 			}
-			chars[index] = pastedDigits[digitCursor];
+			chars[index] = pastedTokens[digitCursor];
 			digitCursor += 1;
 		}
 		datetimeInput.value = normalizeDatetimeValue(chars.join(""));
@@ -2884,6 +3020,9 @@ const dashboardNavLinks = [
 
 	publishButton?.addEventListener("click", async () => {
 		window.clearTimeout(publishTimer);
+		if (!validateRequiredTag()) {
+			return;
+		}
 		try {
 			await publishEntry();
 		} catch (error) {
@@ -2899,6 +3038,38 @@ const dashboardNavLinks = [
 	initEditorScrollbar();
 	fitEditorTextarea();
 	locationInput?.addEventListener("input", markDirty);
+	tagInput?.addEventListener("input", () => {
+		markDirty();
+		updateTagMenuState();
+	});
+	tagActionButton?.addEventListener("click", (event) => {
+		event.preventDefault();
+		event.stopPropagation();
+		toggleTagMenu();
+		tagInput?.focus();
+	});
+	for (const button of tagMenuButtons) {
+		button.addEventListener("click", () => {
+			if (button.dataset.tagAction === "new") {
+				if (tagInput) {
+					tagInput.value = "";
+				}
+				setTagEditing(true);
+			} else if (tagInput) {
+				tagInput.value = button.dataset.tagValue || "";
+				setTagEditing(false);
+			}
+			hideTagMenu();
+			markDirty();
+			updateTagMenuState();
+			tagInput?.focus();
+		});
+	}
+	document.addEventListener("pointerdown", (event) => {
+		if (!event.target?.closest?.(".meta-tag")) {
+			hideTagMenu();
+		}
+	});
 	window.addEventListener("beforeunload", (event) => {
 		if (publishSucceeded) {
 			return;
@@ -2910,6 +3081,7 @@ const dashboardNavLinks = [
 	disableSwupFromPublish();
 	setImageMode("off");
 	renderAllImages();
+	updateTagMenuState();
 	updateDatetimeCaret();
 	window.timelinePublish = { prepareSafeImageAssets, originalTileFiles };
 </script>
@@ -2952,6 +3124,7 @@ const dashboardNavLinks = [
 	.publish-main {
 		display: grid;
 		gap: 0.85rem;
+		overflow: visible;
 	}
 
 	.publish-images {
@@ -3091,6 +3264,7 @@ const dashboardNavLinks = [
 		--meta-pin-size: 1.05rem;
 		--meta-gap: 0.5rem;
 		--meta-time-width: 12rem;
+		--meta-tag-width: 12rem;
 		--meta-transition-duration: 260ms;
 		display: flex;
 		align-items: end;
@@ -3101,6 +3275,7 @@ const dashboardNavLinks = [
 	}
 
 	.meta-time,
+	.meta-tag,
 	.meta-location {
 		position: relative;
 		min-width: 0;
@@ -3113,6 +3288,11 @@ const dashboardNavLinks = [
 		width: min(var(--meta-time-width), 100%);
 	}
 
+	.meta-tag {
+		flex: 1 1 var(--meta-tag-width);
+		width: var(--meta-tag-width);
+	}
+
 	.meta-location {
 		flex: 0 0 var(--meta-icon-size);
 		width: var(--meta-icon-size);
@@ -3122,8 +3302,8 @@ const dashboardNavLinks = [
 	}
 
 	.meta-editor.location-expanded .meta-location {
-		flex-basis: calc(100% - var(--meta-time-width) - var(--meta-gap));
-		width: calc(100% - var(--meta-time-width) - var(--meta-gap));
+		flex-basis: calc(100% - var(--meta-time-width) - var(--meta-tag-width) - (var(--meta-gap) * 2));
+		width: calc(100% - var(--meta-time-width) - var(--meta-tag-width) - (var(--meta-gap) * 2));
 	}
 
 	.meta-editor .field {
@@ -3172,6 +3352,26 @@ const dashboardNavLinks = [
 			outline-color 160ms ease;
 	}
 
+	.tag-control {
+		position: relative;
+		display: block;
+		width: 100%;
+		height: var(--meta-icon-size);
+		box-sizing: border-box;
+		overflow: visible;
+		border-radius: 0.75rem;
+		background: var(--publish-control-bg);
+		outline: 2px solid transparent;
+		transition:
+			background-color 160ms ease,
+			outline-color 160ms ease;
+	}
+
+	.tag-control:focus-within {
+		outline-color: var(--publish-accent);
+		background: var(--publish-control-bg);
+	}
+
 	.meta-editor:not(.location-expanded) .date-control:focus-within {
 		outline-color: var(--publish-accent);
 		background: var(--publish-control-bg);
@@ -3198,16 +3398,40 @@ const dashboardNavLinks = [
 			transform 120ms ease;
 	}
 
-	.date-now-button:hover {
+	.tag-action-button {
+		position: absolute;
+		top: 0;
+		right: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--meta-icon-size);
+		height: var(--meta-icon-size);
+		border: 0;
+		box-sizing: border-box;
+		border-radius: 0.75rem;
+		color: var(--publish-muted-text);
+		background: transparent;
+		cursor: pointer;
+		transition:
+			background-color 160ms ease,
+			color 160ms ease,
+			transform 120ms ease;
+	}
+
+	.date-now-button:hover,
+	.tag-action-button:hover {
 		color: var(--publish-active-icon);
 		background: var(--publish-control-hover-bg);
 	}
 
-	.date-now-button:active {
+	.date-now-button:active,
+	.tag-action-button:active {
 		transform: scale(0.9);
 	}
 
-	.date-now-button :global(svg) {
+	.date-now-button :global(svg),
+	.tag-action-button :global(svg) {
 		display: block;
 		font-size: 1.1rem;
 	}
@@ -3362,22 +3586,29 @@ const dashboardNavLinks = [
 		background: transparent;
 	}
 
+	.meta-editor .tag-control input {
+		width: 100%;
+		height: var(--meta-icon-size);
+		padding-right: 2.35rem;
+		background: transparent;
+		outline: 0;
+		overflow: hidden;
+		text-overflow: clip;
+		white-space: nowrap;
+	}
+
 	.meta-editor .meta-location input {
 		width: 100%;
 		height: var(--meta-icon-size);
 		padding: 0 var(--meta-icon-size) 0 0.75rem;
 		color: transparent;
 		caret-color: transparent;
+		background: transparent;
 		outline: 0;
 		pointer-events: none;
-		text-align: center;
 		overflow: hidden;
 		text-overflow: clip;
 		white-space: nowrap;
-	}
-
-	.meta-editor .meta-location input:hover {
-		background: transparent;
 	}
 
 	.meta-editor.location-expanded .meta-location input {
@@ -3388,11 +3619,74 @@ const dashboardNavLinks = [
 		outline: 2px solid transparent;
 		pointer-events: auto;
 		text-align: left;
+	}
+
+	.meta-editor .tag-control input[readonly] {
+		cursor: default;
+	}
+
+	.meta-editor .tag-control input:hover,
+	.meta-editor .tag-control input:focus,
+	.meta-editor .meta-location input:hover {
 		background: transparent;
 	}
 
-	.meta-editor.location-expanded .meta-location input:hover {
+	:global(.dark) .meta-editor.location-expanded .meta-location input {
+		color: rgba(255, 255, 255, 0.82);
+	}
+
+	.tag-menu-panel {
+		position: absolute;
+		bottom: calc(100% + 0.65rem);
+		right: 0;
+		z-index: 20;
+	}
+
+	.tag-menu-panel.float-panel-closed {
+		transform: translateY(0.25rem);
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.tag-menu {
+		display: grid;
+		min-width: 8.5rem;
+		padding: 0.45rem;
+		font-size: 1rem;
+		line-height: 1.5;
+	}
+
+	.tag-menu button {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 0.75rem;
+		width: 100%;
+		height: 2.25rem;
+		border: 0;
+		border-radius: 0.5rem;
+		padding: 0 0.75rem;
 		background: transparent;
+		font: inherit;
+		font-weight: 500;
+		cursor: pointer;
+		text-align: left;
+	}
+
+	.tag-menu button.current-theme-btn,
+	.tag-menu button.active {
+		color: var(--publish-accent);
+	}
+
+	.tag-menu button.current-theme-btn::before,
+	.tag-menu button.active::before {
+		transform: scale(1);
+		opacity: 1;
+		background: var(--btn-plain-bg-hover);
+	}
+
+	.tag-menu button :global(svg) {
+		font-size: 1.15rem;
 	}
 
 	.meta-editor.location-expanded .location-control:hover {
@@ -3401,10 +3695,6 @@ const dashboardNavLinks = [
 
 	.meta-editor.location-expanded .location-control:hover .location-toggle {
 		background: var(--publish-control-hover-bg);
-	}
-
-	:global(.dark) .meta-editor.location-expanded .meta-location input {
-		color: rgba(255, 255, 255, 0.82);
 	}
 
 	:global(.dark) input,

@@ -4,8 +4,19 @@ import { i18n } from "@i18n/translation";
 import { getCategoryUrl } from "@utils/url-utils.ts";
 
 // // Retrieve posts and sort them by publication date
-async function getRawSortedPosts(): Promise<CollectionEntry<"posts">[]> {
+type PostFilterOptions = {
+	includeIndev?: boolean;
+};
+
+async function getRawSortedPosts(
+	options: PostFilterOptions = {},
+): Promise<CollectionEntry<"posts">[]> {
+	const { includeIndev = true } = options;
 	const allBlogPosts = (await getCollection("posts")).filter((post) => {
+		if (post.data.indev === true) {
+			return !import.meta.env.PROD && includeIndev;
+		}
+
 		return import.meta.env.PROD ? post.data.draft !== true : true;
 	});
 
@@ -36,7 +47,7 @@ export type PostForList = {
 	data: CollectionEntry<"posts">["data"];
 };
 export async function getSortedPostsList(): Promise<PostForList[]> {
-	const sortedFullPosts = await getRawSortedPosts();
+	const sortedFullPosts = await getRawSortedPosts({ includeIndev: false });
 
 	// delete post.body
 	const sortedPostsList = sortedFullPosts.map((post) => ({
@@ -52,7 +63,7 @@ export type Tag = {
 };
 
 export async function getTagList(): Promise<Tag[]> {
-	const allBlogPosts = await getRawSortedPosts();
+	const allBlogPosts = await getRawSortedPosts({ includeIndev: false });
 
 	const countMap: { [key: string]: number } = {};
 	allBlogPosts.forEach((post) => {
@@ -77,7 +88,7 @@ export type Category = {
 };
 
 export async function getCategoryList(): Promise<Category[]> {
-	const allBlogPosts = await getRawSortedPosts();
+	const allBlogPosts = await getRawSortedPosts({ includeIndev: false });
 	const count: { [key: string]: number } = {};
 	allBlogPosts.forEach((post) => {
 		if (!post.data.category) {

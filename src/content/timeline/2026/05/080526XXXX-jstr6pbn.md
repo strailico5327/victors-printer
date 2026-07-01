@@ -1,7 +1,7 @@
 ---
 type: "event"
-id: "080526XXXX-jstr6pbn"
-published: 2026-05-08TXX:XX:00+08:00
+id: "080526xxxx-jstr6pbn"
+published: 2026-05-08Txx:xx:00+08:00
 tag: "UNKNOWN"
 draft: false
 ---

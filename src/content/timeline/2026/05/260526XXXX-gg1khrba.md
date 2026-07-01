@@ -1,7 +1,7 @@
 ---
 type: "event"
-id: "260526XXXX-gg1khrba"
-published: 2026-05-26TXX:XX:00+08:00
+id: "260526xxxx-gg1khrba"
+published: 2026-05-26Txx:xx:00+08:00
 tag: "UNKNOWN"
 draft: false
 ---

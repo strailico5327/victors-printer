@@ -1,7 +1,7 @@
 ---
 type: "event"
-id: "060426XXXX-6vcw6nbg"
-published: 2026-04-06TXX:XX:00+08:00
+id: "060426xxxx-6vcw6nbg"
+published: 2026-04-06Txx:xx:00+08:00
 tag: "UNKNOWN"
 draft: false
 ---

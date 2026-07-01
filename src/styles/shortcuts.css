@@ -151,6 +151,14 @@
     text-indent: 0;
 }
 
+.custom-md .shortcut-inner-separator {
+    display: block;
+    height: 0;
+    margin: 0.75rem 0;
+    border-bottom: 1px dashed var(--line-divider);
+    text-indent: 0;
+}
+
 .custom-md .shortcut-card-separator::before,
 .custom-md .shortcut-card-separator::after {
     content: "";

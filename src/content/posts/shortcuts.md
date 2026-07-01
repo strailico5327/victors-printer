@@ -1,6 +1,11 @@
 ---
 title: "Shortcuts"
 published: 2026-06-29
+category: Tech
+indev: true
+tags:
+    - Markdown
+    - Shortcuts
 ---
 
 :!## Markdown Shortcuts
@@ -32,6 +37,14 @@ Creates a visual card separator gap.
 
 ```md
 :!===!:
+```
+
+## Inner Separator
+
+Creates a light divider inside the current card without using a Markdown `<hr>`.
+
+```md
+:!==!:
 ```
 
 ## Date

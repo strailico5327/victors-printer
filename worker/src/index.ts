@@ -22,6 +22,7 @@ type DraftEvent = {
 	published: string;
 	draft?: string;
 	location?: string;
+	tag?: string;
 };
 
 type AccessJwk = JsonWebKey & {
@@ -51,9 +52,9 @@ const JSON_HEADERS = {
 };
 const PUBLIC_SITE_ORIGIN = "https://strailico.me";
 
-const ID_PATTERN = /^\d{10}-[a-z0-9]{8}$/;
+const ID_PATTERN = /^\d{6}(?:\d{4}|x{4})-[a-z0-9]{8}$/i;
 const ISO_WITH_ZONE =
-	/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+	/^(\d{4})-(\d{2})-(\d{2})T(\d{2}|xx):(\d{2}|xx)(?::(\d{2}|xx))?(?:\.\d+)?(Z|[+-]\d{2}:\d{2})$/i;
 
 let accessCertsCache: { expiresAt: number; certs: AccessCerts } | undefined;
 
@@ -281,11 +282,17 @@ function validateDraftEvent(event: DraftEvent): void {
 		throw new HttpError(400, "invalid_event_type", 'type must be "event".');
 	}
 	if (!ID_PATTERN.test(event.id)) {
-		throw new HttpError(400, "invalid_event_id", "id must match ddmmyyhhmm-xxxxxxxx.");
+		throw new HttpError(400, "invalid_event_id", "id must match ddmmyyhhmm-xxxxxxxx or ddmmyyxxxx-xxxxxxxx.");
 	}
 	parseTimelineDate(event.published);
 	if (event.location !== undefined && event.location.length > 120) {
 		throw new HttpError(400, "location_too_long", "location must be at most 120 characters.");
+	}
+	if (!event.tag?.trim()) {
+		throw new HttpError(400, "missing_tag", "tag is required.");
+	}
+	if (event.tag.length > 60) {
+		throw new HttpError(400, "tag_too_long", "tag must be at most 60 characters.");
 	}
 }
 
@@ -295,6 +302,7 @@ function buildPublishedMarkdown(event: DraftEvent, body: string): string {
 		'type: "event"',
 		`id: ${JSON.stringify(event.id)}`,
 		`published: ${event.published}`,
+		`tag: ${JSON.stringify(event.tag)}`,
 		"draft: false",
 		`location: ${JSON.stringify(event.location ?? "")}`,
 		"---",
@@ -364,17 +372,22 @@ function parseTimelineDate(value: string): { year: string; month: string } {
 	}
 
 	const [, year, month, day, hour, minute, second = "00"] = match;
-	const parsed = new Date(value);
-
-	if (Number.isNaN(parsed.getTime())) {
+	const normalizedHour = hour.toLowerCase();
+	const normalizedMinute = minute.toLowerCase();
+	const normalizedSecond = second.toLowerCase();
+	const hasUnknownTime = normalizedHour === "xx" || normalizedMinute === "xx" || normalizedSecond === "xx";
+	if (
+		(normalizedHour === "xx" || normalizedMinute === "xx") &&
+		(normalizedHour !== "xx" || normalizedMinute !== "xx" || !["00", "xx"].includes(normalizedSecond))
+	) {
 		throw new HttpError(400, "invalid_datetime", "datetime is not a valid date.");
 	}
 
 	const monthNumber = Number(month);
 	const dayNumber = Number(day);
-	const hourNumber = Number(hour);
-	const minuteNumber = Number(minute);
-	const secondNumber = Number(second);
+	const hourNumber = hasUnknownTime ? 0 : Number(hour);
+	const minuteNumber = hasUnknownTime ? 0 : Number(minute);
+	const secondNumber = hasUnknownTime ? 0 : Number(second);
 	const maxDay = new Date(Date.UTC(Number(year), monthNumber, 0)).getUTCDate();
 
 	if (
@@ -386,6 +399,10 @@ function parseTimelineDate(value: string): { year: string; month: string } {
 		minuteNumber > 59 ||
 		secondNumber > 59
 	) {
+		throw new HttpError(400, "invalid_datetime", "datetime is not a valid date.");
+	}
+
+	if (!hasUnknownTime && Number.isNaN(new Date(value).getTime())) {
 		throw new HttpError(400, "invalid_datetime", "datetime is not a valid date.");
 	}
 

@@ -2,7 +2,7 @@
 title: Shortcut Mosaic Syntax Test
 published: 2026-06-25
 category: Tech
-draft: true
+indev: true
 proseStyle: literary
 tags:
     - Test
