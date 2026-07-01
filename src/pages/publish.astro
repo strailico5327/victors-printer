@@ -2165,11 +2165,8 @@ const dashboardNavLinks = [
 
 	function toggleLocationMode() {
 		if (locationTransitionPending) return;
-		window.setTimeout(() => {
-			if (locationTransitionPending) return;
-			setMetaMode(!metaEditor?.classList.contains("location-expanded"));
-			markDirty();
-		}, 120);
+		setMetaMode(!metaEditor?.classList.contains("location-expanded"));
+		markDirty();
 	}
 
 	function handleLocationFocusRequest(event) {
