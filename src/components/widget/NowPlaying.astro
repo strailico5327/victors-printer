@@ -1,0 +1,279 @@
+---
+import { Icon } from "astro-icon/components";
+import { nowPlayingConfig } from "../../config";
+
+interface Props {
+	class?: string;
+	style?: string;
+}
+
+const className = Astro.props.class;
+const style = Astro.props.style;
+const { enable, endpointUrl, profileUrl } = nowPlayingConfig;
+---
+
+{enable && (
+	<div
+		id="now-playing-widget"
+		class:list={["invisible min-h-[5rem] pb-2.5 card-base", className]}
+		style={style}
+	>
+		<a
+			id="now-playing-link"
+			href={profileUrl}
+			target="_blank"
+			rel="noopener noreferrer"
+			class="block"
+		>
+			<div
+				id="now-playing-title"
+				class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative ml-8 mr-4 mt-3 mb-1"
+			>
+				<Icon
+					name="material-symbols:music-note"
+					class="absolute left-[-21px] top-[5px] text-[1.15rem] text-[var(--primary)]"
+				/>
+				<span
+					id="now-playing-song"
+					class="now-playing-line block overflow-hidden whitespace-nowrap"
+				></span>
+			</div>
+			<div
+				id="now-playing-artist"
+				class="now-playing-line ml-8 mr-4 truncate text-sm text-neutral-500 transition dark:text-neutral-400"
+			>
+			</div>
+		</a>
+	</div>
+)}
+
+<style>
+	#now-playing-widget {
+		--now-playing-shift: 1.85rem;
+	}
+
+	.now-playing-line {
+		will-change: opacity, transform;
+	}
+
+	.now-playing-exit {
+		animation: now-playing-exit 180ms ease-in forwards;
+	}
+
+	.now-playing-enter {
+		animation: now-playing-enter 240ms ease-out forwards;
+	}
+
+	#now-playing-artist.now-playing-exit {
+		animation-delay: 50ms;
+	}
+
+	#now-playing-artist.now-playing-enter {
+		animation-delay: 70ms;
+		opacity: 0;
+	}
+
+	@keyframes now-playing-exit {
+		from {
+			opacity: 1;
+			transform: translateX(0);
+		}
+		to {
+			opacity: 0;
+			transform: translateX(var(--now-playing-shift));
+		}
+	}
+
+	@keyframes now-playing-enter {
+		from {
+			opacity: 0;
+			transform: translateX(var(--now-playing-shift));
+		}
+		to {
+			opacity: 1;
+			transform: translateX(0);
+		}
+	}
+</style>
+
+{enable && (
+	<script is:inline define:vars={{ endpointUrl, profileUrl }}>
+		const widgetEl = document.getElementById("now-playing-widget");
+		const songEl = document.getElementById("now-playing-song");
+		const artistEl = document.getElementById("now-playing-artist");
+		const linkEl = document.getElementById("now-playing-link");
+		const cacheKey = "victors-now-playing-track";
+		const cacheMaxAge = 60 * 1000;
+		const pollIntervalMs = 30 * 1000;
+		const transitionMs = 260;
+		const pageLoadDebounceMs = 1500;
+		let currentSongTitle = "";
+		let currentTrackKey = "";
+		let transitionToken = 0;
+		let lastLoadStartedAt = 0;
+
+		const hideWidget = () => {
+			widgetEl?.classList.add("hidden");
+			widgetEl?.classList.remove("invisible");
+			try {
+				localStorage.removeItem(cacheKey);
+			} catch {
+				// Ignore private-mode storage failures.
+			}
+			currentTrackKey = "";
+		};
+
+		const readCachedTrack = () => {
+			try {
+				const cached = JSON.parse(localStorage.getItem(cacheKey) || "null");
+				if (!cached?.track || Date.now() - cached.cachedAt > cacheMaxAge) return null;
+				return cached.track;
+			} catch {
+				return null;
+			}
+		};
+
+		const writeCachedTrack = (track) => {
+			try {
+				localStorage.setItem(cacheKey, JSON.stringify({ cachedAt: Date.now(), track }));
+			} catch {
+				// Ignore private-mode storage failures.
+			}
+		};
+
+		const fitSongTitle = () => {
+			if (!songEl) return;
+
+			const words = currentSongTitle.trim().split(/\s+/).filter(Boolean);
+			const style = window.getComputedStyle(songEl);
+			const font = `${style.fontStyle} ${style.fontVariant} ${style.fontWeight} ${style.fontSize} / ${style.lineHeight} ${style.fontFamily}`;
+			const canvas = document.createElement("canvas");
+			const context = canvas.getContext("2d");
+			const availableWidth = songEl.getBoundingClientRect().width - 14;
+
+			if (!context || availableWidth <= 0) {
+				songEl.textContent = currentSongTitle;
+				songEl.title = currentSongTitle;
+				return;
+			}
+
+			context.font = font;
+			songEl.textContent = currentSongTitle;
+			songEl.title = currentSongTitle;
+
+			if (context.measureText(currentSongTitle).width <= availableWidth || words.length <= 1) {
+				return;
+			}
+
+			const firstCandidateWordCount = Math.max(1, words.length - 2);
+
+			for (let count = firstCandidateWordCount; count > 0; count -= 1) {
+				const candidate = `${words.slice(0, count).join(" ")}...`;
+				if (context.measureText(candidate).width <= availableWidth) {
+					songEl.textContent = candidate;
+					return;
+				}
+			}
+
+			songEl.textContent = `${words[0]}...`;
+		};
+
+		const getTrackKey = (track) =>
+			[track?.title || "", track?.artist || "", track?.url || ""].join("\u0001");
+
+		const setTrackText = (track) => {
+			if (!songEl || !artistEl || !linkEl) return;
+
+			currentSongTitle = track.title || "Unknown track";
+			artistEl.textContent = track.artist || "Unknown artist";
+			linkEl.href = track.url || profileUrl;
+			requestAnimationFrame(fitSongTitle);
+		};
+
+		const resetLineAnimation = () => {
+			songEl?.classList.remove("now-playing-exit", "now-playing-enter");
+			artistEl?.classList.remove("now-playing-exit", "now-playing-enter");
+		};
+
+		const renderTrack = (track, shouldAnimate = true) => {
+			if (!widgetEl || !songEl || !artistEl || !linkEl || track?.nowPlaying !== true) {
+				hideWidget();
+				return;
+			}
+
+			const nextTrackKey = getTrackKey(track);
+			if (nextTrackKey === currentTrackKey) {
+				linkEl.href = track.url || profileUrl;
+				return;
+			}
+
+			const hasVisibleTrack = currentTrackKey && !widgetEl.classList.contains("hidden");
+			currentTrackKey = nextTrackKey;
+			widgetEl.classList.remove("hidden");
+			widgetEl.classList.remove("invisible");
+
+			if (!shouldAnimate || !hasVisibleTrack) {
+				resetLineAnimation();
+				setTrackText(track);
+				return;
+			}
+
+			const token = ++transitionToken;
+			resetLineAnimation();
+			void songEl.offsetWidth;
+			songEl.classList.add("now-playing-exit");
+			artistEl.classList.add("now-playing-exit");
+
+			window.setTimeout(() => {
+				if (token !== transitionToken) return;
+				resetLineAnimation();
+				setTrackText(track);
+				void songEl.offsetWidth;
+				songEl.classList.add("now-playing-enter");
+				artistEl.classList.add("now-playing-enter");
+			}, transitionMs);
+		};
+
+		const loadNowPlaying = async () => {
+			lastLoadStartedAt = Date.now();
+			try {
+				const response = await fetch(endpointUrl);
+				if (!response.ok) {
+					if (!currentTrackKey) hideWidget();
+					return;
+				}
+				const data = await response.json();
+				if (data?.track?.nowPlaying === true) {
+					renderTrack(data.track);
+					writeCachedTrack(data.track);
+					return;
+				}
+
+				if (!currentTrackKey) {
+					hideWidget();
+				}
+			} catch {
+				if (!currentTrackKey && !readCachedTrack()) hideWidget();
+			}
+		};
+
+		const loadNowPlayingOnPageShow = () => {
+			if (Date.now() - lastLoadStartedAt < pageLoadDebounceMs) return;
+			loadNowPlaying();
+		};
+
+		const startNowPlaying = () => {
+			const cachedTrack = readCachedTrack();
+			if (cachedTrack) renderTrack(cachedTrack, false);
+			loadNowPlaying();
+			if (window.__victorsNowPlayingPoll) {
+				window.clearInterval(window.__victorsNowPlayingPoll);
+			}
+			window.__victorsNowPlayingPoll = window.setInterval(loadNowPlaying, pollIntervalMs);
+		};
+
+		startNowPlaying();
+		window.addEventListener("pageshow", loadNowPlayingOnPageShow);
+		window.addEventListener("resize", fitSongTitle);
+	</script>
+)}

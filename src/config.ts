@@ -88,7 +88,7 @@ export const nowPlayingConfig: NowPlayingConfig = {
 	enable: true,
 	user: "strailynx",
 	profileUrl: "https://www.last.fm/user/strailynx",
-	endpointUrl: "https://dashboard.strailico.me/api/now-playing",
+	endpointUrl: "https://api.strailico.me/now-playing",
 };
 
 export const licenseConfig: LicenseConfig = {
