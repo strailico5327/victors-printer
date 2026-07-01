@@ -44,6 +44,7 @@ yarn.lock
 AGENTS.md
 .agents/
 CONTEXT.md
+CLAUDE.md
 
 # Local AI handoff / model-switching notes
 *.log

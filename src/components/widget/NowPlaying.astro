@@ -23,20 +23,26 @@ const { enable, endpointUrl, profileUrl } = nowPlayingConfig;
 			href={profileUrl}
 			target="_blank"
 			rel="noopener noreferrer"
-			class="block"
+			class="now-playing-link group block"
 		>
 			<div
 				id="now-playing-title"
-				class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 relative ml-8 mr-4 mt-3 mb-1"
+				class="now-playing-title"
 			>
 				<Icon
 					name="material-symbols:music-note"
-					class="absolute left-[-21px] top-[5px] text-[1.15rem] text-[var(--primary)]"
+					class="now-playing-note"
 				/>
-				<span
-					id="now-playing-song"
-					class="now-playing-line block overflow-hidden whitespace-nowrap"
-				></span>
+				<span class="now-playing-title-row">
+					<span
+						id="now-playing-song"
+						class="now-playing-line now-playing-song block overflow-hidden whitespace-nowrap"
+					></span>
+					<Icon
+						name="material-symbols:chevron-right-rounded"
+						class="now-playing-arrow"
+					/>
+				</span>
 			</div>
 			<div
 				id="now-playing-artist"
@@ -50,6 +56,70 @@ const { enable, endpointUrl, profileUrl } = nowPlayingConfig;
 <style>
 	#now-playing-widget {
 		--now-playing-shift: 1.85rem;
+	}
+
+	.now-playing-title {
+		position: relative;
+		margin: 0.75rem 1rem 0.25rem 2rem;
+		font-size: 1.125rem;
+		font-weight: 700;
+		line-height: 1.75rem;
+		color: rgb(23 23 23 / 0.9);
+	}
+
+	:global(.dark) .now-playing-title {
+		color: rgb(245 245 245 / 0.9);
+	}
+
+	.now-playing-link:hover .now-playing-title {
+		color: var(--primary);
+	}
+
+	.now-playing-link:active .now-playing-title {
+		color: var(--title-active);
+	}
+
+	.now-playing-title-row {
+		display: flex;
+		align-items: center;
+		gap: 0.125rem;
+		min-width: 0;
+	}
+
+	.now-playing-song {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.now-playing-note {
+		position: absolute;
+		left: -21px;
+		top: 5px;
+		font-size: 1.15rem;
+		color: var(--primary);
+		pointer-events: none;
+	}
+
+	.now-playing-arrow {
+		display: none;
+		flex: 0 0 auto;
+		font-size: 1.75rem;
+		color: var(--primary);
+		opacity: 0;
+		transform: translateX(-0.25rem);
+		transition: opacity 150ms ease, transform 150ms ease;
+		pointer-events: none;
+	}
+
+	@media (min-width: 768px) {
+		.now-playing-arrow {
+			display: inline-block;
+		}
+	}
+
+	.now-playing-link:hover .now-playing-arrow {
+		opacity: 1;
+		transform: translateX(0);
 	}
 
 	.now-playing-line {

@@ -941,13 +941,22 @@ function preparePhotoSwipeLinks() {
 			}
 
 			applyImageLinkLayout(currentLink)
-			return
+		} else {
+			const link = document.createElement("a")
+			image.parentNode?.insertBefore(link, image)
+			link.appendChild(image)
+			applyImageLinkLayout(link)
 		}
 
-		const link = document.createElement("a")
-		image.parentNode?.insertBefore(link, image)
-		link.appendChild(image)
-		applyImageLinkLayout(link)
+		// Preload the full image dimensions for PhotoSwipe
+		if (!image.dataset.imgW || !image.dataset.imgH) {
+			const preloadImg = new Image()
+			preloadImg.onload = () => {
+				image.dataset.imgW = String(preloadImg.naturalWidth)
+				image.dataset.imgH = String(preloadImg.naturalHeight)
+			}
+			preloadImg.src = fullSrc
+		}
 	})
 }
 
@@ -1039,8 +1048,8 @@ function createPhotoSwipe() {
 
 			itemData.src = fullSrc
 
-			itemData.w = Number(image?.naturalWidth || window.innerWidth)
-			itemData.h = Number(image?.naturalHeight || window.innerHeight)
+			itemData.w = Number(image?.dataset.imgW || image?.naturalWidth || window.innerWidth)
+			itemData.h = Number(image?.dataset.imgH || image?.naturalHeight || window.innerHeight)
 
 			itemData.msrc = image?.currentSrc || image?.src || fullSrc
 		}
