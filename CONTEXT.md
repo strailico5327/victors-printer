@@ -28,6 +28,7 @@
 
 - The publish form metadata row is ordered as Date & time, Tag, Location.
 - Timeline publishes require exactly one tag. If the tag field is empty, publishing shows a browser alert and focuses the tag input.
+- Saving a draft and opening a draft are now also blocked when the current tag field is empty; the page reuses the same alert-and-focus behavior with action-specific wording.
 - The tag input is readonly by default. Choosing a preset tag from the tag button menu fills the input and keeps editing locked.
 - The tag button opens a small float-panel style menu matching the existing light/dark and image mode menus.
 - Current example preset tags are `Games` and `Life`.
@@ -36,6 +37,9 @@
 - Existing timeline events were backfilled with `tag: "UNKNOWN"` for manual reassignment later.
 - Draft export writes the selected tag as `tag: "Tag"`.
 - Draft restore fills `tag`, with fallback support for old `tags` arrays. Restored preset tags stay readonly; restored custom tags become editable.
+- Files touched for this follow-up: `src/scripts/publish/client.js` and `CONTEXT.md`.
+- Verification for this follow-up: `pnpm astro check`.
+- Remaining risk for this follow-up: the new save/load guard is build-checked but not yet click-smoke-tested in the browser after the change.
 
 ## Timeline Pages
 

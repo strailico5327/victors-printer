@@ -1104,11 +1104,11 @@
 		}
 	}
 
-	function validateRequiredTag() {
+	function validateRequiredTag(action = "publishing") {
 		if (tagInput?.value.trim()) {
 			return true;
 		}
-		alert("Please fill in a tag before publishing.");
+		alert(`Please fill in a tag before ${action}.`);
 		tagInput?.focus();
 		return false;
 	}
@@ -2544,6 +2544,9 @@
 	});
 
 	downloadDraftButton?.addEventListener("click", async () => {
+		if (!validateRequiredTag("saving this draft")) {
+			return;
+		}
 		try {
 			const zip = await buildDraftZip();
 			downloadBlob(zip, `${eventId}-draft.zip`);
@@ -2554,7 +2557,12 @@
 		}
 	});
 
-	openDraftButton?.addEventListener("click", () => draftFileInput?.click());
+	openDraftButton?.addEventListener("click", () => {
+		if (!validateRequiredTag("loading a draft")) {
+			return;
+		}
+		draftFileInput?.click();
+	});
 	draftFileInput?.addEventListener("change", async () => {
 		const file = draftFileInput.files?.[0];
 		if (!file) {
