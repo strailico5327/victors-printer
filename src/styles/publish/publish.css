@@ -12,6 +12,7 @@
 		--publish-input-hover-bg: var(--btn-regular-bg-hover);
 		--main-editor-min-height: 12rem;
 		--main-editor-max-height: min(52vh, 32rem);
+		--main-editor-active-height: var(--main-editor-min-height);
 		--canvas-frame-max-height: min(68vh, 44rem);
 		display: grid;
 		gap: 1rem;
@@ -649,10 +650,12 @@
 
 	.publish #editor-pane {
 		position: relative;
+		min-height: var(--main-editor-active-height);
 		border-radius: 0.85rem;
 		overflow: hidden;
 		background: var(--publish-control-bg);
 		outline: 0;
+		transition: min-height 260ms cubic-bezier(0.2, 0, 0, 1);
 	}
 
 	.publish #editor-pane::after {
@@ -667,6 +670,7 @@
 
 	.publish .editor-scroll-shell {
 		display: block;
+		min-height: var(--main-editor-active-height);
 		max-height: var(--main-editor-max-height);
 		overflow: auto;
 		border-radius: inherit;
@@ -681,11 +685,13 @@
 
 	.publish #editor-pane textarea {
 		display: block;
+		min-height: var(--main-editor-active-height);
 		border-radius: 0;
 		background: transparent;
 		outline-color: transparent;
 		overflow: hidden;
 		resize: none;
+		transition: min-height 260ms cubic-bezier(0.2, 0, 0, 1);
 	}
 
 	.publish #editor-pane[data-publish-log="visible"] .editor-scroll-shell {
@@ -707,9 +713,10 @@
 	}
 
 	.publish .native-code-frame.publish-log-frame pre.wrap {
-		min-height: var(--main-editor-min-height);
+		min-height: var(--main-editor-active-height);
 		max-height: var(--main-editor-max-height);
 		overflow: auto;
+		transition: min-height 260ms cubic-bezier(0.2, 0, 0, 1);
 	}
 
 	.publish #editor-pane:focus-within {
