@@ -696,18 +696,20 @@
 		position: absolute;
 		inset: 0;
 		z-index: 1;
-		pointer-events: none;
 		opacity: 0;
+		pointer-events: none;
 		transition: opacity 220ms ease;
 	}
 
 	.publish #editor-pane[data-publish-log="visible"] .native-code-frame.publish-log-frame {
 		opacity: 1;
+		pointer-events: auto;
 	}
 
 	.publish .native-code-frame.publish-log-frame pre.wrap {
 		min-height: var(--main-editor-min-height);
 		max-height: var(--main-editor-max-height);
+		overflow: auto;
 	}
 
 	.publish #editor-pane:focus-within {

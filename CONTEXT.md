@@ -13,6 +13,7 @@
 - Publishing now scrolls the page to the New event card, changes the top-right status icon into the existing rotating sync/loading state, fades the textarea out, and fades a code display into the exact same editor frame.
 - The New event progress display reuses the same Astro Expressive Code/native code frame structure and runtime renderer used by the Images syntax editor.
 - The progress code frame is an absolute overlay inside `#editor-pane`; it must stay the same size and position as the textarea frame.
+- The visible progress code frame must accept pointer events and keep `pre.wrap` scrollable so longer logs can be scrolled inside the editor frame.
 - Publish progress logs append as the draft archive is built, uploaded to the Worker, accepted, and completed. Local dry-run responses show the content path and skip zero-count image lines.
 - Failure messages are written into the progress code frame instead of relying only on blocking browser alerts.
 - Verification passed: `pnpm astro check`, `pnpm --dir worker type-check`, and in-app browser dry-run confirmed textarea opacity `0`, code frame opacity `1`, matching editor/log frame dimensions, and Worker dry-run completion logs.
