@@ -24,7 +24,7 @@ Anyway I got one finally. I got about ￥400 from my grandma at a dinner one day
 
 I bought a black one. Do not ask why I didn’t pick the white one. Of course I preferred the white ones but nobody was selling it then.
 
-:!img first_pebble_order.png Pebble 75
+:!img first_pebble_order.png 
 
 A few days later I got my Pebble. According to the description, it was nearly new, and so was it, at least it looked perfect without scratches and well maintained.
 
@@ -44,8 +44,8 @@ Who on earth would enjoy that? Comparing to the *Tetris* and 2048 it felt less l
 
 Soon I deleted it. There were some other games anyway. *Fitcat*, a virtual petting game that tracks your steps in the background and converts your step statistics into coins to feed a cat and buy new street scenes. The kitty even walks on the streets in its own world when you are walking; *Pebblemon*, a fanmade Pokémon game, where you can explore and collect up to 251 Pokémon. I was totally amazed by such a mini but vivid pixel world created by its genius developer, and the changelog shows that it was initially released in 2021 even if it had been nearly years since Pebble was sold to Fitbit. After a couple of necessary updates the developer seemed to give up Pebble but four years later in 2025 when Eric had just announced the revival of Pebble new updates emerged again. *Tiny Bird*, a Pebble version of *Flappy Bird* but is much harder since the gaps between the two sewers are narrower than than usual so I hardly played it. What fascinated me most was *Flood*, start from the up-left corner and select the right colour to fill and connect the other pixels with same colour and finally *flood* the how board in 26 steps at most, simple but fun.
 
-Has it entertained my school life? Well, maybe not really since I don't quite remember. 
+Has it entertained my school life? Well, maybe not really since I don't quite remember much about playing. 
 
 One third of our county was on the slope of a hill to the north, and our school was on the slope too, among old houses and alleys. Everyday after school we a gang of four boys went down along the alley together, chattering and even buying some snacks — or what grownups called ‘junk food’ — and our parents would wait for us on its end. There was game on my Pebble, *Ledge Climber*, which allowed you tilt your watch and make the ball on the screen move left and right and then bounce and jump to a higher pedal when you hit one. One of us, the boy whose seat was in front of me, was deep addicted since he found it on my Pebble and asked often if I could lend it to him to play those days. Of course I won’t decline that. But I was worried if his grade dropped since he was a extraordinary student in all subjects, a genius. Oh my, would this game ruin him? What if his grades dropped? Would I be blamed? Thank goodness he didn’t, obviously. Soon his interest was worn off. It was just a mini game after all.
 
-Gaming could be my initial 
+My initial motivation could be the games but of course it could be all I want, if I wanna games I could by some other gadgets. I would never buy any inelegant gadgets even if it might meet my demand. For example, those 
