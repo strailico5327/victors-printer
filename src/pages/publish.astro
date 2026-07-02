@@ -3296,15 +3296,9 @@ const dashboardNavLinks = [
 	.meta-location {
 		flex: 0 0 var(--meta-icon-size);
 		width: var(--meta-icon-size);
-		overflow: hidden;
-		border-radius: 0.75rem;
 		transition:
 			flex-basis var(--meta-transition-duration) cubic-bezier(0.2, 0, 0, 1),
 			width var(--meta-transition-duration) cubic-bezier(0.2, 0, 0, 1);
-	}
-
-	.meta-editor.location-expanded .meta-location {
-		background: var(--publish-control-bg);
 	}
 
 	.meta-editor.location-expanded .meta-location {
@@ -3467,17 +3461,21 @@ const dashboardNavLinks = [
 		width: 100%;
 		height: var(--meta-icon-size);
 		overflow: hidden;
+		border-radius: 0.75rem;
 		background: transparent;
 		outline: 2px solid transparent;
 		transition:
+			background-color 160ms ease,
 			outline-color 160ms ease;
 	}
 
-	.meta-editor.location-expanded .location-control .location-toggle {
+	.meta-editor.location-expanded .location-control {
 		background: var(--publish-control-bg);
 	}
+
 	.meta-editor.location-expanded .location-control:focus-within {
 		outline-color: var(--publish-accent);
+		background: var(--publish-control-bg);
 	}
 
 	.location-toggle {
