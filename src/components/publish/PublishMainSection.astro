@@ -1,0 +1,73 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+		<section class="publish-main card-base">
+			<div class="publish-section-header">
+				<div>
+					<div class="publish-eyebrow">Timeline</div>
+					<h1>New event</h1>
+				</div>
+				<button class="publish-status btn-plain scale-animation" type="button" aria-label="Draft source ready" aria-disabled="true" data-state="ready" disabled>
+					<Icon class="status-cloud" name="material-symbols:cloud-done-outline-rounded" />
+					<Icon class="status-copy" name="material-symbols:content-copy-outline-rounded" />
+					<Icon class="status-sync" name="material-symbols:sync-rounded" />
+					<Icon class="status-done" name="material-symbols:check-rounded" />
+				</button>
+			</div>
+
+			<label class="field text-field" id="editor-pane">
+				<span class="editor-scroll-shell hide-scrollbar">
+					<textarea rows="7"></textarea>
+				</span>
+			</label>
+
+			<div class="publish-footer">
+				<div class="meta-editor" id="meta-editor">
+					<label class="field meta-time">
+						<span class="meta-label">Date & time</span>
+						<span class="date-control">
+							<input id="datetime-input" type="text" />
+							<span class="datetime-caret" aria-hidden="true"></span>
+							<button id="set-now-button" class="date-now-button" type="button" aria-label="Use current date and time">
+								<Icon name="material-symbols:calendar-today-outline-rounded" />
+							</button>
+						</span>
+					</label>
+					<label class="field meta-tag">
+						<span class="meta-label">Tag</span>
+						<span class="tag-control">
+							<input id="tag-input" type="text" readonly />
+							<button id="tag-action-button" class="tag-action-button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Choose tag">
+								<Icon name="material-symbols:tag-rounded" />
+							</button>
+							<span id="tag-menu-panel" class="tag-menu-panel transition float-panel-closed" hidden>
+								<span class="card-base float-panel tag-menu">
+									<button class="btn-plain scale-animation active:scale-95" type="button" data-tag-action="new">
+										<Icon name="material-symbols:add-rounded" />
+										<span>New</span>
+									</button>
+									<button class="btn-plain scale-animation active:scale-95" type="button" data-tag-value="Games">
+										<Icon name="material-symbols:sports-esports-outline-rounded" />
+										<span>Games</span>
+									</button>
+									<button class="btn-plain scale-animation active:scale-95" type="button" data-tag-value="Life">
+										<Icon name="material-symbols:favorite-outline-rounded" />
+										<span>Life</span>
+									</button>
+								</span>
+							</span>
+						</span>
+					</label>
+					<div class="field meta-location">
+						<span class="meta-label">Location</span>
+						<span class="location-control">
+							<input id="location-input" type="text" />
+							<button id="toggle-location-button" class="location-toggle" type="button" aria-label="Show location">
+								<Icon name="material-symbols:location-on-outline-rounded" />
+							</button>
+						</span>
+					</div>
+				</div>
+			</div>
+		</section>

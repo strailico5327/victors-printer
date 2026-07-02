@@ -15,6 +15,15 @@
 - Verification passed: `pnpm astro check` and `pnpm build`.
 - Remaining risk: this was build-verified but not browser-click smoke-tested in the dashboard UI.
 
+## Publish Page Module Refactor
+
+- `src/pages/publish.astro` is now a route wrapper that mounts `src/components/publish/PublishPage.astro` inside `MainGridLayout`.
+- Publish markup is split into `PublishMainSection.astro`, `PublishImagePanel.astro`, and `PublishActions.astro` under `src/components/publish/`.
+- Publish styles were moved from the Astro page `<style>` block to `src/styles/publish/publish.css`; `:global(...)` selectors were converted for external CSS and selectors are scoped under `.publish` to avoid site-wide bleed.
+- Publish client helper logic was split into `src/scripts/publish/datetime.js`, `draft-format.js`, and `image-assets.js`; DOM queries, event wiring, IDs/classes/data attributes, workflow behavior, and API endpoint assumptions remain in `client.js`.
+- Verification passed: `pnpm astro check`, `pnpm build`, HTTP 200 for local `/publish/`, and browser smoke test confirmed publish DOM/style presence plus Tag menu click behavior.
+- Remaining risk: browser smoke test was targeted, not a full manual publish/draft/image workflow pass.
+
 ## Publish Timeline Tag Input
 
 - The publish form metadata row is ordered as Date & time, Tag, Location.

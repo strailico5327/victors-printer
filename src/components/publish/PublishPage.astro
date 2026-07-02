@@ -1,0 +1,20 @@
+---
+import "../../styles/publish/publish.css";
+import PublishActions from "./PublishActions.astro";
+import PublishImagePanel from "./PublishImagePanel.astro";
+import PublishMainSection from "./PublishMainSection.astro";
+---
+
+<div class="publish onload-animation">
+	<PublishMainSection />
+
+	<PublishImagePanel />
+
+	<PublishActions />
+</div>
+<input id="image-file-input" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" multiple hidden />
+<input id="draft-file-input" type="file" accept=".zip,application/zip" hidden />
+
+<script>
+	import "../../scripts/publish/client.js";
+</script>

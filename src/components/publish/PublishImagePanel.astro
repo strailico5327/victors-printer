@@ -1,0 +1,178 @@
+---
+import { Icon } from "astro-icon/components";
+import Code from "../../../node_modules/astro-expressive-code/components/Code.astro";
+
+const emptyCodePlaceholder = "\u200b";
+---
+
+		<section id="image-panel" class="publish-images card-base collapsed">
+			<div class="publish-section-header compact">
+				<div>
+					<h2>Images</h2>
+				</div>
+				<div class="image-header-controls">
+					<div class="image-header-actions">
+						<button id="image-add-button" class="image-icon-button image-add-button" type="button" aria-label="Add image">
+							<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+						</button>
+						<button id="image-trash-button" class="image-icon-button image-trash-button" type="button" aria-label="Clear selected image tile">
+							<Icon name="material-symbols:delete-outline-rounded" />
+						</button>
+					</div>
+					<div class="segmented-control image-mode-control" role="tablist" aria-label="Image editor mode" data-mode="canvas">
+						<button class="segment active" type="button" data-editor-mode="canvas" aria-label="Canvas" disabled aria-disabled="true">
+							<Icon name="material-symbols:image-outline-rounded" />
+						</button>
+						<button class="segment" type="button" data-editor-mode="syntax" aria-label="Syntax" disabled aria-disabled="true">
+							<Icon name="material-symbols:data-object-rounded" />
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<div class="image-panel-body">
+				<div class="image-panel-body-inner">
+					<div id="canvas-editor" class="editor-pane active">
+						<div class="image-grid" aria-label="Selected image grid">
+							<button class="image-tile empty" type="button" data-slot="0">
+								<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+								<span>1</span>
+							</button>
+							<button class="image-tile empty" type="button" data-slot="1">
+								<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+								<span>2</span>
+							</button>
+							<button class="image-tile empty" type="button" data-slot="2">
+								<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+								<span>3</span>
+							</button>
+							<button class="image-tile empty" type="button" data-slot="3">
+								<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+								<span>4</span>
+							</button>
+						</div>
+					</div>
+
+					<div id="syntax-editor" class="editor-pane">
+						<div class="syntax-layout">
+							<div class="image-strip" aria-label="Uploaded images">
+								<button class="image-tile empty" type="button" data-slot="0">
+									<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+									<span>1</span>
+								</button>
+								<button class="image-tile empty" type="button" data-slot="1">
+									<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+									<span>2</span>
+								</button>
+								<button class="image-tile empty" type="button" data-slot="2">
+									<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+									<span>3</span>
+								</button>
+								<button class="image-tile empty" type="button" data-slot="3">
+									<Icon name="material-symbols:add-photo-alternate-outline-rounded" />
+									<span>4</span>
+								</button>
+							</div>
+							<div class="native-code-frame syntax-code-frame" data-native-code-frame="syntax">
+								<Code code={emptyCodePlaceholder} lang="md" class="publish-native-code" />
+							</div>
+						</div>
+					</div>
+					<div class="image-panel-footer">
+						<div class="canvas-footer-center" hidden>
+							<div class="canvas-layout-controls">
+								<div id="grid-size-control" class="grid-size-control" aria-label="Grid layout size" hidden>
+									<span class="grid-size-value grid-size-pair" aria-live="polite">
+										<span id="grid-width-value" class="grid-size-number" data-grid-axis="columns">2</span>
+										<span class="grid-size-separator">×</span>
+										<span id="grid-height-value" class="grid-size-number" data-grid-axis="rows">2</span>
+									</span>
+									<span id="single-width-display" class="grid-size-value single-width-display" aria-live="polite" hidden>
+										<span id="single-width-value" class="grid-size-number" data-grid-axis="width">75</span>
+										<span class="grid-size-unit">%</span>
+									</span>
+									<label id="single-width-input-shell" class="single-width-input-shell" hidden>
+										<input id="single-width-input" type="text" inputmode="numeric" value="75" aria-label="Single image width percent" />
+										<span class="grid-size-unit">%</span>
+									</label>
+									<button id="grid-size-apply-button" type="button" aria-label="Apply grid layout">
+										<Icon name="material-symbols:check-rounded" />
+									</button>
+								</div>
+								<div id="grid-ratio-control" class="grid-size-control grid-ratio-control" aria-label="Grid cell ratio" hidden>
+									<span class="grid-size-value grid-ratio-value-shell" aria-live="polite">
+										<span class="grid-ratio-value">
+											<span id="grid-ratio-width-value" class="grid-size-number grid-ratio-number" data-grid-axis="ratio">1</span>
+											<span class="grid-size-separator grid-ratio-separator">:</span>
+											<span id="grid-ratio-height-value" class="grid-size-number grid-ratio-number" data-grid-axis="ratio">1</span>
+										</span>
+									</span>
+									<button id="grid-ratio-rotate-button" type="button" aria-label="Rotate grid cell ratio">
+										<Icon name="material-symbols:screen-rotation-alt-rounded" />
+									</button>
+								</div>
+								<div id="mosaic-ratio-control" class="grid-size-control grid-ratio-control mosaic-ratio-control" aria-label="Mosaic row ratio" hidden>
+									<span class="grid-size-value grid-ratio-value-shell" aria-live="polite">
+										<span class="grid-ratio-value">
+											<span id="mosaic-ratio-width-value" class="grid-size-number grid-ratio-number" data-grid-axis="mosaic-ratio">1</span>
+											<span class="grid-size-separator grid-ratio-separator">:</span>
+											<span id="mosaic-ratio-height-value" class="grid-size-number grid-ratio-number" data-grid-axis="mosaic-ratio">1</span>
+										</span>
+									</span>
+									<button id="mosaic-ratio-swap-button" type="button" aria-label="Rotate mosaic row ratio">
+										<Icon name="material-symbols:screen-rotation-alt-rounded" />
+									</button>
+								</div>
+							</div>
+						</div>
+						<button id="syntax-back-button" class="image-icon-button syntax-back-button" type="button" aria-label="Back to canvas" hidden>
+							<Icon name="material-symbols:arrow-back-rounded" />
+						</button>
+					<div id="canvas-syntax-control" class="canvas-syntax-control" aria-label="Canvas syntax mode" hidden>
+							<button id="canvas-syntax-button" class="btn-plain scale-animation active:scale-90" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Canvas syntax mode">
+								<span class="canvas-syntax-trigger-icon" data-canvas-syntax-trigger="single" aria-hidden="true">
+									<Icon name="material-symbols:image-outline-rounded" />
+								</span>
+								<span class="canvas-syntax-trigger-icon" data-canvas-syntax-trigger="mosaic" aria-hidden="true">
+									<Icon name="material-symbols:dashboard-customize-outline-rounded" />
+								</span>
+								<span class="canvas-syntax-trigger-icon" data-canvas-syntax-trigger="grid" aria-hidden="true">
+									<Icon name="material-symbols:grid-view-rounded" />
+								</span>
+							</button>
+							<div id="canvas-syntax-panel" class="canvas-syntax-panel transition float-panel-closed" hidden>
+								<div class="card-base float-panel canvas-syntax-menu">
+									<button class="btn-plain scale-animation" type="button" data-canvas-syntax-mode="single">
+										<Icon name="material-symbols:image-outline-rounded" />
+										<span>Single</span>
+									</button>
+									<button class="btn-plain scale-animation" type="button" data-canvas-syntax-mode="mosaic">
+										<Icon name="material-symbols:dashboard-customize-outline-rounded" />
+										<span>Mosaic</span>
+									</button>
+									<button class="btn-plain scale-animation" type="button" data-canvas-syntax-mode="grid">
+										<Icon name="material-symbols:grid-view-rounded" />
+										<span>Grid</span>
+									</button>
+								</div>
+							</div>
+						</div>
+						<button id="tile-swap-toggle-button" class="canvas-icon-toggle" type="button" aria-label="Toggle tile swapping" aria-pressed="false">
+							<Icon name="material-symbols:swap-horiz-rounded" />
+						</button>
+						<div class="canvas-next-actions" hidden>
+							<div id="mosaic-row-actions" class="image-clipboard-control mosaic-row-actions" aria-label="Mosaic row tools" hidden>
+								<button id="mosaic-add-row-button" type="button" aria-label="Add mosaic row below">
+									<Icon name="material-symbols:add-row-below-rounded" />
+								</button>
+								<button id="mosaic-add-tile-button" type="button" aria-label="Add image to mosaic row">
+									<Icon name="material-symbols:add-column-right-rounded" />
+								</button>
+							</div>
+							<button id="canvas-next-button" class="image-icon-button canvas-next-button" type="button" aria-label="Continue to syntax">
+								<Icon name="material-symbols:arrow-forward-rounded" />
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>

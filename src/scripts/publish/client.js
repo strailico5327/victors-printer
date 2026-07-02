@@ -1,4 +1,27 @@
 	// @ts-nocheck
+	import {
+		datetimeDigitIndexes,
+		datetimeMask,
+		datetimeTimeIndexes,
+		datetimeToIso,
+		datetimeValue,
+		getClosestDatetimeDigitIndex,
+		isoToDatetimeValue,
+		normalizeDatetimeValue,
+	} from "./datetime.js";
+	import {
+		imageIdFromDraftFileName,
+		parseFrontmatterMarkdown,
+		splitDraftBodyAndImageBlock,
+		yamlString,
+	} from "./draft-format.js";
+	import {
+		encodeSafeImage,
+		extensionForUploadedImage,
+		measureImageSource,
+		mimeTypeForExtension,
+		thumbNameForFileName,
+	} from "./image-assets.js";
 	import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 	import { OverlayScrollbars } from "overlayscrollbars";
 	import PhotoSwipe from "photoswipe";
@@ -106,9 +129,6 @@
 	const maxImages = 16;
 	const tileCount = maxImages;
 	const publishEndpoint = import.meta.env.PUBLIC_PUBLISH_API_ENDPOINT || "/api/publish";
-	const datetimeDigitIndexes = [0, 1, 3, 4, 6, 7, 8, 9, 11, 12, 14, 15];
-	const datetimeTimeIndexes = [11, 12, 14, 15];
-	const datetimeMask = "00/00/0000 00:00";
 	const datetimeMeasureCanvas = document.createElement("canvas");
 	const datetimeMeasureContext = datetimeMeasureCanvas.getContext("2d");
 	const originalTileFiles = new WeakMap();
@@ -143,10 +163,6 @@
 			.slice(0, 8);
 	}
 
-	function pad(value) {
-		return String(value).padStart(2, "0");
-	}
-
 	function downloadBlob(blob, filename) {
 		const href = URL.createObjectURL(blob);
 		const link = document.createElement("a");
@@ -167,10 +183,6 @@
 		const value = normalizeDatetimeValue(datetimeInput?.value ?? "");
 		const prefix = `${value.slice(0, 2)}${value.slice(3, 5)}${value.slice(8, 10)}${value.slice(11, 13)}${value.slice(14, 16)}`;
 		return `${prefix || "0000000000"}-${eventRandomSuffix}`;
-	}
-
-	function datetimeValue(date = new Date()) {
-		return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 	}
 
 	function syncEventIdToDatetime() {
@@ -211,41 +223,6 @@
 				row.imageIds = (row.imageIds ?? []).map((imageId) => (imageId === oldImageId ? nextImageId : imageId));
 			}
 		}
-	}
-
-	function datetimeToIso(value) {
-		const match = normalizeDatetimeValue(value).match(/^(\d{2})\/(\d{2})\/(\d{4}) ([\dx]{2}):([\dx]{2})$/);
-		if (!match) {
-			throw new Error("invalid_datetime");
-		}
-		const [, day, month, year, hour, minute] = match;
-		const hasUnknownTime = hour.toLowerCase().includes("x") || minute.toLowerCase().includes("x");
-		const date = new Date(
-			Number(year),
-			Number(month) - 1,
-			Number(day),
-			hasUnknownTime ? 0 : Number(hour),
-			hasUnknownTime ? 0 : Number(minute),
-			0,
-		);
-		const offsetMinutes = -date.getTimezoneOffset();
-		const sign = offsetMinutes >= 0 ? "+" : "-";
-		const absOffset = Math.abs(offsetMinutes);
-		const time = hasUnknownTime ? "xx:xx" : `${hour}:${minute}`;
-		return `${year}-${month}-${day}T${time}:00${sign}${pad(Math.floor(absOffset / 60))}:${pad(absOffset % 60)}`;
-	}
-
-	function isoToDatetimeValue(value) {
-		const unknownTime = `${value ?? ""}`.match(/^(\d{4})-(\d{2})-(\d{2})Txx:xx(?::xx|:00)?(?:Z|[+-]\d{2}:\d{2})?$/);
-		if (unknownTime) {
-			const [, year, month, day] = unknownTime;
-			return `${day}/${month}/${year} xx:xx`;
-		}
-		const date = new Date(value);
-		if (Number.isNaN(date.getTime())) {
-			return normalizeDatetimeValue("");
-		}
-		return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 	}
 
 	function setDraftState(state) {
@@ -355,35 +332,6 @@
 		);
 	}
 
-	function getClosestDatetimeDigitIndex(index, direction = 1) {
-		const sortedIndexes = direction < 0 ? [...datetimeDigitIndexes].reverse() : datetimeDigitIndexes;
-		return (
-			sortedIndexes.find((digitIndex) =>
-				direction < 0 ? digitIndex <= index : digitIndex >= index,
-			) ?? sortedIndexes[sortedIndexes.length - 1]
-		);
-	}
-
-	function normalizeDatetimeValue(value) {
-		const tokens = value.replace(/[^0-9x]/g, "").padEnd(12, "0").slice(0, 12);
-		let day = Number(tokens.slice(0, 2).replace(/x/g, "0"));
-		let month = Number(tokens.slice(2, 4).replace(/x/g, "0"));
-		let year = Number(tokens.slice(4, 8).replace(/x/g, "0"));
-		let hour = Number(tokens.slice(8, 10).replace(/x/g, "0"));
-		let minute = Number(tokens.slice(10, 12).replace(/x/g, "0"));
-		const hasUnknownTime = tokens.slice(8, 12).includes("x");
-
-		year = Math.min(Math.max(year, 1), 9999);
-		month = Math.min(Math.max(month, 1), 12);
-		const maxDay = new Date(year, month, 0).getDate();
-		day = Math.min(Math.max(day, 1), maxDay);
-		hour = Math.min(Math.max(hour, 0), 23);
-		minute = Math.min(Math.max(minute, 0), 59);
-
-		const time = hasUnknownTime ? "xx:xx" : `${pad(hour)}:${pad(minute)}`;
-		return `${pad(day)}/${pad(month)}/${String(year).padStart(4, "0")} ${time}`;
-	}
-
 	function setDatetimeDigit(input, index, digit) {
 		const nextIndex = getClosestDatetimeDigitIndex(index);
 		const chars = input.value.padEnd(datetimeMask.length, "0").split("");
@@ -447,28 +395,6 @@
 			fileName: `${id}.png`,
 			thumbName: `${id}_thumb.webp`,
 		};
-	}
-
-	function extensionForUploadedImage(file) {
-		const nameExtension = file.name.split(".").pop()?.toLowerCase() ?? "";
-		if (["jpg", "jpeg", "png"].includes(nameExtension)) {
-			return nameExtension;
-		}
-		if (file.type === "image/jpeg") {
-			return "jpg";
-		}
-		if (file.type === "image/png") {
-			return "png";
-		}
-		return "png";
-	}
-
-	function mimeTypeForExtension(extension) {
-		return extension === "jpg" || extension === "jpeg" ? "image/jpeg" : "image/png";
-	}
-
-	function thumbNameForFileName(fileName) {
-		return fileName.replace(/\.[^.]+$/, "_thumb.webp");
 	}
 
 	function tileHasImage(tile) {
@@ -650,13 +576,6 @@
 				node.setAttribute(name, value);
 			}
 		}
-	}
-
-	async function measureImageSource(source) {
-		const bitmap = await createImageBitmap(source, { imageOrientation: "from-image" });
-		const dimensions = { width: bitmap.width, height: bitmap.height };
-		bitmap.close();
-		return dimensions;
 	}
 
 	function singleCanvasFrameAspectRatio() {
@@ -1434,41 +1353,6 @@
 		syncSyntaxView();
 	}
 
-	function canvasToBlob(canvas, type, quality) {
-		return new Promise((resolve, reject) => {
-			canvas.toBlob(
-				(blob) => {
-					if (blob) {
-						resolve(blob);
-						return;
-					}
-					reject(new Error("Unable to encode image"));
-				},
-				type,
-				quality,
-			);
-		});
-	}
-
-	async function encodeSafeImage(source, maxSize, type, quality) {
-		const bitmap = await createImageBitmap(source, { imageOrientation: "from-image" });
-		const scale = Number.isFinite(maxSize) ? Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height)) : 1;
-		const width = Math.max(1, Math.round(bitmap.width * scale));
-		const height = Math.max(1, Math.round(bitmap.height * scale));
-		const canvas = document.createElement("canvas");
-		canvas.width = width;
-		canvas.height = height;
-		const context = canvas.getContext("2d");
-		if (!context) {
-			bitmap.close();
-			throw new Error("Canvas is unavailable");
-		}
-		context.drawImage(bitmap, 0, 0, width, height);
-		bitmap.close();
-		const blob = await canvasToBlob(canvas, type, quality);
-		return { blob, width, height };
-	}
-
 	async function sourceBlobForImage(image) {
 		if (image.source) {
 			return image.source;
@@ -1558,10 +1442,6 @@
 		return records;
 	}
 
-	function yamlString(value) {
-		return JSON.stringify(String(value ?? ""));
-	}
-
 	function buildEventMarkdown() {
 		const published = datetimeToIso(datetimeInput?.value ?? "");
 		const location = metaEditor?.classList.contains("location-expanded") ? locationInput?.value.trim() : "";
@@ -1618,58 +1498,6 @@
 		} catch {
 			return `Publish failed (${response.status})`;
 		}
-	}
-
-	function parseFrontmatterMarkdown(text) {
-		const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
-		if (!match) {
-			return { data: {}, body: text };
-		}
-		const data = {};
-		for (const line of match[1].split(/\r?\n/)) {
-			const field = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-			if (!field) {
-				continue;
-			}
-			const value = field[2].trim();
-			if (value.startsWith("[") && value.endsWith("]")) {
-				data[field[1]] = value
-					.slice(1, -1)
-					.split(",")
-					.map((item) => item.trim().replace(/^["']|["']$/g, ""))
-					.filter(Boolean);
-				continue;
-			}
-			data[field[1]] = value.replace(/^["']|["']$/g, "");
-		}
-		return { data, body: text.slice(match[0].length).replace(/^(?:[ \t]*\r?\n)+/, "") };
-	}
-
-	function isDraftShortcutLine(line) {
-		return (
-			/^:!img\s+\S+(?:\s+\S+){0,3}$/.test(line) ||
-			/^:!grid(?:\s+\S+){2,5}$/.test(line) ||
-			/^:!mosaic(?:\s+\S+){0,3}$/.test(line) ||
-			/^:\/(?:\s+\S+)?$/.test(line) ||
-			/^!:(?:grid|mosaic)$/.test(line)
-		);
-	}
-
-	function splitDraftBodyAndImageBlock(body) {
-		const lines = body.trimEnd().split(/\r?\n/);
-		let start = lines.length;
-		while (start > 0 && (lines[start - 1].trim() === "" || isDraftShortcutLine(lines[start - 1].trim()))) {
-			start -= 1;
-		}
-		const shortcutLines = lines.slice(start).map((line) => line.trim()).filter(Boolean);
-		return {
-			text: lines.slice(0, start).join("\n").trimEnd(),
-			shortcutLines,
-		};
-	}
-
-	function imageIdFromDraftFileName(fileName) {
-		return fileName.replace(/\.[^.]+$/, "");
 	}
 
 	function restoreLayoutFromShortcuts(shortcutLines, fileNameToImageId) {
