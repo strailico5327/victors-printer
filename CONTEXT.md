@@ -1,5 +1,22 @@
 # Project Context
 
+## Publish Preview Attempt Reverted
+
+- A attempted New event textarea-to-code preview and separate publish log panel were reverted after they caused incorrect editor sizing and an unwanted clickable status icon.
+- At that point, publish source files were restored to the prior normal layout and behavior before the corrected overlay was reimplemented below.
+- Local publish testing now runs Astro at `http://localhost:4321/` and Wrangler at `http://127.0.0.1:8788/`; root `.env` points `PUBLIC_PUBLISH_API_ENDPOINT` to the local Worker.
+- Dashboard Worker local requests are detected through Wrangler/Miniflare local request metadata and always bypass Access plus return publish dry-run results, so local testing does not write to GitHub or trigger deploy hooks.
+- Verification passed after cleanup: `pnpm astro check`.
+
+## Publish Progress Overlay
+
+- Publishing now scrolls the page to the New event card, changes the top-right status icon into the existing rotating sync/loading state, fades the textarea out, and fades a code display into the exact same editor frame.
+- The New event progress display reuses the same Astro Expressive Code/native code frame structure and runtime renderer used by the Images syntax editor.
+- The progress code frame is an absolute overlay inside `#editor-pane`; it must stay the same size and position as the textarea frame.
+- Publish progress logs append as the draft archive is built, uploaded to the Worker, accepted, and completed. Local dry-run responses show the content path and skip zero-count image lines.
+- Failure messages are written into the progress code frame instead of relying only on blocking browser alerts.
+- Verification passed: `pnpm astro check`, `pnpm --dir worker type-check`, and in-app browser dry-run confirmed textarea opacity `0`, code frame opacity `1`, matching editor/log frame dimensions, and Worker dry-run completion logs.
+
 ## Agent Working Rules
 
 - `AGENTS.md` now requires Codex to commit after every meaningful project change unless the user explicitly says not to commit.

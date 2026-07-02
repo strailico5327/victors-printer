@@ -151,11 +151,6 @@
 
 	.publish .publish-status[data-state="processing"] .status-sync,
 	.publish .publish-status[data-state="publishing"] .status-sync {
-		opacity: 0;
-	}
-
-	.publish .publish-status[data-state="processing"] .status-cloud,
-	.publish .publish-status[data-state="publishing"] .status-cloud {
 		opacity: 1;
 		animation: status-spin 900ms linear infinite;
 	}
@@ -676,6 +671,8 @@
 		overflow: auto;
 		border-radius: inherit;
 		padding-left: 0;
+		opacity: 1;
+		transition: opacity 220ms ease;
 	}
 
 	.publish .editor-scroll-shell [data-overlayscrollbars-viewport] {
@@ -689,6 +686,28 @@
 		outline-color: transparent;
 		overflow: hidden;
 		resize: none;
+	}
+
+	.publish #editor-pane[data-publish-log="visible"] .editor-scroll-shell {
+		opacity: 0;
+	}
+
+	.publish .native-code-frame.publish-log-frame {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 220ms ease;
+	}
+
+	.publish #editor-pane[data-publish-log="visible"] .native-code-frame.publish-log-frame {
+		opacity: 1;
+	}
+
+	.publish .native-code-frame.publish-log-frame pre.wrap {
+		min-height: var(--main-editor-min-height);
+		max-height: var(--main-editor-max-height);
 	}
 
 	.publish #editor-pane:focus-within {

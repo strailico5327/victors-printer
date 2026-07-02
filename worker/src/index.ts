@@ -149,7 +149,7 @@ async function handlePublish(request: Request, env: Env): Promise<Response> {
 	const paths = buildPaths(event.id, dateParts.year, dateParts.month);
 	const imagePaths = event.images.map((image) => `public/images/timeline/${dateParts.year}/${dateParts.month}/${image.name}`);
 
-	if (isLocalDryRun(url, env)) {
+	if (isLocalDryRun(request, url)) {
 		return json({
 			ok: true,
 			dryRun: true,
@@ -418,7 +418,7 @@ function buildPaths(eventId: string, year: string, month: string): { content: st
 
 async function assertAccess(request: Request, env: Env): Promise<void> {
 	const url = new URL(request.url);
-	if (env.ALLOW_LOCAL_BYPASS === "true" && ["localhost", "127.0.0.1"].includes(url.hostname)) {
+	if (isLocalRequest(request, url)) {
 		return;
 	}
 
@@ -652,8 +652,25 @@ function getAccessIssuer(value: string | undefined): string | undefined {
 	return hostname === "cloudflareaccess.com" || hostname.endsWith(".cloudflareaccess.com") ? issuer : undefined;
 }
 
-function isLocalDryRun(url: URL, env: Env): boolean {
-	return env.LOCAL_DRY_RUN === "true" && ["localhost", "127.0.0.1"].includes(url.hostname);
+function isLocalDryRun(request: Request, url: URL): boolean {
+	return isLocalRequest(request, url);
+}
+
+function isLocalRequest(request: Request, url: URL): boolean {
+	if (!request.cf) {
+		return true;
+	}
+
+	if (request.headers.has("mf-original-hostname")) {
+		return true;
+	}
+
+	const host = request.headers.get("host")?.split(":")[0] ?? "";
+	return isLocalHostName(url.hostname) || isLocalHostName(host);
+}
+
+function isLocalHostName(hostname: string): boolean {
+	return hostname === "localhost" || hostname === "127.0.0.1";
 }
 
 function readLimit(value: string | undefined, fallback: number): number {

@@ -40,8 +40,10 @@
 	const tagMenuButtons = Array.from(document.querySelectorAll("[data-tag-value], [data-tag-action]"));
 	const toggleLocationButton = document.querySelector("#toggle-location-button");
 	const datetimeInput = document.querySelector("#datetime-input");
+	const editorPane = document.querySelector("#editor-pane");
 	const editorScrollShell = document.querySelector(".editor-scroll-shell");
-	const editorTextarea = document.querySelector("#editor-pane textarea");
+	const editorTextarea = editorPane?.querySelector("textarea");
+	const publishLogFrame = document.querySelector('[data-native-code-frame="publish-log"]');
 	const syntaxCodeFrame = document.querySelector('[data-native-code-frame="syntax"]');
 	const datetimeCaret = document.querySelector(".datetime-caret");
 	const setNowButton = document.querySelector("#set-now-button");
@@ -148,6 +150,7 @@
 	let draftState = "ready";
 	let publishSucceeded = false;
 	let publishTimer = 0;
+	let publishLogLines = [];
 	let imageTrashTimer = 0;
 	let editorScrollbar = null;
 	const metaTransitionMs = 260;
@@ -177,6 +180,16 @@
 	function currentDateCode() {
 		const value = normalizeDatetimeValue(datetimeInput?.value ?? "");
 		return `${value.slice(0, 2)}${value.slice(3, 5)}${value.slice(6, 10)}`;
+	}
+
+	function formatBytes(bytes) {
+		if (bytes < 1024) {
+			return `${bytes} B`;
+		}
+		if (bytes < 1024 * 1024) {
+			return `${(bytes / 1024).toFixed(1)} KB`;
+		}
+		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 	}
 
 	function currentEventId() {
@@ -247,6 +260,9 @@
 		if (draftState === "published") {
 			setDraftState("ready");
 		}
+		if (draftState !== "publishing") {
+			hidePublishLog();
+		}
 		fitEditorTextarea();
 		updateOutput();
 	}
@@ -257,6 +273,8 @@
 		}
 		publishSucceeded = false;
 		setDraftState("ready");
+		hidePublishLog();
+		resetPublishLog();
 		fitEditorTextarea();
 		updateOutput();
 	}
@@ -1105,8 +1123,9 @@
 	}
 
 	function focusRequiredTagInput() {
-		tagInput?.scrollIntoView({ behavior: "smooth", block: "center" });
-		tagInput?.focus();
+		const target = document.querySelector(".publish-main") || tagInput;
+		target?.scrollIntoView({ behavior: "smooth", block: "center" });
+		window.setTimeout(() => tagInput?.focus({ preventScroll: true }), 320);
 	}
 
 	function validateRequiredTag() {
@@ -1175,6 +1194,41 @@
 			}),
 		);
 		pre?.style.setProperty("--ecMaxLine", `${Math.max(1, ...lines.map((line) => line.length))}ch`);
+	}
+
+	function revealPublishLog() {
+		if (!editorPane) {
+			return;
+		}
+		editorPane.dataset.publishLog = "visible";
+		publishLogFrame?.setAttribute("aria-hidden", "false");
+	}
+
+	function hidePublishLog() {
+		if (!editorPane) {
+			return;
+		}
+		delete editorPane.dataset.publishLog;
+		publishLogFrame?.setAttribute("aria-hidden", "true");
+	}
+
+	function resetPublishLog() {
+		publishLogLines = [];
+		renderNativeCodeFrame(publishLogFrame, "\u200b");
+	}
+
+	function appendPublishLog(message) {
+		publishLogLines.push(message);
+		renderNativeCodeFrame(publishLogFrame, publishLogLines.join("\n"));
+		const pre = publishLogFrame?.querySelector("pre");
+		pre?.scrollTo({ top: pre.scrollHeight, behavior: "smooth" });
+	}
+
+	function beginPublishLog() {
+		resetPublishLog();
+		revealPublishLog();
+		appendPublishLog("Preparing timeline publish...");
+		document.querySelector(".publish-main")?.scrollIntoView({ behavior: "smooth", block: "start" });
 	}
 
 	async function copyNativeCodeFrame(button) {
@@ -1484,15 +1538,32 @@
 
 	async function publishEntry() {
 		publishButton?.setAttribute("aria-busy", "true");
+		appendPublishLog("Building draft archive...");
 		const zip = await buildDraftZip({ finalState: "publishing" });
+		appendPublishLog(`Draft archive ready: ${formatBytes(zip.size)}.`);
 		const form = new FormData();
 		form.set("draft", zip, `${eventId}-draft.zip`);
+		appendPublishLog("Uploading draft to publish worker...");
 		const response = await fetch(publishEndpoint, { method: "POST", body: form, credentials: "include" });
 		if (!response.ok) {
-			throw new Error(await publishErrorMessage(response));
+			const message = await publishErrorMessage(response);
+			appendPublishLog(`Publish failed: ${message}`);
+			throw new Error(message);
+		}
+		const result = await response.json().catch(() => null);
+		appendPublishLog("Worker accepted publish request.");
+		if (result?.dryRun) {
+			appendPublishLog("Local dry-run complete. No GitHub write or deploy hook was triggered.");
+		}
+		if (result?.paths?.content) {
+			appendPublishLog(`Content path: ${result.paths.content}`);
+		}
+		if (Array.isArray(result?.paths?.images) && result.paths.images.length > 0) {
+			appendPublishLog(`Image files: ${result.paths.images.length}`);
 		}
 		publishSucceeded = true;
 		setDraftState("published");
+		appendPublishLog("Publish complete.");
 	}
 
 	async function publishErrorMessage(response) {
@@ -2583,12 +2654,14 @@
 		if (!validateRequiredTag()) {
 			return;
 		}
+		setDraftState("publishing");
+		beginPublishLog();
 		try {
 			await publishEntry();
 		} catch (error) {
 			console.error(error);
 			setDraftState("ready");
-			alert(error instanceof Error ? error.message : "Publish failed");
+			appendPublishLog(error instanceof Error ? `Stopped: ${error.message}` : "Stopped: Publish failed");
 		} finally {
 			publishButton.removeAttribute("aria-busy");
 		}

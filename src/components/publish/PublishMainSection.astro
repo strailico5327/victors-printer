@@ -1,5 +1,8 @@
 ---
 import { Icon } from "astro-icon/components";
+import Code from "../../../node_modules/astro-expressive-code/components/Code.astro";
+
+const emptyCodePlaceholder = "\u200b";
 ---
 
 		<section class="publish-main card-base">
@@ -20,6 +23,9 @@ import { Icon } from "astro-icon/components";
 				<span class="editor-scroll-shell hide-scrollbar">
 					<textarea rows="7"></textarea>
 				</span>
+				<div class="native-code-frame publish-log-frame" data-native-code-frame="publish-log" aria-hidden="true">
+					<Code code={emptyCodePlaceholder} lang="md" class="publish-native-code" />
+				</div>
 			</label>
 
 			<div class="publish-footer">
