@@ -20,6 +20,9 @@
 - `src/pages/publish.astro` is now a route wrapper that mounts `src/components/publish/PublishPage.astro` inside `MainGridLayout`.
 - Publish markup is split into `PublishMainSection.astro`, `PublishImagePanel.astro`, and `PublishActions.astro` under `src/components/publish/`.
 - Publish styles were moved from the Astro page `<style>` block to `src/styles/publish/publish.css`; `:global(...)` selectors were converted for external CSS and selectors are scoped under `.publish` to avoid site-wide bleed.
+- Publish editor focus and selected image highlights are drawn with `::after` border overlays to keep rounded corners intact while keeping the highlight visible above textarea/image content.
+- The main editor background and clipping live on `#editor-pane`; the inner textarea is transparent with no radius so the top-left and bottom-left corners are not double-painted or clipped.
+- Publish section headings use the shared `.publish-section-title` accent-bar wrapper; `New event` and `Images` share the same horizontal bar offset, with only vertical position controlled by section modifier variables.
 - Publish client helper logic was split into `src/scripts/publish/datetime.js`, `draft-format.js`, and `image-assets.js`; DOM queries, event wiring, IDs/classes/data attributes, workflow behavior, and API endpoint assumptions remain in `client.js`.
 - Verification passed: `pnpm astro check`, `pnpm build`, HTTP 200 for local `/publish/`, and browser smoke test confirmed publish DOM/style presence plus Tag menu click behavior.
 - Remaining risk: browser smoke test was targeted, not a full manual publish/draft/image workflow pass.
