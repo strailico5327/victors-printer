@@ -6,6 +6,15 @@
 - Commits must continue to follow the existing allowed prefix patterns in `AGENTS.md`: `feat:`, `fix:`, `style:`, `refactor:`, `docs:`, `perf:`, or `chore:`.
 - This guidance update touched `AGENTS.md` and `CONTEXT.md`; no build or type-check was needed because only repository documentation changed.
 
+## Publish Client Script Extraction
+
+- The publish page client script was mechanically extracted from `src/pages/publish.astro` into `src/scripts/publish/client.js`.
+- `src/pages/publish.astro` now keeps the existing markup and scoped CSS in place and imports the extracted client module from its `<script>` block.
+- The extracted script body matches the previous inline script body; no IDs, classes, data attributes, selector contracts, workflow logic, API endpoint assumptions, or UI styling were changed.
+- CSS was intentionally left in `src/pages/publish.astro` because the approved first batch only moves the client script and Astro scoped CSS remains risky.
+- Verification passed: `pnpm astro check` and `pnpm build`.
+- Remaining risk: this was build-verified but not browser-click smoke-tested in the dashboard UI.
+
 ## Publish Timeline Tag Input
 
 - The publish form metadata row is ordered as Date & time, Tag, Location.
