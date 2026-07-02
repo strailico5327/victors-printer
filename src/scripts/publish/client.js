@@ -1104,12 +1104,17 @@
 		}
 	}
 
+	function focusRequiredTagInput() {
+		tagInput?.scrollIntoView({ behavior: "smooth", block: "center" });
+		tagInput?.focus();
+	}
+
 	function validateRequiredTag(action = "publishing") {
 		if (tagInput?.value.trim()) {
 			return true;
 		}
 		alert(`Please fill in a tag before ${action}.`);
-		tagInput?.focus();
+		focusRequiredTagInput();
 		return false;
 	}
 
