@@ -1109,11 +1109,10 @@
 		tagInput?.focus();
 	}
 
-	function validateRequiredTag(action = "publishing") {
+	function validateRequiredTag() {
 		if (tagInput?.value.trim()) {
 			return true;
 		}
-		alert(`Please fill in a tag before ${action}.`);
 		focusRequiredTagInput();
 		return false;
 	}
@@ -2549,7 +2548,7 @@
 	});
 
 	downloadDraftButton?.addEventListener("click", async () => {
-		if (!validateRequiredTag("saving this draft")) {
+		if (!validateRequiredTag()) {
 			return;
 		}
 		try {
@@ -2562,12 +2561,7 @@
 		}
 	});
 
-	openDraftButton?.addEventListener("click", () => {
-		if (!validateRequiredTag("loading a draft")) {
-			return;
-		}
-		draftFileInput?.click();
-	});
+	openDraftButton?.addEventListener("click", () => draftFileInput?.click());
 	draftFileInput?.addEventListener("change", async () => {
 		const file = draftFileInput.files?.[0];
 		if (!file) {

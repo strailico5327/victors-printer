@@ -27,8 +27,8 @@
 ## Publish Timeline Tag Input
 
 - The publish form metadata row is ordered as Date & time, Tag, Location.
-- Timeline publishes require exactly one tag. If the tag field is empty, publishing shows a browser alert and focuses the tag input.
-- Saving a draft and opening a draft are now also blocked when the current tag field is empty; the page reuses the same alert-and-focus behavior with action-specific wording.
+- Timeline publishes require exactly one tag. If the tag field is empty, required-action validation scrolls to the tag input and focuses it without showing a blocking alert.
+- Saving a draft is blocked when the current tag field is empty using the same scroll-and-focus behavior. `Open draft` does not validate the current page tag before file selection.
 - The tag input is readonly by default. Choosing a preset tag from the tag button menu fills the input and keeps editing locked.
 - The tag button opens a small float-panel style menu matching the existing light/dark and image mode menus.
 - Current example preset tags are `Games` and `Life`.
