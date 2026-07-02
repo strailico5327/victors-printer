@@ -151,6 +151,11 @@
 
 	.publish .publish-status[data-state="processing"] .status-sync,
 	.publish .publish-status[data-state="publishing"] .status-sync {
+		opacity: 0;
+	}
+
+	.publish .publish-status[data-state="processing"] .status-cloud,
+	.publish .publish-status[data-state="publishing"] .status-cloud {
 		opacity: 1;
 		animation: status-spin 900ms linear infinite;
 	}
