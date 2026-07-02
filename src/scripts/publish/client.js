@@ -151,10 +151,13 @@
 	let publishSucceeded = false;
 	let publishTimer = 0;
 	let publishLogLines = [];
+	let publishLogBaseHeight = 0;
+	let publishLogHeightTarget = 0;
+	let publishLogHeightTimer = 0;
 	let imageTrashTimer = 0;
 	let editorScrollbar = null;
 	const metaTransitionMs = 260;
-	const publishLogFramePadding = 32;
+	const publishLogFrameBottomPadding = 12;
 	const imagesById = new Map();
 	const imageOrder = [];
 	const gridSlots = Array(tileCount).fill(null);
@@ -295,7 +298,9 @@
 		}
 		editorTextarea.style.height = "auto";
 		editorTextarea.style.height = `${editorTextarea.scrollHeight}px`;
-		editorPane?.style.setProperty("--main-editor-active-height", `${editorTextarea.scrollHeight}px`);
+		const nextHeight = Math.ceil(editorTextarea.scrollHeight);
+		editorPane?.style.setProperty("--main-editor-active-height", `${nextHeight}px`);
+		publishLogHeightTarget = nextHeight;
 		editorScrollbar?.update();
 	}
 
@@ -304,9 +309,12 @@
 			return;
 		}
 		if (editorTextarea) {
-			editorPane.style.setProperty("--main-editor-active-height", `${editorTextarea.scrollHeight}px`);
+			const nextHeight = Math.ceil(editorTextarea.scrollHeight);
+			editorPane.style.setProperty("--main-editor-active-height", `${nextHeight}px`);
+			publishLogHeightTarget = nextHeight;
 		} else {
 			editorPane.style.removeProperty("--main-editor-active-height");
+			publishLogHeightTarget = 0;
 		}
 	}
 
@@ -1233,6 +1241,8 @@
 		if (!editorPane) {
 			return;
 		}
+		publishLogBaseHeight = Math.ceil(editorPane.getBoundingClientRect().height || 0);
+		publishLogHeightTarget = publishLogBaseHeight;
 		editorPane.dataset.publishLog = "visible";
 		publishLogFrame?.setAttribute("aria-hidden", "false");
 	}
@@ -1243,33 +1253,60 @@
 		}
 		delete editorPane.dataset.publishLog;
 		publishLogFrame?.setAttribute("aria-hidden", "true");
+		publishLogBaseHeight = 0;
+		window.clearTimeout(publishLogHeightTimer);
+		publishLogHeightTimer = 0;
 		resetEditorFrameHeight();
 	}
 
 	function resetPublishLog() {
 		publishLogLines = [];
 		renderNativeCodeFrame(publishLogFrame, "\u200b");
+		window.clearTimeout(publishLogHeightTimer);
+		publishLogHeightTimer = 0;
 		resetEditorFrameHeight();
 	}
 
-	function updatePublishLogHeight() {
+	function measurePublishLogHeight() {
 		if (!editorPane || !publishLogFrame) {
-			return;
+			return 0;
 		}
 		const pre = publishLogFrame.querySelector("pre");
 		if (!pre) {
+			return 0;
+		}
+		const lines = Array.from(publishLogFrame.querySelectorAll(".ec-line"));
+		const minimumHeight = publishLogBaseHeight || editorPane.getBoundingClientRect().height || 0;
+		const maximumHeight = Math.max(minimumHeight, Math.round(window.innerHeight * 0.68));
+		const firstLine = lines[0];
+		const lastLine = lines.at(-1);
+		const topInset = firstLine instanceof HTMLElement ? firstLine.offsetTop : 0;
+		const contentBottom =
+			lastLine instanceof HTMLElement ? lastLine.offsetTop + lastLine.offsetHeight : pre.scrollHeight;
+		const measuredHeight = contentBottom + topInset + publishLogFrameBottomPadding;
+		return Math.ceil(Math.min(maximumHeight, Math.max(minimumHeight, measuredHeight)));
+	}
+
+	function schedulePublishLogHeightUpdate() {
+		if (!editorPane) {
 			return;
 		}
-		const minimumHeight = editorTextarea?.scrollHeight || editorPane.getBoundingClientRect().height || 0;
-		const maximumHeight = Math.max(minimumHeight, Math.round(window.innerHeight * 0.68));
-		const nextHeight = Math.min(maximumHeight, Math.max(minimumHeight, pre.scrollHeight + publishLogFramePadding));
-		editorPane.style.setProperty("--main-editor-active-height", `${Math.ceil(nextHeight)}px`);
+		window.clearTimeout(publishLogHeightTimer);
+		publishLogHeightTimer = window.setTimeout(() => {
+			publishLogHeightTimer = 0;
+			const nextHeight = measurePublishLogHeight();
+			if (!nextHeight || nextHeight <= publishLogHeightTarget) {
+				return;
+			}
+			publishLogHeightTarget = nextHeight;
+			editorPane.style.setProperty("--main-editor-active-height", `${nextHeight}px`);
+		}, 120);
 	}
 
 	function appendPublishLog(message) {
 		publishLogLines.push(message);
 		renderNativeCodeFrame(publishLogFrame, publishLogLines.join("\n"));
-		updatePublishLogHeight();
+		schedulePublishLogHeightUpdate();
 		const pre = publishLogFrame?.querySelector("pre");
 		pre?.scrollTo({ top: pre.scrollHeight, behavior: "smooth" });
 	}
