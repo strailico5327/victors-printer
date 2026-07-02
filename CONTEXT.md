@@ -42,6 +42,7 @@
 - Publish editor focus and selected image highlights are drawn with `::after` border overlays to keep rounded corners intact while keeping the highlight visible above textarea/image content.
 - The main editor background and clipping live on `#editor-pane`; the inner textarea is transparent with no radius so the top-left and bottom-left corners are not double-painted or clipped.
 - Publish section headings use the shared `.publish-section-title` accent-bar wrapper; `New event` and `Images` share the same horizontal bar offset, with only vertical position controlled by section modifier variables.
+- Image trash intent is explicit: double-clicking the trash button clears all images and collapses the image panel, while clicking trash and then a specific image tile deletes only that tile instead of whichever tile becomes selected later.
 - Publish client helper logic was split into `src/scripts/publish/datetime.js`, `draft-format.js`, and `image-assets.js`; DOM queries, event wiring, IDs/classes/data attributes, workflow behavior, and API endpoint assumptions remain in `client.js`.
 - Verification passed: `pnpm astro check`, `pnpm build`, HTTP 200 for local `/publish/`, and browser smoke test confirmed publish DOM/style presence plus Tag menu click behavior.
 - Remaining risk: browser smoke test was targeted, not a full manual publish/draft/image workflow pass.

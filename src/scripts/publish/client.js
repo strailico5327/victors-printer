@@ -535,6 +535,26 @@
 		markDirty();
 	}
 
+	function resetImageTrashIntent() {
+		window.clearTimeout(imageTrashTimer);
+		imageTrashTimer = 0;
+		if (imageTrashButton) {
+			imageTrashButton.dataset.pendingClear = "false";
+		}
+	}
+
+	function clearTileFromTrashIntent(tile) {
+		if (imageTrashButton?.dataset.pendingClear !== "true") {
+			return false;
+		}
+		resetImageTrashIntent();
+		if (!imageIdForTile(tile)) {
+			return false;
+		}
+		clearTile(tile);
+		return true;
+	}
+
 	function clearAllTiles() {
 		const fileNames = Array.from(imagesById.values(), (image) => image.fileName);
 		for (const image of imagesById.values()) {
@@ -1980,6 +2000,9 @@
 
 	function handleGridTileClick(tile, event) {
 		event.stopPropagation();
+		if (clearTileFromTrashIntent(tile)) {
+			return;
+		}
 		if (imageMode === "canvas" && canvasSyntaxMode === "mosaic") {
 			activeMosaicRowIndex = mosaicRowIndexForTile(tile);
 			syncMosaicSelectionState();
@@ -2041,6 +2064,9 @@
 
 	function handlePoolTileClick(tile, event) {
 		event.stopPropagation();
+		if (clearTileFromTrashIntent(tile)) {
+			return;
+		}
 		if (tileArea(tile) === "pool-add") {
 			requestImageUpload({ area: "append" });
 			return;
@@ -2420,20 +2446,20 @@
 	});
 
 	imageTrashButton?.addEventListener("click", () => {
-		window.clearTimeout(imageTrashTimer);
 		if (imageTrashButton.dataset.pendingClear === "true") {
-			imageTrashButton.dataset.pendingClear = "false";
+			resetImageTrashIntent();
 			clearAllTiles();
 			setImageMode("off");
 			return;
 		}
 		imageTrashButton.dataset.pendingClear = "true";
+		const tileToClear = selectedTile;
 		imageTrashTimer = window.setTimeout(() => {
-			imageTrashButton.dataset.pendingClear = "false";
-			if (selectedTile) {
-				clearTile(selectedTile);
+			resetImageTrashIntent();
+			if (tileToClear?.isConnected && imageIdForTile(tileToClear)) {
+				clearTile(tileToClear);
 			}
-		}, 240);
+		}, tileToClear ? 240 : 1600);
 	});
 
 	imageFileInput?.addEventListener("change", async () => {
